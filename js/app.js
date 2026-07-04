@@ -82,6 +82,62 @@
             if (el) el.innerText = text;
         }
 
+
+
+        function getKoreanWeekday(date = new Date()) {
+            return ['일요일','월요일','화요일','수요일','목요일','금요일','토요일'][date.getDay()];
+        }
+
+        function isGatheringScheduledToday(g, date = new Date()) {
+            if (!g || !g.joined) return false;
+            const schedule = String(g.schedule || '').trim();
+            if (!schedule || schedule === '협의' || schedule.includes('협의')) return false;
+            if (schedule.includes('매일')) return true;
+
+            const weekday = getKoreanWeekday(date);
+            if (schedule.includes(weekday)) return true;
+
+            const monthDayMatch = schedule.match(/(\d{1,2})\s*월\s*(\d{1,2})\s*일/);
+            if (monthDayMatch) {
+                return Number(monthDayMatch[1]) === (date.getMonth() + 1) && Number(monthDayMatch[2]) === date.getDate();
+            }
+
+            return false;
+        }
+
+        function getTodayJoinedGatherings() {
+            if (typeof isGuestUser === 'function' && isGuestUser()) return [];
+            return (state.gatherings || []).filter(g => isGatheringScheduledToday(g));
+        }
+
+        function getGatheringScheduleTime(schedule) {
+            const text = String(schedule || '');
+            const hhmm = text.match(/(\d{1,2})\s*[:시]\s*(\d{1,2})?/);
+            if (!hhmm) return '';
+            const hour = String(hhmm[1]).padStart(2, '0');
+            const minute = String(hhmm[2] || '00').padStart(2, '0');
+            return `${hour}:${minute}`;
+        }
+
+        function updateHomeReadingSchedule() {
+            const card = document.getElementById('home-reading-schedule-card');
+            if (!card) return;
+            const todays = getTodayJoinedGatherings();
+            if (!todays.length) {
+                card.classList.add('hidden');
+                return;
+            }
+            const g = todays[0];
+            const time = getGatheringScheduleTime(g.schedule) || '오늘';
+            const titleEl = card.querySelector('h2');
+            const descEl = card.querySelector('p.text-xs.sm\\:text-sm, p.text-xs');
+            const button = card.querySelector('button');
+            if (titleEl) titleEl.innerText = `${time}, 『${g.book}』 ${g.title}`;
+            if (descEl) descEl.innerText = `${g.method || '독서모임'} · ${g.platform || g.place || '진행 장소 미정'}에서 진행되는 나의 독서모임입니다.`;
+            if (button) button.setAttribute('onclick', `enterMeetingRoom(${JSON.stringify(g.book)})`);
+            card.classList.remove('hidden');
+        }
+
         function updateHomeBrief() {
             const avatarEl = document.getElementById('home-brief-avatar');
             if (avatarEl) avatarEl.innerHTML = getAvatarHTML(state.currentUser, 'w-14 h-14', 'border-4 border-white shadow-sm');
@@ -96,19 +152,24 @@
                 safeSetText('home-stat-2-label', 'AI 모아 대화');
                 safeSetText('home-stat-3-value', '가입');
                 safeSetText('home-stat-3-label', '기록 저장하기');
+                const card = document.getElementById('home-reading-schedule-card');
+                if (card) card.classList.add('hidden');
                 return;
             }
 
             safeSetText('home-brief-eyebrow', '오늘의 북메이트');
             safeSetText('home-brief-title', `${state.currentUser.nickname}님, 오늘도 북메이트와 함께할 준비 되셨나요?`);
-            const joinedCount = state.gatherings ? state.gatherings.filter(g => g.joined).length : 2;
-            safeSetText('home-brief-subtitle', `오늘은 ${Math.max(1, Math.min(joinedCount, 3))}개의 독서모임이 열리고, 북메이트 3명이 새로운 글을 남겼어요.`);
+            const joinedCount = state.gatherings ? state.gatherings.filter(g => g.joined).length : 0;
+            const todayGatherings = getTodayJoinedGatherings();
+            const todayCount = todayGatherings.length;
+            safeSetText('home-brief-subtitle', todayCount > 0 ? `오늘은 가입한 독서모임 ${todayCount}개가 예정되어 있어요. 알림에서 자세히 확인할 수 있습니다.` : '오늘 예정된 가입 독서모임은 없습니다. 관심 모임을 찾아보거나 새 모임을 만들어보세요.');
             safeSetText('home-stat-1-value', '7일');
             safeSetText('home-stat-1-label', '독서 연속');
-            safeSetText('home-stat-2-value', `${Math.max(1, Math.min(joinedCount, 3))}개`);
+            safeSetText('home-stat-2-value', `${todayCount}개`);
             safeSetText('home-stat-2-label', '오늘 모임');
-            safeSetText('home-stat-3-value', '3명');
-            safeSetText('home-stat-3-label', '새 소식');
+            safeSetText('home-stat-3-value', `${joinedCount}개`);
+            safeSetText('home-stat-3-label', '가입 모임');
+            updateHomeReadingSchedule();
         }
 
         function openProfileCard() {
@@ -190,7 +251,7 @@
             renderSocialComposerState();
             container.innerHTML = '';
             
-            const unreadCount = state.notifications.filter(n => !n.isRead).length;
+            const unreadCount = state.notifications.filter(n => !n.isRead).length + (typeof getTodayJoinedGatherings === 'function' ? getTodayJoinedGatherings().length : 0);
             const badge = document.getElementById('notification-badge-count');
             if(badge) {
                 badge.innerText = unreadCount;
@@ -560,7 +621,34 @@
             updateGuestHomeVisibility();
             if (viewName === 'ai-chat') renderAIRightSidebar();
             if (viewName === 'archive') renderSavedAIArchives();
+            if (viewName === 'notifications') renderNotificationsView();
             window.scrollTo({ top: 0, behavior: 'smooth' });
+            lucide.createIcons();
+        }
+
+
+
+        function renderNotificationsView() {
+            const section = document.getElementById('view-notifications');
+            const list = section ? section.querySelector('.divide-y.divide-brand-ivoryDark') : null;
+            if (!list) return;
+            if (typeof isGuestUser === 'function' && isGuestUser()) {
+                list.innerHTML = `
+                    <div class="p-8 text-center bg-brand-ivory/40">
+                        <div class="w-14 h-14 mx-auto rounded-2xl bg-white border border-brand-ivoryDark flex items-center justify-center text-2xl mb-4">🔔</div>
+                        <h3 class="serif-title text-lg font-bold text-brand-navy">가입하면 나의 모임 알림을 받을 수 있어요.</h3>
+                        <p class="text-xs text-gray-500 leading-relaxed mt-2">게스트 계정에서는 예시 알림을 보여주지 않습니다. BOOKMATE가 되어 독서모임 일정, 초대, 새 글 알림을 확인해보세요.</p>
+                        <button onclick="openAuthPage('login')" class="mt-5 px-5 py-2.5 bg-brand-navy text-white rounded-xl text-xs font-bold shadow">로그인 / 가입하기</button>
+                    </div>`;
+                return;
+            }
+            const todays = getTodayJoinedGatherings();
+            const scheduleItems = todays.map(g => {
+                const time = getGatheringScheduleTime(g.schedule) || '오늘';
+                return `<div class="p-5 flex gap-4 hover:bg-brand-ivory/40 transition-colors"><div class="w-10 h-10 rounded-full bg-red-50 text-red-600 flex items-center justify-center shrink-0"><i data-lucide="calendar-clock" class="w-5 h-5"></i></div><div><h3 class="font-bold text-sm text-brand-navy">${time} 『${g.book}』 ${g.title} 모임이 있습니다.</h3><p class="text-xs text-gray-500 mt-1">${g.method || '독서모임'} · ${g.platform || g.place || g.schedule}</p><button onclick="enterMeetingRoom(${JSON.stringify(g.book)})" class="mt-3 px-3 py-1.5 bg-brand-navy text-white rounded-lg text-[10px] font-bold">입장하기</button></div></div>`;
+            });
+            const baseItems = (state.notifications || []).map(n => `<div class="p-5 flex gap-4 hover:bg-brand-ivory/40 transition-colors"><div class="w-10 h-10 rounded-full bg-brand-sageLight text-brand-sageDark flex items-center justify-center shrink-0">${n.initial || '알'}</div><div><h3 class="font-bold text-sm text-brand-navy">${n.message || n.gathering || '새 알림이 있습니다.'}</h3><p class="text-xs text-gray-500 mt-1">${n.time || ''}</p></div></div>`);
+            list.innerHTML = (scheduleItems.length || baseItems.length) ? [...scheduleItems, ...baseItems].join('') : `<div class="p-8 text-center text-xs text-gray-400">오늘 확인할 알림이 없습니다.</div>`;
             lucide.createIcons();
         }
 

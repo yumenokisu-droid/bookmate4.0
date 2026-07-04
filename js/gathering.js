@@ -6,26 +6,33 @@
                 container.innerHTML = `<div class="col-span-full py-16 text-center text-gray-500 bg-white rounded border border-brand-ivoryDark">검색 결과가 없습니다.</div>`;
                 return;
             }
-            listData.forEach(g => {
+            listData.filter(g => g.scope !== '비공개' || g.joined || g.invited).forEach(g => {
                 const isJoined = g.joined;
                 const coverId = `grid-cover-${g.id}`;
                 let tagBadges = g.keywords.map(keyword => `<span class="bg-brand-sageLight text-brand-sageDark px-2 py-0.5 rounded-full text-[9px] font-bold">#${keyword}</span>`).join(' ');
                 
-                let scopeBadgeStyle = g.scope === "도서관 전용" ? "bg-amber-100 text-amber-800" : "bg-brand-sageLight text-brand-sageDark";
+                let scopeBadgeStyle = (g.scope === "도서관 전용" || g.libraryOnly) ? "bg-amber-100 text-amber-800" : (g.scope === "비공개" ? "bg-gray-100 text-gray-600" : "bg-brand-sageLight text-brand-sageDark");
                 let libraryText = g.library ? `(${g.library})` : "";
+                const targetText = formatGatheringTarget(g.target);
+                const methodDetail = g.method === '온라인' ? (g.platform || 'Bookmate') : (g.place || '장소 미정');
 
                 const card = document.createElement('div');
                 card.className = "bg-white p-6 rounded-2xl border border-brand-ivoryDark hover:border-brand-sage hover:shadow-lg transition-all relative flex flex-col justify-between space-y-4";
                 card.innerHTML = `
                     <div class="space-y-3">
                         <div class="flex justify-between items-start flex-wrap gap-1">
-                            <span class="${scopeBadgeStyle} px-2.5 py-0.5 rounded-full text-[10px] font-bold">${g.scope} ${libraryText} · ${g.type}</span>
+                            <span class="${scopeBadgeStyle} px-2.5 py-0.5 rounded-full text-[10px] font-bold">${g.scope || '공개'} ${libraryText} · ${g.type}</span>
+                            ${g.libraryOnly ? `<span class="bg-amber-50 text-amber-700 border border-amber-100 px-2.5 py-0.5 rounded-full text-[10px] font-bold">도서관 인증 회원</span>` : ''}
                         </div>
                         <h3 class="serif-title font-bold text-base text-brand-navy mt-1">${g.title}</h3>
                         <div class="flex items-center gap-1.5 text-xs font-semibold text-brand-sageDark bg-brand-sageLight/50 px-2.5 py-1.5 rounded-lg w-fit">
                             <i data-lucide="clock" class="w-3.5 h-3.5"></i> ${g.schedule || '일정 미정'}
                         </div>
                         <p class="text-xs text-gray-500 line-clamp-3">${g.desc}</p>
+                        <div class="flex flex-wrap gap-1">
+                            <span class="bg-white text-brand-navy px-2 py-0.5 rounded-full text-[9px] font-bold border border-brand-ivoryDark">${g.method || '온라인'} · ${methodDetail}</span>
+                            ${targetText ? `<span class="bg-white text-brand-navy px-2 py-0.5 rounded-full text-[9px] font-bold border border-brand-ivoryDark">${targetText}</span>` : ''}
+                        </div>
                         <div class="flex flex-wrap gap-1 mt-1">${tagBadges}<span class="bg-brand-ivory text-brand-navy px-2 py-0.5 rounded-full text-[9px] font-bold border border-brand-ivoryDark">AI 질문 준비</span></div>
                         <div class="space-y-1">
                             <div class="flex justify-between text-[9px] text-gray-400 font-bold"><span>모집률</span><span>${Math.min(100, Math.round((g.membersCount / g.maxMembers) * 100))}%</span></div>
@@ -62,7 +69,7 @@
                 target.membersCount--;
                 showToast("독서모임 참여를 철회했습니다.");
             } else {
-                if (target.library && target.library !== state.currentUser.library) {
+                if ((target.libraryOnly || target.library) && (target.library || state.currentUser.library) !== state.currentUser.library) {
                     showToast(`[${target.library}] 회원만 가입할 수 있는 모임입니다.`, "error");
                     return;
                 }
@@ -117,6 +124,58 @@
             lucide.createIcons();
         }
 
+
+        function getCheckedValues(name) {
+            return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(el => el.value);
+        }
+
+        function normalizeTargetValues(values, openValue) {
+            if (!values || values.length === 0) return [openValue];
+            if (values.includes(openValue) && values.length > 1) return values.filter(v => v !== openValue);
+            return values;
+        }
+
+        function collectGatheringTarget() {
+            const custom = document.getElementById('create-g-target-custom')?.value.trim();
+            return {
+                age: normalizeTargetValues(getCheckedValues('g-age'), '누구나'),
+                gender: normalizeTargetValues(getCheckedValues('g-gender'), '누구나'),
+                preference: normalizeTargetValues(getCheckedValues('g-preference'), '제한 없음'),
+                custom: custom || ''
+            };
+        }
+
+        function formatGatheringTarget(target) {
+            if (!target) return '';
+            const parts = [];
+            const age = (target.age || []).filter(v => v && v !== '누구나');
+            const gender = (target.gender || []).filter(v => v && v !== '누구나');
+            const pref = (target.preference || []).filter(v => v && v !== '제한 없음');
+            if (age.length) parts.push(age.join('/'));
+            if (gender.length) parts.push(gender.join('/'));
+            if (pref.length) parts.push(pref.join('/'));
+            if (target.custom) parts.push(target.custom);
+            return parts.length ? parts.join(' · ') : '누구나';
+        }
+
+        function setToggleButtonState(prefix, activeValue) {
+            const groups = {
+                scope: { '공개': 'btn-g-scope-pub', '비공개': 'btn-g-scope-priv' },
+                type: { '정기모임': 'btn-g-type-reg', '1회성': 'btn-g-type-once' },
+                method: { '온라인': 'btn-g-method-on', '오프라인': 'btn-g-method-off' }
+            };
+            const map = groups[prefix] || {};
+            Object.entries(map).forEach(([value, id]) => {
+                const btn = document.getElementById(id);
+                if (!btn) return;
+                btn.className = value === activeValue
+                    ? 'flex-1 py-2 rounded-xl text-xs font-bold bg-brand-navy text-white transition-all'
+                    : 'flex-1 py-2 rounded-xl text-xs font-bold bg-brand-ivory text-brand-navy hover:bg-brand-ivoryDark transition-all';
+            });
+            const help = document.getElementById('create-g-scope-help');
+            if (help && prefix === 'scope') help.innerText = activeValue === '비공개' ? '비공개 모임은 목록 검색에 노출되지 않고, 초대 링크를 통해서만 가입할 수 있습니다.' : '공개 모임은 목록과 검색에 노출됩니다.';
+        }
+
         function toggleKeywordSelection(keyword) {
             const index = state.createGatheringState.keywords.indexOf(keyword);
             const map = { '자기계발': 'key-tag-자기계발', '인문학': 'key-tag-인문학', '소설/문학': 'key-tag-소설', '사회/과학': 'key-tag-과학', '힐링/에세이': 'key-tag-힐링' };
@@ -134,12 +193,24 @@
         function updateGatheringPreview() {
             const name = document.getElementById('create-g-name')?.value.trim() || '새로운 모임 이름';
             const book = document.getElementById('create-g-book')?.value.trim() || '지정 대기 중';
+            const target = collectGatheringTarget();
+            const targetLabel = formatGatheringTarget(target);
+            const libraryOnly = !!document.getElementById('create-g-library-only')?.checked;
+            const methodDetail = state.createGatheringState.method === '온라인'
+                ? (document.getElementById('create-g-platform')?.value || 'Bookmate')
+                : (document.getElementById('create-g-place')?.value.trim() || '장소 미정');
+
             safeSetText('preview-title', name);
             safeSetText('preview-book', book);
-            
+            safeSetText('preview-desc', document.getElementById('create-g-desc')?.value.trim() || '멋진 소개글을 입력해 보세요.');
+            safeSetText('preview-tag', `${state.createGatheringState.scope} · ${state.createGatheringState.type}${libraryOnly ? ' · 도서관 인증' : ''}`);
+            safeSetText('preview-method', `${state.createGatheringState.method} · ${methodDetail}`);
+
             const keywordBadge = document.getElementById('preview-keywords-badge');
-            if(keywordBadge) keywordBadge.innerText = state.createGatheringState.keywords.length > 0 ? state.createGatheringState.keywords.map(k=>`#${k}`).join(', ') : '선택 없음';
-            
+            if (keywordBadge) {
+                const keywordText = state.createGatheringState.keywords.length > 0 ? state.createGatheringState.keywords.map(k=>`#${k}`).join(', ') : '선택 없음';
+                keywordBadge.innerText = targetLabel && targetLabel !== '누구나' ? `${keywordText} · 대상: ${targetLabel}` : keywordText;
+            }
             const freq = document.getElementById('create-g-freq')?.value || '협의';
             const time = document.getElementById('create-g-time')?.value.trim() || '';
             safeSetText('preview-schedule', time ? `${freq} ${time}` : freq);
@@ -154,8 +225,8 @@
 
         function setGatheringToggle(category, value) {
             state.createGatheringState[category] = value;
-            safeSetText('preview-tag', `${state.createGatheringState.scope} · ${state.createGatheringState.type}`);
-            safeSetText('preview-method', state.createGatheringState.method);
+            setToggleButtonState(category, value);
+            updateGatheringPreview();
         }
 
         function updateGatheringMembers(val) {
@@ -196,10 +267,16 @@
                 scope: state.createGatheringState.scope,
                 type: state.createGatheringState.type,
                 method: state.createGatheringState.method,
+                platform: document.getElementById('create-g-platform')?.value || 'Bookmate',
+                place: document.getElementById('create-g-place')?.value.trim() || '',
                 schedule: scheduleStr,
                 suitability: 100,
                 desc: document.getElementById('create-g-desc').value.trim(),
                 keywords: [...state.createGatheringState.keywords],
+                target: collectGatheringTarget(),
+                libraryOnly: !!document.getElementById('create-g-library-only')?.checked,
+                library: document.getElementById('create-g-library-only')?.checked ? state.currentUser.library : '',
+                shareLink: state.createGatheringState.scope === '비공개' ? `bookmate://gathering/${Date.now()}` : '',
                 joined: true,
                 isLeader: true
             };
@@ -207,7 +284,7 @@
             saveAppState();
             renderGatheringsGrid();
             renderMyPageGatherings();
-            showToast("모임이 성공적으로 개설되었습니다!");
+            showToast(newGathering.scope === "비공개" ? "비공개 모임이 개설되었습니다. 초대 링크로만 가입할 수 있어요." : "모임이 성공적으로 개설되었습니다!");
             navigate('mypage');
         }
 

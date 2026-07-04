@@ -534,6 +534,38 @@
                         </div>
                     </div>
 
+                    <div class="bg-white p-6 rounded-2xl border border-brand-ivoryDark space-y-4">
+                        <div>
+                            <label class="block text-sm font-bold text-brand-navy">모집 대상 설정</label>
+                            <p class="text-[10px] text-gray-400 mt-0.5">누구나 참여 가능하게 두거나, 연령·성별·취향에 맞춰 모임을 만들 수 있습니다.</p>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div class="space-y-2">
+                                <p class="text-[11px] font-bold text-brand-sageDark">연령</p>
+                                <label class="flex items-center gap-2 text-xs text-brand-navy"><input type="checkbox" name="g-age" value="누구나" checked class="accent-brand-sage"> 누구나</label>
+                                <label class="flex items-center gap-2 text-xs text-brand-navy"><input type="checkbox" name="g-age" value="청소년" class="accent-brand-sage"> 청소년</label>
+                                <label class="flex items-center gap-2 text-xs text-brand-navy"><input type="checkbox" name="g-age" value="2030" class="accent-brand-sage"> 2030</label>
+                                <label class="flex items-center gap-2 text-xs text-brand-navy"><input type="checkbox" name="g-age" value="4050" class="accent-brand-sage"> 4050</label>
+                                <label class="flex items-center gap-2 text-xs text-brand-navy"><input type="checkbox" name="g-age" value="시니어" class="accent-brand-sage"> 시니어</label>
+                            </div>
+                            <div class="space-y-2">
+                                <p class="text-[11px] font-bold text-brand-sageDark">성별</p>
+                                <label class="flex items-center gap-2 text-xs text-brand-navy"><input type="checkbox" name="g-gender" value="누구나" checked class="accent-brand-sage"> 누구나</label>
+                                <label class="flex items-center gap-2 text-xs text-brand-navy"><input type="checkbox" name="g-gender" value="여성" class="accent-brand-sage"> 여성</label>
+                                <label class="flex items-center gap-2 text-xs text-brand-navy"><input type="checkbox" name="g-gender" value="남성" class="accent-brand-sage"> 남성</label>
+                                <label class="flex items-center gap-2 text-xs text-brand-navy"><input type="checkbox" name="g-gender" value="기타" class="accent-brand-sage"> 기타</label>
+                            </div>
+                            <div class="space-y-2">
+                                <p class="text-[11px] font-bold text-brand-sageDark">취향/상황</p>
+                                <label class="flex items-center gap-2 text-xs text-brand-navy"><input type="checkbox" name="g-preference" value="제한 없음" checked class="accent-brand-sage"> 제한 없음</label>
+                                <label class="flex items-center gap-2 text-xs text-brand-navy"><input type="checkbox" name="g-preference" value="엄마들의 독서클럽" class="accent-brand-sage"> 엄마들의 독서클럽</label>
+                                <label class="flex items-center gap-2 text-xs text-brand-navy"><input type="checkbox" name="g-preference" value="직장인" class="accent-brand-sage"> 직장인</label>
+                                <label class="flex items-center gap-2 text-xs text-brand-navy"><input type="checkbox" name="g-preference" value="고전 중심" class="accent-brand-sage"> 고전 중심</label>
+                                <input id="create-g-target-custom" type="text" placeholder="직접 입력" oninput="updateGatheringPreview()" class="w-full mt-2 px-3 py-2 bg-brand-ivory/50 border border-brand-ivoryDark rounded-lg text-xs outline-none focus:border-brand-sage">
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div class="bg-white p-6 rounded-2xl border border-brand-ivoryDark space-y-3">
                             <label class="block text-sm font-bold text-brand-navy">공개 범위</label>
@@ -541,6 +573,8 @@
                                 <button onclick="setGatheringToggle('scope', '공개')" id="btn-g-scope-pub" class="flex-1 py-2 rounded-xl text-xs font-bold bg-brand-navy text-white transition-all">공개</button>
                                 <button onclick="setGatheringToggle('scope', '비공개')" id="btn-g-scope-priv" class="flex-1 py-2 rounded-xl text-xs font-bold bg-brand-ivory text-brand-navy hover:bg-brand-ivoryDark transition-all">비공개</button>
                             </div>
+                            <p id="create-g-scope-help" class="text-[10px] text-gray-400 leading-relaxed">공개 모임은 목록과 검색에 노출됩니다.</p>
+                            <label class="flex items-center gap-2 text-[11px] font-semibold text-brand-navy"><input id="create-g-library-only" type="checkbox" onchange="updateGatheringPreview()" class="accent-brand-sage"> 소속도서관 인증 회원만 모집</label>
                         </div>
 
                         <div class="bg-white p-6 rounded-2xl border border-brand-ivoryDark space-y-3">
@@ -560,10 +594,28 @@
                         </div>
                     </div>
 
+                    <div class="bg-white p-6 rounded-2xl border border-brand-ivoryDark space-y-4">
+                        <div>
+                            <label class="block text-sm font-bold text-brand-navy">진행 방식 상세</label>
+                            <p class="text-[10px] text-gray-400 mt-0.5">온라인은 사용할 플랫폼을, 오프라인은 만날 장소를 적어주세요.</p>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <select id="create-g-platform" onchange="updateGatheringPreview()" class="px-4 py-3 bg-brand-ivory/50 border border-brand-ivoryDark rounded-xl focus:border-brand-sage outline-none text-sm font-semibold text-brand-navy appearance-none">
+                                <option value="Bookmate">Bookmate</option>
+                                <option value="카카오톡">카카오톡</option>
+                                <option value="네이버밴드">네이버밴드</option>
+                                <option value="Zoom">Zoom</option>
+                                <option value="기타 온라인">기타 온라인</option>
+                            </select>
+                            <input id="create-g-place" type="text" placeholder="오프라인 장소 예: 익산시립도서관, 카페" oninput="updateGatheringPreview()" class="w-full px-4 py-3 bg-brand-ivory/50 border border-brand-ivoryDark rounded-xl focus:border-brand-sage outline-none text-sm">
+                        </div>
+                    </div>
+
                     <div class="bg-white p-6 rounded-2xl border border-brand-ivoryDark space-y-3">
                         <label class="block text-sm font-bold text-brand-navy">모임 일정 (주기 및 시간)</label>
                         <div class="flex flex-col sm:flex-row gap-3">
                             <select id="create-g-freq" onchange="updateGatheringPreview()" class="px-4 py-3 bg-brand-ivory/50 border border-brand-ivoryDark rounded-xl focus:border-brand-sage outline-none text-sm font-semibold text-brand-navy sm:w-1/3 appearance-none">
+                                <option value="매일">매일</option>
                                 <option value="매주">매주</option>
                                 <option value="격주">격주</option>
                                 <option value="매월">매월</option>
