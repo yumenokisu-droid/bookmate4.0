@@ -191,8 +191,8 @@
             if (!g) return;
             ensureGatheringMembers(g);
             window.bookmateCurrentGatheringId = g.id;
-            // BOOKMATE 4.0 독서모임 전용 화면으로 이동
-            window.location.href = `meeting.html?gathering=${encodeURIComponent(g.id)}`;
+            // BOOKMATE 4.0: 페이지 이동 없이 index.html 안의 독서모임 커뮤니티 화면을 연다.
+            enterMeetingRoom(g.book || g.title, g.id);
         }
 
         function renderMyPageGatherings() {
