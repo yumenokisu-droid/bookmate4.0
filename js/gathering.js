@@ -464,12 +464,12 @@
             }
             renderMeetingRoomPermissions(activeGathering);
             renderMeetingRoomStructure(activeGathering);
-            switchMeetingTab('chat');
+            switchMeetingTab('dashboard');
             
             state.meetingState.currentAiStage = 1;
             renderFreeChatHistory(activeGathering);
             safeSetText('meeting-ai-stage-label', '상시 대화방');
-            showToast("자유대화방에 입장했습니다.");
+            showToast("독서모임 대시보드에 입장했습니다.");
             lucide.createIcons();
         }
 
@@ -693,6 +693,28 @@
             if (currentAuthor) currentAuthor.innerText = g.author ? `${g.author} 저` : '저자 미정';
             if (nextTitle) nextTitle.innerText = `『${g.nextBook || '다음 도서 미정'}』`;
             if (rulesBox) rulesBox.innerText = g.rules;
+            safeSetText('meeting-dashboard-book', `『${g.book || '주제도서 미정'}』`);
+            safeSetText('meeting-dashboard-desc', g.desc || '책을 중심으로 함께 읽고 대화하는 독서모임입니다.');
+            safeSetText('meeting-dashboard-schedule', g.schedule || '일정 미정');
+            safeSetText('meeting-dashboard-nextbook', `다음 주제도서 · 『${g.nextBook || '미정'}』`);
+            safeSetText('meeting-schedule-next', g.schedule || '일정 미정');
+            safeSetText('meeting-members-count', `${g.membersCount || 0}/${g.maxMembers || '-'}명`);
+            const activity = document.getElementById('meeting-dashboard-activity');
+            if (activity) activity.innerHTML = `<li>${g.leaderNickname || '모임장'}님이 공지를 등록했습니다.</li><li>AI 모아가 이번 토론 질문을 준비했습니다.</li><li>${g.membersCount || 0}명이 이번 모임을 기다리고 있어요.</li>`;
+            const cover = document.getElementById('meeting-dashboard-cover');
+            if (cover) {
+                cover.innerText = g.book || '주제도서';
+                if (typeof loadBookCover === 'function') loadBookCover(g.book, 'meeting-dashboard-cover', 'w-20 h-28 object-cover rounded-xl shadow-sm', g.coverUrl, g);
+            }
+            const memberPanel = document.getElementById('meeting-members-panel-list');
+            if (memberPanel) {
+                ensureGatheringMembers(g);
+                memberPanel.innerHTML = (g.members || []).map(m => {
+                    const roleLabel = m.role === 'leader' ? '모임장' : m.role === 'coLeader' ? '부모임장' : '회원';
+                    const roleClass = m.role === 'leader' ? 'bg-brand-navy text-white' : m.role === 'coLeader' ? 'bg-brand-sage text-white' : 'bg-brand-ivory text-brand-navy';
+                    return `<div class="bg-white border border-brand-ivoryDark rounded-2xl p-4 flex items-center justify-between gap-3"><div class="flex items-center gap-3 min-w-0"><div class="w-9 h-9 rounded-full bg-brand-ivoryDark text-brand-navy flex items-center justify-center text-xs font-bold">${(m.nickname || '?').slice(0,1)}</div><b class="text-xs text-brand-navy truncate">${m.nickname}</b></div><span class="${roleClass} text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0">${roleLabel}</span></div>`;
+                }).join('');
+            }
             if (manageSummary) {
                 const managers = (g.members || []).filter(m => m.role === 'leader' || m.role === 'coLeader').map(m => `${m.role === 'leader' ? '👑' : '🛡️'} ${m.nickname}`).join(' · ');
                 manageSummary.innerHTML = `<b>관리 권한</b><br>${managers || '관리자 없음'}<br><br><b>회원 수</b><br>${g.membersCount}/${g.maxMembers}명`;
@@ -704,7 +726,7 @@
         function switchMeetingTab(tab) {
             const active = 'bg-brand-navy text-white px-3.5 py-2 rounded-xl text-xs font-bold';
             const inactive = 'bg-brand-ivory text-brand-navy px-3.5 py-2 rounded-xl text-xs font-bold';
-            ['chat','board','rules','books','manage'].forEach(key => {
+            ['dashboard','board','chat','schedule','members','rules','books','manage'].forEach(key => {
                 const panel = document.getElementById(`meeting-panel-${key}`);
                 const btn = document.getElementById(`meeting-tab-${key}`);
                 if (panel) panel.classList.toggle('hidden', key !== tab);
