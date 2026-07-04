@@ -18,7 +18,17 @@
       desc: "매일 저녁 20분씩 읽고 짧은 감상을 나누는 온라인 독서 루틴 모임입니다.",
       keywords: ["힐링/에세이", "소설/문학"],
       target: { age: ["누구나"], gender: ["누구나"], preference: ["제한 없음"], custom: "" },
-      libraryOnly: false
+      libraryOnly: false,
+      leaderNickname: "달빛독서가",
+      members: [
+        { nickname: "달빛독서가", role: "leader" },
+        { nickname: "사유올빼미", role: "coLeader" },
+        { nickname: "지혜의등대", role: "member" },
+        { nickname: "한줄수집가", role: "member" },
+        { nickname: "책읽는기린", role: "member" },
+        { nickname: "문장수집가", role: "member" }
+      ],
+      inviteToken: "moon-reader-dream"
     },
     {
       id: 2,
@@ -38,7 +48,18 @@
       keywords: ["소설/문학", "인문학"],
       target: { age: ["2030", "4050"], gender: ["누구나"], preference: ["고전 중심"], custom: "" },
       libraryOnly: true,
-      library: "익산시립도서관"
+      library: "익산시립도서관",
+      leaderNickname: "사유올빼미",
+      members: [
+        { nickname: "사유올빼미", role: "leader" },
+        { nickname: "달빛독서가", role: "member" },
+        { nickname: "지혜의등대", role: "coLeader" },
+        { nickname: "한줄수집가", role: "member" },
+        { nickname: "책읽는기린", role: "member" },
+        { nickname: "문장수집가", role: "member" },
+        { nickname: "초록책갈피", role: "member" }
+      ],
+      inviteToken: "demian-library"
     },
     {
       id: 3,
@@ -57,7 +78,20 @@
       desc: "감정을 느끼고 표현하는 방식, 공감의 언어를 함께 나누는 엄마들의 소설 독서모임입니다.",
       keywords: ["소설/문학", "힐링/에세이"],
       target: { age: ["4050"], gender: ["여성"], preference: ["엄마들의 독서클럽"], custom: "" },
-      libraryOnly: false
+      libraryOnly: false,
+      leaderNickname: "책읽는기린",
+      members: [
+        { nickname: "책읽는기린", role: "leader" },
+        { nickname: "문장수집가", role: "coLeader" },
+        { nickname: "달빛독서가", role: "member" },
+        { nickname: "지혜의등대", role: "member" },
+        { nickname: "초록책갈피", role: "member" },
+        { nickname: "사유올빼미", role: "member" },
+        { nickname: "한줄수집가", role: "member" },
+        { nickname: "엄마독서가", role: "member" },
+        { nickname: "다정한책", role: "member" }
+      ],
+      inviteToken: "almond-moms"
     },
     {
       id: 4,
@@ -77,7 +111,16 @@
       keywords: ["사회", "고전", "토론"],
       target: { age: ["2030"], gender: ["누구나"], preference: ["직장인"], custom: "" },
       libraryOnly: false,
-      shareLink: "bookmate://gathering/animal-farm-2030"
+      shareLink: "bookmate://gathering/animal-farm-2030",
+      leaderNickname: "한줄수집가",
+      members: [
+        { nickname: "한줄수집가", role: "leader" },
+        { nickname: "사유올빼미", role: "member" },
+        { nickname: "지혜의등대", role: "member" },
+        { nickname: "책읽는기린", role: "member" },
+        { nickname: "문장수집가", role: "member" }
+      ],
+      inviteToken: "animal-farm-2030"
     },
     {
       id: 5,
@@ -97,7 +140,21 @@
       keywords: ["인문학", "고전"],
       target: { age: ["시니어"], gender: ["누구나"], preference: ["고전 중심"], custom: "" },
       libraryOnly: true,
-      library: "익산시립도서관"
+      library: "익산시립도서관",
+      leaderNickname: "지혜의등대",
+      members: [
+        { nickname: "지혜의등대", role: "leader" },
+        { nickname: "사유올빼미", role: "coLeader" },
+        { nickname: "달빛독서가", role: "member" },
+        { nickname: "책읽는기린", role: "member" },
+        { nickname: "한줄수집가", role: "member" },
+        { nickname: "문장수집가", role: "member" },
+        { nickname: "초록책갈피", role: "member" },
+        { nickname: "느린독자", role: "member" },
+        { nickname: "고전읽기", role: "member" },
+        { nickname: "바다책방", role: "member" }
+      ],
+      inviteToken: "senior-humanities"
     }
   ];
 })();

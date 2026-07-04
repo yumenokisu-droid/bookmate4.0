@@ -49,8 +49,8 @@
                     <div class="flex items-center justify-between border-t border-brand-ivory pt-3">
                         <span class="text-[10px] text-gray-400 flex items-center gap-1"><i data-lucide="users" class="w-3.5 h-3.5 text-brand-sage"></i> ${g.membersCount}/${g.maxMembers}명 참여 중</span>
                         <div class="flex gap-2">
-                            ${isJoined ? `<button onclick="enterMeetingRoom('${g.book}')" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg">입장</button>` : ''}
-                            <button onclick="toggleGatheringMembership(${g.id})" class="px-3 py-1.5 rounded-lg text-xs font-bold ${isJoined ? 'bg-brand-ivory text-gray-500' : 'bg-brand-navy text-white'}">${isJoined ? '가입중' : '함께하기'}</button>
+                            ${isJoined ? `<button onclick="enterMeetingRoomById(${g.id})" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg">입장</button>` : ''}
+                            ${isJoined ? `<button onclick="leaveGathering(${g.id})" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-brand-ivory text-gray-500">탈퇴</button>` : `<button onclick="toggleGatheringMembership(${g.id})" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-brand-navy text-white">함께하기</button>`}
                         </div>
                     </div>
                 `;
@@ -62,25 +62,98 @@
 
         function toggleGatheringMembership(id) {
             if (isGuestUser()) { showGuestActionModal('gathering'); return; }
-            const target = state.gatherings.find(g => g.id === id);
+            const target = state.gatherings.find(g => Number(g.id) === Number(id));
             if (!target) return;
-            if (target.joined) {
-                target.joined = false;
-                target.membersCount--;
-                showToast("독서모임 참여를 철회했습니다.");
-            } else {
-                if ((target.libraryOnly || target.library) && (target.library || state.currentUser.library) !== state.currentUser.library) {
-                    showToast(`[${target.library}] 회원만 가입할 수 있는 모임입니다.`, "error");
-                    return;
-                }
-                if (target.membersCount >= target.maxMembers) { showToast("모임의 정원이 다 찼습니다.", "error"); return; }
-                target.joined = true;
-                target.membersCount++;
-                showToast(`『${target.title}』 모임에 가입되었습니다!`);
+            if (target.joined) { leaveGathering(id); return; }
+            joinGathering(id);
+        }
+
+        function getCurrentNickname() {
+            return state.currentUser?.nickname || '나';
+        }
+
+        function ensureGatheringMembers(g) {
+            if (!g) return [];
+            const currentNick = getCurrentNickname();
+            const leaderName = g.leaderNickname || (g.isLeader ? currentNick : '달빛독서가');
+            if (!Array.isArray(g.members)) {
+                const samples = ['사유올빼미', '지혜의등대', '한줄수집가', '책읽는기린', '문장수집가', '초록책갈피'];
+                const set = new Set([leaderName]);
+                if (g.joined) set.add(currentNick);
+                samples.forEach(n => { if (set.size < Math.max(1, Number(g.membersCount || 1))) set.add(n); });
+                g.members = Array.from(set).map(n => ({ nickname: n, role: n === leaderName ? 'leader' : 'member' }));
             }
+            if (!g.members.some(m => m.role === 'leader')) g.members.unshift({ nickname: leaderName, role: 'leader' });
+            g.leaderNickname = g.members.find(m => m.role === 'leader')?.nickname || leaderName;
+            g.coLeaderNicknames = g.members.filter(m => m.role === 'coLeader').map(m => m.nickname);
+            g.membersCount = g.members.length;
+            return g.members;
+        }
+
+        function getGatheringRole(g, nickname = getCurrentNickname()) {
+            ensureGatheringMembers(g);
+            if (!g || !nickname) return 'guest';
+            const member = (g.members || []).find(m => m.nickname === nickname);
+            if (member) return member.role || 'member';
+            if (g.isLeader && nickname === getCurrentNickname()) return 'leader';
+            return 'guest';
+        }
+
+        function isGatheringLeader(g, nickname = getCurrentNickname()) { return getGatheringRole(g, nickname) === 'leader'; }
+        function isGatheringCoLeader(g, nickname = getCurrentNickname()) { return getGatheringRole(g, nickname) === 'coLeader'; }
+        function canManageGathering(g) { return isGatheringLeader(g) || isGatheringCoLeader(g); }
+        function canUseOwnerTools(g) { return isGatheringLeader(g); }
+
+        function joinGathering(id, fromInvite = false) {
+            const target = state.gatherings.find(g => Number(g.id) === Number(id));
+            if (!target) return false;
+            if (isGuestUser()) { showGuestActionModal('gathering'); return false; }
+            if (!fromInvite && target.scope === '비공개' && !target.invited) {
+                showToast('비공개 모임은 초대 링크를 통해서만 가입할 수 있습니다.', 'error');
+                return false;
+            }
+            if ((target.libraryOnly || target.library) && (target.library || state.currentUser.library) !== state.currentUser.library) {
+                showToast(`[${target.library}] 회원만 가입할 수 있는 모임입니다.`, "error");
+                return false;
+            }
+            ensureGatheringMembers(target);
+            if (target.membersCount >= target.maxMembers && !target.members?.some(m => m.nickname === getCurrentNickname())) { showToast("모임의 정원이 다 찼습니다.", "error"); return false; }
+            target.joined = true;
+            if (!target.members.some(m => m.nickname === getCurrentNickname())) target.members.push({ nickname: getCurrentNickname(), role: 'member' });
+            target.membersCount = target.members.length;
+            saveAppState();
             renderGatheringsGrid();
             renderMyPageGatherings();
             updateUIProfileData();
+            showToast(`『${target.title}』 모임에 가입되었습니다!`);
+            return true;
+        }
+
+        function leaveGathering(id) {
+            const target = state.gatherings.find(g => Number(g.id) === Number(id));
+            if (!target) return;
+            ensureGatheringMembers(target);
+            if (isGatheringLeader(target)) {
+                showToast('모임장은 먼저 모임장을 변경한 뒤 탈퇴할 수 있습니다.', 'error');
+                return;
+            }
+            if (!confirm(`'${target.title}' 모임에서 탈퇴할까요?`)) return;
+            target.joined = false;
+            target.members = target.members.filter(m => m.nickname !== getCurrentNickname());
+            target.membersCount = target.members.length;
+            saveAppState();
+            renderGatheringsGrid();
+            renderMyPageGatherings();
+            updateUIProfileData();
+            showToast('독서모임에서 탈퇴했습니다.');
+        }
+
+        function enterMeetingRoomById(id) {
+            const g = state.gatherings.find(x => Number(x.id) === Number(id));
+            if (!g) return;
+            ensureGatheringMembers(g);
+            window.bookmateCurrentGatheringId = g.id;
+            enterMeetingRoom(g.book, g.id);
         }
 
         function renderMyPageGatherings() {
@@ -102,7 +175,7 @@
                         <div class="space-y-1 overflow-hidden">
                             <div class="flex items-center gap-1.5 flex-wrap">
                                 <span class="text-[9px] bg-brand-sageLight text-brand-sageDark px-2 py-0.5 rounded-full font-bold">${g.scope} · ${g.method}</span>
-                                ${g.isLeader ? `<span class="text-[9px] bg-brand-navy text-white px-2 py-0.5 rounded-full font-bold flex items-center gap-0.5 shadow-sm"><i data-lucide="crown" class="w-2.5 h-2.5"></i> 모임장</span>` : ''}
+                                ${isGatheringLeader(g) ? `<span class="text-[9px] bg-brand-navy text-white px-2 py-0.5 rounded-full font-bold flex items-center gap-0.5 shadow-sm"><i data-lucide="crown" class="w-2.5 h-2.5"></i> 모임장</span>` : isGatheringCoLeader(g) ? `<span class="text-[9px] bg-brand-sage text-white px-2 py-0.5 rounded-full font-bold flex items-center gap-0.5 shadow-sm"><i data-lucide="shield" class="w-2.5 h-2.5"></i> 부모임장</span>` : ''}
                             </div>
                             <h4 class="font-serif font-bold text-sm text-brand-navy truncate">${g.title}</h4>
                             <p class="text-[10px] text-brand-sageDark font-semibold flex items-center gap-1 mt-0.5"><i data-lucide="clock" class="w-3 h-3"></i> ${g.schedule || '일정 미정'}</p>
@@ -112,9 +185,9 @@
                     <div class="flex items-center justify-between text-[10px] border-t border-brand-ivoryDark/50 pt-2.5 mt-3 gap-2">
                         <span class="text-gray-400">대표시작 책: 『${g.book}』</span>
                         <div class="flex gap-2 items-center">
-                            ${g.isLeader ? `<button onclick="openEditGatheringModal(${g.id})" class="text-brand-sage font-bold hover:underline mr-1 px-2 py-1 hover:bg-brand-sageLight rounded transition-colors">모임 관리</button>` : ''}
-                            <button onclick="enterMeetingRoom('${g.book}')" class="bg-red-600 text-white px-2.5 py-1 rounded font-bold hover:bg-red-700 transition-colors">방 입장</button>
-                            ${!g.isLeader ? `<button onclick="toggleGatheringMembership(${g.id})" class="text-red-600 font-bold hover:underline ml-1">탈퇴</button>` : ''}
+                            ${canManageGathering(g) ? `<button onclick="openEditGatheringModal(${g.id})" class="text-brand-sage font-bold hover:underline mr-1 px-2 py-1 hover:bg-brand-sageLight rounded transition-colors">모임 관리</button>` : ''}
+                            <button onclick="enterMeetingRoomById(${g.id})" class="bg-red-600 text-white px-2.5 py-1 rounded font-bold hover:bg-red-700 transition-colors">방 입장</button>
+                            ${!isGatheringLeader(g) ? `<button onclick="leaveGathering(${g.id})" class="text-red-600 font-bold hover:underline ml-1">탈퇴</button>` : ''}
                         </div>
                     </div>
                 `;
@@ -276,9 +349,13 @@
                 target: collectGatheringTarget(),
                 libraryOnly: !!document.getElementById('create-g-library-only')?.checked,
                 library: document.getElementById('create-g-library-only')?.checked ? state.currentUser.library : '',
-                shareLink: state.createGatheringState.scope === '비공개' ? `bookmate://gathering/${Date.now()}` : '',
+                inviteToken: `g${Date.now()}`,
+                shareLink: '',
                 joined: true,
-                isLeader: true
+                isLeader: true,
+                leaderNickname: getCurrentNickname(),
+                members: [{ nickname: getCurrentNickname(), role: 'leader' }],
+                coLeaderNicknames: []
             };
             state.gatherings.push(newGathering);
             saveAppState();
@@ -293,6 +370,8 @@
         function openEditGatheringModal(id) {
             const g = state.gatherings.find(x => x.id === id);
             if (!g) return;
+            ensureGatheringMembers(g);
+            if (!canManageGathering(g)) { showToast('모임 관리 권한이 없습니다.', 'error'); return; }
             currentEditGatheringId = id;
             
             document.getElementById('edit-g-name').value = g.title;
@@ -300,6 +379,7 @@
             document.getElementById('edit-g-desc').value = g.desc;
             document.getElementById('edit-g-members').value = g.maxMembers;
             document.getElementById('edit-g-member-val').innerText = g.maxMembers;
+            renderGatheringManagementPanel(g);
             
             document.getElementById('edit-gathering-modal').classList.remove('hidden');
         }
@@ -332,13 +412,16 @@
             closeEditGatheringModal();
         }
 
-        function enterMeetingRoom(bookTitle = "달러구트 꿈 백화점") {
+        function enterMeetingRoom(bookTitle = "달러구트 꿈 백화점", gatheringId = null) {
             navigate('club-meeting');
+            const activeGathering = gatheringId ? state.gatherings.find(x => Number(x.id) === Number(gatheringId)) : state.gatherings.find(x => x.book === bookTitle && x.joined);
+            if (activeGathering) { ensureGatheringMembers(activeGathering); window.bookmateCurrentGatheringId = activeGathering.id; }
             const titleEl = document.getElementById('meeting-room-title');
             if (titleEl) {
-                titleEl.innerText = `${bookTitle} 사색 소모임`;
+                titleEl.innerText = activeGathering ? activeGathering.title : `${bookTitle} 사색 소모임`;
                 if (titleEl.nextElementSibling) titleEl.nextElementSibling.innerText = `지정도서: 『${bookTitle}』`;
             }
+            renderMeetingRoomPermissions(activeGathering);
             
             state.meetingState.currentAiStage = 1;
             const scroller = document.getElementById('meeting-chat-scroller');
@@ -363,6 +446,167 @@
             showToast("실시간 토론방에 입장했습니다.");
             lucide.createIcons();
             loadBookCover(bookTitle, "meeting-ai-quest-cover-mini", "w-12 h-16 object-cover rounded shadow-sm");
+        }
+
+
+        function getGatheringInviteUrl(g) {
+            if (!g) return '';
+            if (!g.inviteToken) g.inviteToken = `g${g.id}-${Date.now()}`;
+            const url = new URL(window.location.href.split('#')[0]);
+            url.searchParams.set('invite', g.id);
+            url.searchParams.set('token', g.inviteToken);
+            return url.toString();
+        }
+
+        function openGatheringInviteModal(id) {
+            const g = state.gatherings.find(x => Number(x.id) === Number(id));
+            if (!g) return;
+            ensureGatheringMembers(g);
+            const link = getGatheringInviteUrl(g);
+            if (navigator.clipboard) navigator.clipboard.writeText(link).catch(()=>{});
+            const box = document.getElementById('gathering-invite-link-box');
+            if (box) box.value = link;
+            safeSetText('gathering-invite-modal-title', g.title);
+            const modal = document.getElementById('gathering-invite-modal');
+            if (modal) modal.classList.remove('hidden');
+            showToast('초대 링크를 만들었습니다. 복사해서 전달하세요.');
+        }
+
+        function closeGatheringInviteModal() {
+            document.getElementById('gathering-invite-modal')?.classList.add('hidden');
+        }
+
+        function copyGatheringInviteLink() {
+            const el = document.getElementById('gathering-invite-link-box');
+            if (!el) return;
+            el.select();
+            if (navigator.clipboard) navigator.clipboard.writeText(el.value).catch(()=>document.execCommand('copy'));
+            else document.execCommand('copy');
+            showToast('초대 링크를 복사했습니다.');
+        }
+
+        function openGatheringInvitePage(id, token = '') {
+            const g = state.gatherings.find(x => Number(x.id) === Number(id));
+            if (!g) return;
+            if (g.inviteToken && token && g.inviteToken !== token) { showToast('유효하지 않은 초대 링크입니다.', 'error'); return; }
+            g.invited = true;
+            ensureGatheringMembers(g);
+            safeSetText('invite-accept-title', g.title);
+            safeSetText('invite-accept-desc', g.desc || '초대받은 독서모임입니다.');
+            safeSetText('invite-accept-book', `지정도서: 『${g.book}』`);
+            safeSetText('invite-accept-schedule', `${g.schedule || '일정 미정'} · ${g.method || '진행 방식 미정'}`);
+            const btn = document.getElementById('invite-accept-join-btn');
+            if (btn) btn.setAttribute('onclick', `acceptGatheringInvite(${Number(g.id)})`);
+            const modal = document.getElementById('gathering-invite-accept-modal');
+            if (modal) modal.classList.remove('hidden');
+            saveAppState();
+        }
+
+        function closeGatheringInviteAcceptModal() {
+            document.getElementById('gathering-invite-accept-modal')?.classList.add('hidden');
+        }
+
+        function acceptGatheringInvite(id) {
+            if (joinGathering(id, true)) {
+                closeGatheringInviteAcceptModal();
+                navigate('mypage');
+            }
+        }
+
+        function renderGatheringManagementPanel(g) {
+            ensureGatheringMembers(g);
+            safeSetText('edit-g-leader-name', g.leaderNickname || '모임장 미정');
+            const inviteBtn = document.getElementById('edit-g-invite-btn');
+            if (inviteBtn) inviteBtn.setAttribute('onclick', `openGatheringInviteModal(${Number(g.id)})`);
+            const list = document.getElementById('edit-g-members-list');
+            if (!list) return;
+            const currentIsLeader = isGatheringLeader(g);
+            list.innerHTML = (g.members || []).map(m => {
+                const isMe = m.nickname === getCurrentNickname();
+                const roleLabel = m.role === 'leader' ? '모임장' : m.role === 'coLeader' ? '부모임장' : '회원';
+                const roleClass = m.role === 'leader' ? 'bg-brand-navy text-white' : m.role === 'coLeader' ? 'bg-brand-sage text-white' : 'bg-brand-ivory text-brand-navy';
+                const disabled = m.role === 'leader' || isMe || !currentIsLeader;
+                return `<div class="flex items-center justify-between gap-3 p-3 rounded-xl border border-brand-ivoryDark bg-white">
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2"><b class="text-xs text-brand-navy">${m.nickname}</b><span class="${roleClass} text-[9px] font-bold px-2 py-0.5 rounded-full">${roleLabel}</span>${isMe ? '<span class="text-[9px] text-gray-400">나</span>' : ''}</div>
+                    </div>
+                    <div class="flex gap-1 shrink-0">
+                        ${currentIsLeader && m.role !== 'leader' ? `<button onclick="transferGatheringLeader(${g.id}, '${m.nickname}')" class="px-2 py-1 rounded bg-brand-ivory text-[10px] font-bold text-brand-navy hover:bg-brand-ivoryDark">모임장 변경</button>` : ''}
+                        ${currentIsLeader && m.role === 'member' ? `<button onclick="setGatheringCoLeader(${g.id}, '${m.nickname}', true)" class="px-2 py-1 rounded bg-brand-sageLight text-[10px] font-bold text-brand-sageDark">부모임장 지정</button>` : ''}
+                        ${currentIsLeader && m.role === 'coLeader' ? `<button onclick="setGatheringCoLeader(${g.id}, '${m.nickname}', false)" class="px-2 py-1 rounded bg-brand-ivory text-[10px] font-bold text-gray-600">부모임장 해제</button>` : ''}
+                        ${!disabled ? `<button onclick="kickGatheringMember(${g.id}, '${m.nickname}')" class="px-2 py-1 rounded bg-red-50 text-[10px] font-bold text-red-600">강제퇴장</button>` : ''}
+                    </div>
+                </div>`;
+            }).join('');
+            const ownerOnly = document.getElementById('edit-g-owner-only-note');
+            if (ownerOnly) ownerOnly.classList.toggle('hidden', currentIsLeader);
+            lucide.createIcons();
+        }
+
+        function refreshGatheringManagementModal(id) {
+            const g = state.gatherings.find(x => Number(x.id) === Number(id));
+            if (g) renderGatheringManagementPanel(g);
+            renderGatheringsGrid();
+            renderMyPageGatherings();
+            updateUIProfileData();
+            saveAppState();
+        }
+
+        function transferGatheringLeader(id, nickname) {
+            const g = state.gatherings.find(x => Number(x.id) === Number(id));
+            if (!g || !isGatheringLeader(g)) return;
+            if (!confirm(`${nickname}님에게 모임장 권한을 넘길까요?`)) return;
+            ensureGatheringMembers(g);
+            g.members.forEach(m => {
+                if (m.role === 'leader') m.role = 'member';
+                if (m.nickname === nickname) m.role = 'leader';
+            });
+            g.leaderNickname = nickname;
+            g.isLeader = nickname === getCurrentNickname();
+            showToast('모임장을 변경했습니다.');
+            refreshGatheringManagementModal(id);
+        }
+
+        function setGatheringCoLeader(id, nickname, enabled) {
+            const g = state.gatherings.find(x => Number(x.id) === Number(id));
+            if (!g || !isGatheringLeader(g)) return;
+            ensureGatheringMembers(g);
+            const member = g.members.find(m => m.nickname === nickname);
+            if (!member || member.role === 'leader') return;
+            member.role = enabled ? 'coLeader' : 'member';
+            g.coLeaderNicknames = g.members.filter(m => m.role === 'coLeader').map(m => m.nickname);
+            showToast(enabled ? '부모임장으로 지정했습니다.' : '부모임장 권한을 해제했습니다.');
+            refreshGatheringManagementModal(id);
+        }
+
+        function kickGatheringMember(id, nickname) {
+            const g = state.gatherings.find(x => Number(x.id) === Number(id));
+            if (!g || !isGatheringLeader(g)) return;
+            if (!confirm(`${nickname}님을 모임에서 강제퇴장할까요?`)) return;
+            ensureGatheringMembers(g);
+            g.members = g.members.filter(m => m.nickname !== nickname);
+            g.membersCount = g.members.length;
+            if (nickname === getCurrentNickname()) g.joined = false;
+            showToast('회원을 강제퇴장했습니다.');
+            refreshGatheringManagementModal(id);
+        }
+
+        function renderMeetingRoomPermissions(g) {
+            const tool = document.getElementById('meeting-owner-tools-card');
+            const leaderSpan = document.getElementById('meeting-leader-name-span');
+            if (!g) {
+                if (tool) tool.classList.add('hidden');
+                return;
+            }
+            if (leaderSpan) leaderSpan.innerText = g.leaderNickname || '모임장';
+            if (tool) tool.classList.toggle('hidden', !canManageGathering(g));
+        }
+
+        function checkGatheringInviteFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            const inviteId = params.get('invite');
+            if (!inviteId) return;
+            openGatheringInvitePage(inviteId, params.get('token') || '');
         }
 
         function triggerFacilitatorIntro() {

@@ -473,11 +473,25 @@
         function applyGatheringMembership(baseGatherings, accountData) {
             const joinedIds = new Set((accountData && Array.isArray(accountData.joinedGatheringIds)) ? accountData.joinedGatheringIds.map(Number) : []);
             const leaderIds = new Set((accountData && Array.isArray(accountData.leadingGatheringIds)) ? accountData.leadingGatheringIds.map(Number) : []);
-            return deepClone(baseGatherings || [], []).map(g => ({
-                ...g,
-                joined: joinedIds.has(Number(g.id)),
-                isLeader: leaderIds.has(Number(g.id))
-            }));
+            const nickname = accountData?.nickname || state.currentUser?.nickname || '';
+            return deepClone(baseGatherings || [], []).map(g => {
+                const joined = joinedIds.has(Number(g.id));
+                const isLeader = leaderIds.has(Number(g.id));
+                if (!Array.isArray(g.members)) g.members = [];
+                if (joined && nickname && !g.members.some(m => m.nickname === nickname)) {
+                    g.members.push({ nickname, role: isLeader ? 'leader' : 'member' });
+                }
+                if (isLeader && nickname) {
+                    g.members.forEach(m => { if (m.role === 'leader') m.role = 'member'; });
+                    const mine = g.members.find(m => m.nickname === nickname);
+                    if (mine) mine.role = 'leader';
+                    else g.members.unshift({ nickname, role: 'leader' });
+                    g.leaderNickname = nickname;
+                }
+                g.coLeaderNicknames = g.members.filter(m => m.role === 'coLeader').map(m => m.nickname);
+                g.membersCount = Array.isArray(g.members) && g.members.length ? g.members.length : g.membersCount;
+                return { ...g, joined, isLeader };
+            });
         }
 
         function getAccountLoungeBookmates(accountData) {
@@ -974,6 +988,7 @@
             renderDiscussionWidgets();
             renderGatheringsGrid();
             renderMyPageGatherings();
+            if (typeof checkGatheringInviteFromUrl === 'function') checkGatheringInviteFromUrl();
             loadBookCover('채식주의자', 'home-question-cover', 'w-14 h-20 object-cover rounded-xl shadow-sm', 'https://image.aladin.co.kr/product/29137/2/cover500/8936434594_2.jpg', { title: '채식주의자', author: '한강', isbn: '9788936434595' });
             preloadBookCovers([...state.recentBooks, ...state.gatherings.map(g => ({ title: g.book, author: g.author, isbn: g.isbn, coverUrl: g.coverUrl }))]);
             
