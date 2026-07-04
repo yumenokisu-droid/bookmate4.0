@@ -467,28 +467,10 @@
             switchMeetingTab('chat');
             
             state.meetingState.currentAiStage = 1;
-            const scroller = document.getElementById('meeting-chat-scroller');
-            if (scroller) {
-                scroller.innerHTML = `
-                    <div class="bg-[#EAF2E8] p-3 rounded-xl border border-brand-sage/20 text-brand-sageDark font-semibold text-center animate-fadeIn" id="meeting-welcome-banner">
-                        어서오세요! LIVE 모임방에 입장하셨습니다. 하단의 [모임 시작하기 🚀] 버튼을 눌러보세요.
-                    </div>
-                    <div class="bg-brand-ivory border border-brand-ivoryDark p-4 rounded-xl space-y-2 flex gap-3 items-start hidden" id="facilitator-prompt-box">
-                        <div class="w-12 h-16 rounded overflow-hidden shadow-sm shrink-0 bg-brand-navy text-[8px] text-white flex items-center justify-center" id="meeting-ai-quest-cover-mini">달러구트</div>
-                        <div class="space-y-1">
-                            <span class="text-[10px] font-bold text-brand-sageDark block flex items-center gap-1"><i data-lucide="bot" class="w-3.5 h-3.5"></i> AI 퍼실리테이터 전담 리드</span>
-                            <p class="font-serif font-bold text-brand-navy text-xs leading-relaxed" id="meeting-ai-question">Q1. 첫 번째 질문입니다...</p>
-                        </div>
-                    </div>
-                    <div class="flex justify-center gap-2" id="meeting-action-triggers">
-                        <button onclick="triggerFacilitatorIntro()" class="bg-brand-navy hover:bg-brand-navyLight text-white text-xs font-bold px-6 py-3 rounded-xl shadow-md">모임 시작하기 🚀</button>
-                    </div>
-                `;
-            }
-            safeSetText('meeting-ai-stage-label', '대기 중...');
-            showToast("실시간 토론방에 입장했습니다.");
+            renderFreeChatHistory(activeGathering);
+            safeSetText('meeting-ai-stage-label', '상시 대화방');
+            showToast("자유대화방에 입장했습니다.");
             lucide.createIcons();
-            loadBookCover(bookTitle, "meeting-ai-quest-cover-mini", "w-12 h-16 object-cover rounded shadow-sm");
         }
 
 
@@ -668,6 +650,35 @@
                     { author: '사유올빼미', text: '지난 모임 요약이 좋아서 이번에도 기대됩니다.', time: '어제' }
                 ];
             }
+            if (!Array.isArray(g.chatMessages) || g.chatMessages.length === 0) {
+                const book = g.book || '주제도서';
+                g.chatMessages = [
+                    { type: 'notice', text: `${g.title || '독서모임'} 자유대화방입니다. 독서 이야기부터 일상까지 편하게 나눠보세요. 이전 대화도 이곳에 계속 쌓입니다.` },
+                    { author: g.leaderNickname || '모임장', text: `이번 ${book} 모임은 책 속에서 오래 남은 문장 하나씩 나누는 방식으로 진행해볼게요.`, time: '7월 2일' },
+                    { author: '한줄수집가', text: '저는 아직 절반 정도 읽었는데 벌써 표시해둔 문장이 많아요.', time: '7월 2일' },
+                    { author: '사유올빼미', text: '저도요. 이번 책은 가볍게 읽히는데 생각할 거리가 꽤 있네요.', time: '7월 3일' },
+                    { author: '지혜의등대', text: '혹시 발제문은 자유게시판에 올라오나요?', time: '오늘 오전' },
+                    { author: g.leaderNickname || '모임장', text: '네, 오늘 저녁에 자유게시판에 올려둘게요 😊', time: '오늘 오전' }
+                ];
+            }
+        }
+
+        function renderFreeChatHistory(g) {
+            const scroller = document.getElementById('meeting-chat-scroller');
+            if (!scroller || !g) return;
+            ensureGatheringRoomData(g);
+            const currentNick = getCurrentNickname ? getCurrentNickname() : (state.currentUser?.nickname || '나');
+            scroller.innerHTML = g.chatMessages.map(msg => {
+                if (msg.type === 'notice') {
+                    return `<div class="bg-[#EAF2E8] p-3 rounded-xl border border-brand-sage/20 text-brand-sageDark font-semibold text-center animate-fadeIn">💬 ${msg.text}</div>`;
+                }
+                const isMine = msg.author === currentNick || msg.mine;
+                if (isMine) {
+                    return `<div class="space-y-1 text-xs text-right mt-3 animate-fadeIn"><span class="font-bold text-brand-navy block">${msg.author || currentNick} (나) <span class="text-[9px] text-gray-400 font-normal">${msg.time || '방금'}</span></span><p class="text-white bg-brand-navy inline-block px-3 py-2 rounded-xl text-left">${msg.text}</p></div>`;
+                }
+                return `<div class="space-y-1 text-xs text-left mt-3 animate-fadeIn"><span class="font-bold text-brand-navy block">${msg.author} <span class="text-[9px] text-gray-400 font-normal">${msg.time || '방금'}</span></span><p class="text-gray-700 bg-brand-ivory inline-block px-3 py-2 rounded-xl border border-brand-ivoryDark text-left">${msg.text}</p></div>`;
+            }).join('');
+            scroller.scrollTop = scroller.scrollHeight;
         }
 
         function renderMeetingRoomStructure(g) {
@@ -819,25 +830,22 @@
 
         function sendMeetingChatMessage() {
             const input = document.getElementById('meeting-chat-input');
-            const scroller = document.getElementById('meeting-chat-scroller');
-            const txt = input.value.trim();
-            if(!txt || !scroller) return;
-            const div = document.createElement('div');
-            div.className = "space-y-1 text-xs text-right mt-3 animate-fadeIn";
-            div.innerHTML = `<span class="font-bold text-brand-navy block">${state.currentUser.nickname} (나)</span>
-                             <p class="text-white bg-brand-navy inline-block px-3 py-2 rounded-xl text-left">${txt}</p>`;
-            scroller.appendChild(div);
-            scroller.scrollTop = scroller.scrollHeight;
+            const txt = input?.value.trim();
+            if(!txt) return;
+            const g = state.gatherings.find(x => Number(x.id) === Number(window.bookmateCurrentGatheringId));
+            if (!g) return;
+            ensureGatheringRoomData(g);
+            const myName = getCurrentNickname ? getCurrentNickname() : (state.currentUser?.nickname || '나');
+            g.chatMessages.push({ author: myName, text: txt, time: '방금', mine: true });
             input.value = '';
+            renderFreeChatHistory(g);
+            saveAppState();
 
             setTimeout(() => {
-                const peerBubble = document.createElement('div');
-                peerBubble.className = "space-y-1 text-xs text-left mt-2 animate-fadeIn";
                 const peers = ["한줄수집가", "지혜의등대", "사유올빼미"];
                 const peerName = peers[Math.floor(Math.random() * peers.length)];
-                
                 const reactions = [
-                    `${state.currentUser.nickname}님의 생각에 깊이 공감합니다! 좋은 시각이네요.`,
+                    `${myName}님의 생각에 깊이 공감합니다! 좋은 시각이네요.`,
                     "오, 그렇게 생각할 수도 있겠군요. 흥미로운 관점입니다.",
                     "저도 책 읽으면서 정확히 그 부분에서 멈칫했어요. 맞습니다.",
                     "말씀해주신 부분 덕분에 제 생각도 더 또렷하게 정리가 되네요. 감사합니다!",
@@ -845,13 +853,9 @@
                     "그 의견 들으니까 책을 다시 한 번 읽어보고 싶어지네요."
                 ];
                 const reaction = reactions[Math.floor(Math.random() * reactions.length)];
-                
-                peerBubble.innerHTML = `
-                    <span class="font-bold text-brand-navy block">${peerName} <span class="text-[9px] text-gray-400 font-normal">방금</span></span>
-                    <p class="text-gray-700 bg-brand-ivory inline-block px-3 py-2 rounded-xl border border-brand-ivoryDark text-left">${reaction}</p>
-                `;
-                scroller.appendChild(peerBubble);
-                scroller.scrollTop = scroller.scrollHeight;
+                g.chatMessages.push({ author: peerName, text: reaction, time: '방금' });
+                renderFreeChatHistory(g);
+                saveAppState();
             }, 1500 + Math.random() * 1000);
         }
 
