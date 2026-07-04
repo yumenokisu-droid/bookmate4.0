@@ -1003,22 +1003,68 @@
                         </div>
                     </div>
 
-                    <div class="bg-white border border-brand-ivoryDark rounded-2xl p-6 flex flex-col justify-between h-[520px] shadow-sm">
-                        <div class="flex justify-between items-center pb-3 border-b border-brand-ivory">
-                            <span class="text-xs font-bold text-brand-navy flex items-center gap-1.5">
-                                <i data-lucide="message-square" class="w-4 h-4 text-brand-sage"></i> 실시간 대화 & 요약 기록 타임라인
-                            </span>
-                            <span class="text-[10px] text-brand-sage font-bold animate-pulse" id="meeting-ai-stage-label">대기 중...</span>
+                    <div class="bg-white border border-brand-ivoryDark rounded-2xl p-4 shadow-sm">
+                        <div class="flex flex-wrap gap-2 pb-4 border-b border-brand-ivory" id="meeting-room-tabs">
+                            <button onclick="switchMeetingTab('chat')" id="meeting-tab-chat" class="meeting-tab-btn bg-brand-navy text-white px-3.5 py-2 rounded-xl text-xs font-bold">자유 대화방</button>
+                            <button onclick="switchMeetingTab('board')" id="meeting-tab-board" class="meeting-tab-btn bg-brand-ivory text-brand-navy px-3.5 py-2 rounded-xl text-xs font-bold">자유게시판</button>
+                            <button onclick="switchMeetingTab('rules')" id="meeting-tab-rules" class="meeting-tab-btn bg-brand-ivory text-brand-navy px-3.5 py-2 rounded-xl text-xs font-bold">모임 규칙</button>
+                            <button onclick="switchMeetingTab('books')" id="meeting-tab-books" class="meeting-tab-btn bg-brand-ivory text-brand-navy px-3.5 py-2 rounded-xl text-xs font-bold">주제도서</button>
+                            <button onclick="switchMeetingTab('manage')" id="meeting-tab-manage" class="meeting-tab-btn bg-brand-ivory text-brand-navy px-3.5 py-2 rounded-xl text-xs font-bold hidden">모임 관리</button>
                         </div>
 
-                        <div id="meeting-chat-scroller" class="flex-grow overflow-y-auto py-4 space-y-4 pr-1 text-xs">
-                            <!-- Dynamic chat area -->
+                        <div id="meeting-panel-chat" class="meeting-tab-panel pt-4">
+                            <div class="bg-white border border-brand-ivoryDark rounded-2xl p-6 flex flex-col justify-between h-[520px] shadow-sm">
+                                <div class="flex justify-between items-center pb-3 border-b border-brand-ivory">
+                                    <span class="text-xs font-bold text-brand-navy flex items-center gap-1.5">
+                                        <i data-lucide="message-square" class="w-4 h-4 text-brand-sage"></i> 자유 대화방 · 실시간 대화 & 요약 기록
+                                    </span>
+                                    <span class="text-[10px] text-brand-sage font-bold animate-pulse" id="meeting-ai-stage-label">대기 중...</span>
+                                </div>
+                                <div id="meeting-chat-scroller" class="flex-grow overflow-y-auto py-4 space-y-4 pr-1 text-xs"></div>
+                                <div class="pt-3 border-t border-brand-ivory flex gap-2">
+                                    <input id="meeting-chat-input" type="text" placeholder="자유 대화방에 생각을 남겨보세요..." onkeypress="handleMeetingChatKeyPress(event)"
+                                           class="w-full px-4 py-3 bg-brand-ivory border border-brand-ivoryDark rounded-xl text-xs outline-none focus:border-brand-sage">
+                                    <button onclick="sendMeetingChatMessage()" class="bg-brand-navy hover:bg-brand-navyLight text-white px-6 py-3 rounded-xl font-bold text-xs transition-colors shrink-0">전송</button>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="pt-3 border-t border-brand-ivory flex gap-2">
-                            <input id="meeting-chat-input" type="text" placeholder="이야기할 순서에 생각을 적고 전송해 보세요..." onkeypress="handleMeetingChatKeyPress(event)"
-                                   class="w-full px-4 py-3 bg-brand-ivory border border-brand-ivoryDark rounded-xl text-xs outline-none focus:border-brand-sage">
-                            <button onclick="sendMeetingChatMessage()" class="bg-brand-navy hover:bg-brand-navyLight text-white px-6 py-3 rounded-xl font-bold text-xs transition-colors shrink-0">전송</button>
+                        <div id="meeting-panel-board" class="meeting-tab-panel hidden pt-4 space-y-4">
+                            <div class="flex justify-between items-center">
+                                <h3 class="serif-title text-xl font-bold text-brand-navy">자유게시판</h3>
+                                <button onclick="addMeetingBoardPost()" class="px-3 py-2 bg-brand-navy text-white text-xs font-bold rounded-xl">글쓰기</button>
+                            </div>
+                            <div class="flex gap-2">
+                                <input id="meeting-board-input" type="text" placeholder="공지, 후기, 질문을 자유롭게 남겨보세요." class="flex-grow px-4 py-3 bg-brand-ivory/60 border border-brand-ivoryDark rounded-xl text-xs outline-none focus:border-brand-sage">
+                            </div>
+                            <div id="meeting-board-list" class="space-y-3"></div>
+                        </div>
+
+                        <div id="meeting-panel-rules" class="meeting-tab-panel hidden pt-4 space-y-4">
+                            <h3 class="serif-title text-xl font-bold text-brand-navy">모임 규칙</h3>
+                            <div id="meeting-rules-box" class="bg-brand-ivory/50 border border-brand-ivoryDark rounded-2xl p-5 text-sm text-brand-navy leading-relaxed whitespace-pre-line"></div>
+                        </div>
+
+                        <div id="meeting-panel-books" class="meeting-tab-panel hidden pt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-brand-ivory/50 border border-brand-ivoryDark rounded-2xl p-5">
+                                <span class="text-[10px] font-bold text-brand-sageDark">현재 주제도서</span>
+                                <h3 id="meeting-current-book-title" class="serif-title text-xl font-bold text-brand-navy mt-1">-</h3>
+                                <p id="meeting-current-book-author" class="text-xs text-gray-500 mt-1">-</p>
+                            </div>
+                            <div class="bg-white border border-brand-ivoryDark rounded-2xl p-5">
+                                <span class="text-[10px] font-bold text-brand-sageDark">다음 주/월별 주제도서</span>
+                                <h3 id="meeting-next-book-title" class="serif-title text-xl font-bold text-brand-navy mt-1">-</h3>
+                                <p id="meeting-next-book-note" class="text-xs text-gray-500 mt-1">다음 모임에서 함께 읽을 책입니다.</p>
+                            </div>
+                        </div>
+
+                        <div id="meeting-panel-manage" class="meeting-tab-panel hidden pt-4 space-y-4">
+                            <div class="flex justify-between items-center">
+                                <h3 class="serif-title text-xl font-bold text-brand-navy">모임 관리 메뉴</h3>
+                                <button id="meeting-manage-open-btn" onclick="openEditGatheringModal(window.bookmateCurrentGatheringId)" class="px-3 py-2 bg-brand-navy text-white text-xs font-bold rounded-xl">관리창 열기</button>
+                            </div>
+                            <p class="text-xs text-gray-500">모임장/부모임장에게만 보입니다. 초대 링크, 모임장 변경, 부모임장 지정, 강제퇴장 기능을 관리할 수 있습니다.</p>
+                            <div id="meeting-manage-summary" class="bg-brand-ivory/50 border border-brand-ivoryDark rounded-2xl p-4 text-xs text-brand-navy"></div>
                         </div>
                     </div>
 
@@ -1521,7 +1567,7 @@
 
     <!-- SETTINGS MODAL -->
     <div id="settings-modal" class="fixed inset-0 z-50 bg-brand-navy/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl border border-brand-ivoryDark w-full max-w-md overflow-hidden shadow-2xl max-h-[92vh] flex flex-col">
+        <div class="bg-white rounded-2xl border border-brand-ivoryDark w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl max-h-[92vh] flex flex-col">
             <div class="bg-brand-ivory p-5 border-b border-brand-ivoryDark flex justify-between items-center shrink-0">
                 <h3 class="serif-title font-bold text-brand-navy text-lg flex items-center gap-2">
                     <i data-lucide="user-cog" class="w-5 h-5 text-brand-sage"></i> 개인 프로필 설정
@@ -1682,7 +1728,7 @@
 
     <!-- EDIT GATHERING MODAL (모임 관리 모달) -->
     <div id="edit-gathering-modal" class="fixed inset-0 z-50 bg-brand-navy/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl border border-brand-ivoryDark w-full max-w-md overflow-hidden shadow-2xl">
+        <div class="bg-white rounded-2xl border border-brand-ivoryDark w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
             <div class="bg-brand-ivory p-5 border-b border-brand-ivoryDark flex justify-between items-center">
                 <h3 class="serif-title font-bold text-brand-navy text-lg flex items-center gap-2">
                     <i data-lucide="settings-2" class="w-5 h-5 text-brand-sage"></i> 내 모임 관리
@@ -1710,6 +1756,20 @@
                 <div class="space-y-2">
                     <label class="block text-xs font-bold text-brand-navy">모임 소개글</label>
                     <textarea id="edit-g-desc" class="w-full px-4 py-3 bg-brand-ivory/50 border border-brand-ivoryDark rounded-xl focus:border-brand-sage outline-none text-sm h-24 resize-none leading-relaxed text-brand-navy"></textarea>
+                </div>
+                <div class="space-y-3 pt-3 border-t border-brand-ivoryDark">
+                    <div class="flex items-center justify-between gap-2">
+                        <div>
+                            <label class="block text-xs font-bold text-brand-navy">모임 관리 메뉴</label>
+                            <p class="text-[10px] text-gray-400 mt-0.5">모임장/부모임장 권한에 따라 도구가 다르게 표시됩니다.</p>
+                        </div>
+                        <button id="edit-g-invite-btn" type="button" class="px-3 py-2 bg-brand-sage text-white rounded-lg text-xs font-bold">초대 링크 생성</button>
+                    </div>
+                    <div class="rounded-xl bg-brand-ivory/60 border border-brand-ivoryDark p-3 text-xs text-brand-navy">
+                        현재 모임장: <b id="edit-g-leader-name">-</b>
+                        <p id="edit-g-owner-only-note" class="hidden text-[10px] text-gray-500 mt-1">부모임장은 초대/기본 관리만 가능하며, 모임장 변경·강제퇴장 권한은 모임장에게만 표시됩니다.</p>
+                    </div>
+                    <div id="edit-g-members-list" class="space-y-2 max-h-56 overflow-y-auto"></div>
                 </div>
             </div>
             <div class="bg-brand-ivory px-6 py-4 border-t border-brand-ivoryDark flex justify-end gap-2">

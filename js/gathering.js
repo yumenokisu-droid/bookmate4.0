@@ -1,3 +1,38 @@
+
+        function getGatheringMeetingWindow(g) {
+            const schedule = (g?.schedule || '').trim();
+            const timeMatch = schedule.match(/(\d{1,2})\s*[:시]\s*(\d{2})?/);
+            if (!timeMatch) return null;
+            const now = new Date();
+            const dayMap = { '일':0, '월':1, '화':2, '수':3, '목':4, '금':5, '토':6 };
+            const targetDayMatch = schedule.match(/(월|화|수|목|금|토|일)요일/);
+            if (targetDayMatch && !schedule.includes('매일')) {
+                const target = dayMap[targetDayMatch[1]];
+                if (target !== now.getDay()) return null;
+            }
+            const start = new Date(now);
+            start.setHours(parseInt(timeMatch[1],10), parseInt(timeMatch[2] || '0',10), 0, 0);
+            const open = new Date(start.getTime() - 60 * 60 * 1000);
+            const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+            return { open, start, end };
+        }
+
+        function isGatheringLiveNow(g) {
+            const windowInfo = getGatheringMeetingWindow(g);
+            if (!windowInfo) return false;
+            const now = new Date();
+            return now >= windowInfo.open && now <= windowInfo.end;
+        }
+
+        function getGatheringLiveLabel(g) {
+            const windowInfo = getGatheringMeetingWindow(g);
+            if (!windowInfo) return '';
+            const now = new Date();
+            if (now >= windowInfo.open && now <= windowInfo.end) return 'LIVE 모임방 열림';
+            if (now < windowInfo.open) return 'LIVE 시작 1시간 전부터 표시';
+            return '오늘 모임 종료';
+        }
+
         function renderGatheringsGrid(listData = state.gatherings) {
             const container = document.getElementById('gatherings-grid-container');
             if (!container) return;
@@ -15,6 +50,8 @@
                 let libraryText = g.library ? `(${g.library})` : "";
                 const targetText = formatGatheringTarget(g.target);
                 const methodDetail = g.method === '온라인' ? (g.platform || 'Bookmate') : (g.place || '장소 미정');
+                const isLiveNow = isGatheringLiveNow(g);
+                const liveLabel = getGatheringLiveLabel(g);
 
                 const card = document.createElement('div');
                 card.className = "bg-white p-6 rounded-2xl border border-brand-ivoryDark hover:border-brand-sage hover:shadow-lg transition-all relative flex flex-col justify-between space-y-4";
@@ -22,11 +59,12 @@
                     <div class="space-y-3">
                         <div class="flex justify-between items-start flex-wrap gap-1">
                             <span class="${scopeBadgeStyle} px-2.5 py-0.5 rounded-full text-[10px] font-bold">${g.scope || '공개'} ${libraryText} · ${g.type}</span>
+                            ${isLiveNow ? `<span class="bg-red-50 text-red-600 border border-red-100 px-2.5 py-0.5 rounded-full text-[10px] font-bold inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping"></span> LIVE</span>` : ''}
                             ${g.libraryOnly ? `<span class="bg-amber-50 text-amber-700 border border-amber-100 px-2.5 py-0.5 rounded-full text-[10px] font-bold">도서관 인증 회원</span>` : ''}
                         </div>
                         <h3 class="serif-title font-bold text-base text-brand-navy mt-1">${g.title}</h3>
                         <div class="flex items-center gap-1.5 text-xs font-semibold text-brand-sageDark bg-brand-sageLight/50 px-2.5 py-1.5 rounded-lg w-fit">
-                            <i data-lucide="clock" class="w-3.5 h-3.5"></i> ${g.schedule || '일정 미정'}
+                            <i data-lucide="clock" class="w-3.5 h-3.5"></i> ${g.schedule || '일정 미정'}${liveLabel ? ` · ${liveLabel}` : ''}
                         </div>
                         <p class="text-xs text-gray-500 line-clamp-3">${g.desc}</p>
                         <div class="flex flex-wrap gap-1">
@@ -49,7 +87,7 @@
                     <div class="flex items-center justify-between border-t border-brand-ivory pt-3">
                         <span class="text-[10px] text-gray-400 flex items-center gap-1"><i data-lucide="users" class="w-3.5 h-3.5 text-brand-sage"></i> ${g.membersCount}/${g.maxMembers}명 참여 중</span>
                         <div class="flex gap-2">
-                            ${isJoined ? `<button onclick="enterMeetingRoomById(${g.id})" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg">입장</button>` : ''}
+                            ${isJoined ? `<button onclick="enterMeetingRoomById(${g.id})" class="${isLiveNow ? 'bg-red-600 hover:bg-red-700' : 'bg-brand-navy hover:bg-brand-navyLight'} text-white text-xs font-bold px-3 py-1.5 rounded-lg">${isLiveNow ? 'LIVE 입장' : '모임방'}</button>` : ''}
                             ${isJoined ? `<button onclick="leaveGathering(${g.id})" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-brand-ivory text-gray-500">탈퇴</button>` : `<button onclick="toggleGatheringMembership(${g.id})" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-brand-navy text-white">함께하기</button>`}
                         </div>
                     </div>
@@ -355,7 +393,10 @@
                 isLeader: true,
                 leaderNickname: getCurrentNickname(),
                 members: [{ nickname: getCurrentNickname(), role: 'leader' }],
-                coLeaderNicknames: []
+                coLeaderNicknames: [],
+                rules: '서로의 감상을 존중합니다.\n스포일러가 있을 때는 먼저 알려주세요.\n비난보다 질문으로 대화를 이어갑니다.',
+                nextBook: '',
+                boardPosts: []
             };
             state.gatherings.push(newGathering);
             saveAppState();
@@ -422,6 +463,8 @@
                 if (titleEl.nextElementSibling) titleEl.nextElementSibling.innerText = `지정도서: 『${bookTitle}』`;
             }
             renderMeetingRoomPermissions(activeGathering);
+            renderMeetingRoomStructure(activeGathering);
+            switchMeetingTab('chat');
             
             state.meetingState.currentAiStage = 1;
             const scroller = document.getElementById('meeting-chat-scroller');
@@ -599,6 +642,8 @@
                 return;
             }
             if (leaderSpan) leaderSpan.innerText = g.leaderNickname || '모임장';
+            const manageTab = document.getElementById('meeting-tab-manage');
+            if (manageTab) manageTab.classList.toggle('hidden', !canManageGathering(g));
             if (tool) tool.classList.toggle('hidden', !canManageGathering(g));
         }
 
@@ -607,6 +652,81 @@
             const inviteId = params.get('invite');
             if (!inviteId) return;
             openGatheringInvitePage(inviteId, params.get('token') || '');
+        }
+
+
+        function ensureGatheringRoomData(g) {
+            if (!g) return;
+            if (!g.rules) g.rules = '서로의 감상을 존중합니다.\n스포일러가 있을 때는 먼저 알려주세요.\n비난보다 질문으로 대화를 이어갑니다.\n모임 시간과 발언 순서를 지켜주세요.';
+            if (!g.nextBook) {
+                const pool = ['작별인사', '소년이 온다', '1984', '불편한 편의점', '어린 왕자'];
+                g.nextBook = pool[(Number(g.id || 1) - 1) % pool.length];
+            }
+            if (!Array.isArray(g.boardPosts) || g.boardPosts.length === 0) {
+                g.boardPosts = [
+                    { author: g.leaderNickname || '모임장', text: '이번 모임에서는 인상 깊었던 문장 하나씩 준비해 주세요.', time: '공지' },
+                    { author: '사유올빼미', text: '지난 모임 요약이 좋아서 이번에도 기대됩니다.', time: '어제' }
+                ];
+            }
+        }
+
+        function renderMeetingRoomStructure(g) {
+            if (!g) return;
+            ensureGatheringRoomData(g);
+            const currentTitle = document.getElementById('meeting-current-book-title');
+            const currentAuthor = document.getElementById('meeting-current-book-author');
+            const nextTitle = document.getElementById('meeting-next-book-title');
+            const rulesBox = document.getElementById('meeting-rules-box');
+            const manageSummary = document.getElementById('meeting-manage-summary');
+            if (currentTitle) currentTitle.innerText = `『${g.book || '주제도서 미정'}』`;
+            if (currentAuthor) currentAuthor.innerText = g.author ? `${g.author} 저` : '저자 미정';
+            if (nextTitle) nextTitle.innerText = `『${g.nextBook || '다음 도서 미정'}』`;
+            if (rulesBox) rulesBox.innerText = g.rules;
+            if (manageSummary) {
+                const managers = (g.members || []).filter(m => m.role === 'leader' || m.role === 'coLeader').map(m => `${m.role === 'leader' ? '👑' : '🛡️'} ${m.nickname}`).join(' · ');
+                manageSummary.innerHTML = `<b>관리 권한</b><br>${managers || '관리자 없음'}<br><br><b>회원 수</b><br>${g.membersCount}/${g.maxMembers}명`;
+            }
+            renderMeetingBoard(g);
+            renderMeetingRoomPermissions(g);
+        }
+
+        function switchMeetingTab(tab) {
+            const active = 'bg-brand-navy text-white px-3.5 py-2 rounded-xl text-xs font-bold';
+            const inactive = 'bg-brand-ivory text-brand-navy px-3.5 py-2 rounded-xl text-xs font-bold';
+            ['chat','board','rules','books','manage'].forEach(key => {
+                const panel = document.getElementById(`meeting-panel-${key}`);
+                const btn = document.getElementById(`meeting-tab-${key}`);
+                if (panel) panel.classList.toggle('hidden', key !== tab);
+                if (btn && !btn.classList.contains('hidden')) btn.className = `meeting-tab-btn ${key === tab ? active : inactive}`;
+            });
+        }
+
+        function renderMeetingBoard(g) {
+            const list = document.getElementById('meeting-board-list');
+            if (!list || !g) return;
+            ensureGatheringRoomData(g);
+            list.innerHTML = g.boardPosts.map(post => `
+                <div class="bg-white border border-brand-ivoryDark rounded-2xl p-4 shadow-sm">
+                    <div class="flex justify-between items-center gap-2">
+                        <b class="text-xs text-brand-navy">${post.author}</b>
+                        <span class="text-[10px] text-gray-400">${post.time || '방금'}</span>
+                    </div>
+                    <p class="text-xs text-gray-600 mt-2 leading-relaxed">${post.text}</p>
+                </div>
+            `).join('');
+        }
+
+        function addMeetingBoardPost() {
+            const g = state.gatherings.find(x => Number(x.id) === Number(window.bookmateCurrentGatheringId));
+            const input = document.getElementById('meeting-board-input');
+            const text = input?.value.trim();
+            if (!g || !text) { showToast('게시글 내용을 입력해 주세요.', 'error'); return; }
+            ensureGatheringRoomData(g);
+            g.boardPosts.unshift({ author: getCurrentNickname(), text, time: '방금' });
+            input.value = '';
+            renderMeetingBoard(g);
+            saveAppState();
+            showToast('자유게시판에 글을 등록했습니다.');
         }
 
         function triggerFacilitatorIntro() {
