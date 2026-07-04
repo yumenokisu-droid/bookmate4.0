@@ -1,0 +1,848 @@
+/* BOOKMATE 4.0 Foundation
+   기능/화면 변경 없이 기존 스타일을 정리한 단일 CSS입니다.
+   색상 변수는 index.html의 Tailwind 설정과 함께 관리합니다. */
+
+/* =========================================================
+   BOOKMATE / AI MOA - Unified UI Styles
+   새 UI 적용용 정리본
+   ========================================================= */
+
+:root {
+    --bm-bg: #FAF6F0;
+    --bm-surface: #FFFFFF;
+    --bm-surface-soft: #FFF9EF;
+    --bm-surface-green: #F4F8F2;
+    --bm-navy: #1B2A47;
+    --bm-navy-soft: #33425F;
+    --bm-green: #5F8575;
+    --bm-green-dark: #3D5A32;
+    --bm-mint: #DDEBE3;
+    --bm-line: #F3EDE2;
+    --bm-line-dark: #D5CFC6;
+    --bm-muted: #6B7280;
+    --bm-faint: #9CA3AF;
+    --bm-warm: #E8CFAF;
+    --bm-yellow: #F7D56F;
+    --bm-shadow: 0 18px 50px rgba(27, 42, 71, .10);
+    --bm-shadow-soft: 0 10px 28px rgba(27, 42, 71, .08);
+    --bm-radius-xl: 1.5rem;
+    --bm-radius-lg: 1.15rem;
+    --bm-radius-md: .9rem;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    font-family: 'Inter', 'Noto Sans KR', sans-serif;
+    background:
+        radial-gradient(circle at 8% 4%, rgba(95, 133, 117, .10), transparent 28rem),
+        radial-gradient(circle at 92% 8%, rgba(27, 42, 71, .07), transparent 28rem),
+        var(--bm-bg);
+    color: var(--bm-navy);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+img, svg, video, canvas {
+    max-width: 100%;
+}
+
+button, input, textarea, select {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: .55;
+}
+
+.serif-title {
+    font-family: 'Noto Serif KR', serif;
+    letter-spacing: -.025em;
+}
+
+.break-keep {
+    word-break: keep-all;
+}
+
+.line-clamp-2,
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.line-clamp-2 { -webkit-line-clamp: 2; }
+.line-clamp-3 { -webkit-line-clamp: 3; }
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track { background: var(--bm-bg); }
+::-webkit-scrollbar-thumb {
+    background: var(--bm-line-dark);
+    border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover { background: #B8B2A7; }
+
+/* =========================================================
+   Common Motion
+   ========================================================= */
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes bounceAmp {
+    0% { height: 4px; }
+    100% { height: 18px; }
+}
+
+@keyframes tinyBob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+}
+
+.animate-fadeIn { animation: fadeIn .36s ease-out both; }
+.toast-enter { animation: slideInRight .28s ease-out both; }
+
+.nav-link,
+button,
+.home-soft-card,
+.bookmate-live-brief,
+.bm-card,
+.bm-pill {
+    transition: background-color .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s ease, color .18s ease;
+}
+
+button:active,
+.home-soft-card:active,
+.bm-card:active {
+    transform: scale(.985);
+}
+
+/* =========================================================
+   New BOOKMATE UI Base
+   ========================================================= */
+
+.bm-card {
+    background: rgba(255,255,255,.82);
+    border: 1px solid var(--bm-line);
+    border-radius: var(--bm-radius-xl);
+    box-shadow: var(--bm-shadow-soft);
+    backdrop-filter: blur(10px);
+}
+
+.bm-card-soft {
+    background: var(--bm-surface-soft);
+    border: 1px solid var(--bm-line);
+    border-radius: var(--bm-radius-lg);
+}
+
+.bm-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    padding: .48rem .75rem;
+    border-radius: 999px;
+    background: var(--bm-surface-soft);
+    border: 1px solid var(--bm-line);
+    color: var(--bm-navy);
+    font-size: .78rem;
+    font-weight: 800;
+    word-break: keep-all;
+}
+
+.bm-pill.active,
+.bm-pill:hover {
+    background: var(--bm-green);
+    border-color: var(--bm-green);
+    color: #fff;
+}
+
+.bm-primary-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    border: 0;
+    border-radius: 999px;
+    background: var(--bm-navy);
+    color: #fff;
+    font-weight: 900;
+    padding: .75rem 1.1rem;
+    box-shadow: 0 12px 28px rgba(27, 42, 71, .18);
+}
+
+.bm-primary-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 16px 34px rgba(27, 42, 71, .22);
+}
+
+.bm-secondary-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    border: 1px solid var(--bm-line);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--bm-navy);
+    font-weight: 900;
+    padding: .7rem 1rem;
+}
+
+.bm-secondary-button:hover {
+    border-color: var(--bm-green);
+    background: var(--bm-surface-green);
+}
+
+/* =========================================================
+   Home / Landing
+   ========================================================= */
+
+.home-question-spotlight {
+    position: relative;
+    overflow: hidden;
+    border-radius: 2rem;
+}
+
+.home-question-spotlight::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 18% 15%, rgba(95, 133, 117, .18), transparent 30%),
+        radial-gradient(circle at 88% 12%, rgba(27, 42, 71, .09), transparent 32%),
+        linear-gradient(135deg, rgba(255,255,255,.72), rgba(255,249,239,.72));
+    pointer-events: none;
+}
+
+.home-question-spotlight > div {
+    position: relative;
+    z-index: 1;
+}
+
+.home-soft-card {
+    min-height: 104px;
+    background: rgba(255,255,255,.78);
+    border: 1px solid var(--bm-line);
+    border-radius: 1.25rem;
+    box-shadow: 0 10px 26px rgba(27, 42, 71, .06);
+}
+
+.home-soft-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 34px rgba(27, 42, 71, .10);
+}
+
+.bookmate-live-brief {
+    background: linear-gradient(135deg, #fff 0%, #fffaf2 50%, #eef6ef 100%);
+    border: 1px solid var(--bm-line);
+    border-radius: 1.35rem;
+}
+
+.bookmate-live-brief:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--bm-shadow-soft);
+}
+
+/* =========================================================
+   Sidebar / Navigation
+   ========================================================= */
+
+.nav-link {
+    border-radius: .95rem;
+    word-break: keep-all;
+}
+
+.nav-link:hover {
+    background: rgba(95, 133, 117, .10);
+    color: var(--bm-green-dark);
+}
+
+.nav-link.active,
+.nav-link[aria-current="page"] {
+    background: var(--bm-green);
+    color: #fff;
+    box-shadow: 0 10px 22px rgba(95, 133, 117, .22);
+}
+
+.header-avatar,
+.bookmate-avatar {
+    cursor: pointer;
+}
+
+/* =========================================================
+   AI MOA Chat UI
+   ========================================================= */
+
+.ai-moa-panel {
+    background: linear-gradient(180deg, #FFFFFF 0%, #FFF9EF 100%);
+    border: 1px solid var(--bm-line);
+    border-radius: 1.6rem;
+    box-shadow: var(--bm-shadow-soft);
+}
+
+.ai-moa-bubble,
+.chat-bubble-ai {
+    background: #FFFFFF;
+    border: 1px solid var(--bm-line);
+    color: var(--bm-navy);
+    border-radius: 1.25rem 1.25rem 1.25rem .35rem;
+    box-shadow: 0 8px 20px rgba(27, 42, 71, .06);
+    word-break: keep-all;
+}
+
+.chat-bubble-user {
+    background: var(--bm-navy);
+    color: #fff;
+    border-radius: 1.25rem 1.25rem .35rem 1.25rem;
+    box-shadow: 0 8px 20px rgba(27, 42, 71, .14);
+    word-break: keep-all;
+}
+
+.amp-bar {
+    display: inline-block;
+    width: 2px;
+    height: 14px;
+    background-color: var(--bm-navy);
+    margin: 0 1px;
+    border-radius: 999px;
+    animation: bounceAmp .8s ease-in-out infinite alternate;
+}
+
+.amp-bar:nth-child(2) { animation-delay: .12s; }
+.amp-bar:nth-child(3) { animation-delay: .24s; }
+.amp-bar:nth-child(4) { animation-delay: .36s; }
+
+/* =========================================================
+   Discussion / Social UI
+   ========================================================= */
+
+#social-post-submit,
+#view-realtime-room button,
+#view-realtime-room .break-keep {
+    word-break: keep-all;
+}
+
+#social-post-submit {
+    white-space: nowrap;
+}
+
+.social-feed-tabs {
+    padding-bottom: 2px;
+}
+
+.social-feed-tabs button {
+    line-height: 1.2;
+}
+
+#social-category-chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+#social-category-chips::-webkit-scrollbar {
+    display: none;
+}
+
+@media (max-width: 640px) {
+    #view-realtime-room #social-post-submit {
+        width: 100%;
+    }
+}
+
+/* =========================================================
+   Guest Gate / Locked Preview
+   ========================================================= */
+
+.guest-blur-base {
+    filter: blur(2.5px);
+    opacity: .38;
+    transform: scale(.992);
+    pointer-events: none;
+    user-select: none;
+    transition: filter .18s ease, opacity .18s ease, transform .18s ease;
+}
+
+#view-guest-gate.guest-gate-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 45;
+    overflow-y: auto;
+    background: rgba(250, 246, 240, .58);
+    backdrop-filter: blur(1px);
+}
+
+#view-guest-gate.guest-gate-overlay > div {
+    min-height: 100vh;
+    padding-top: 6rem;
+    padding-bottom: 3rem;
+}
+
+#view-guest-gate.guest-gate-overlay .max-w-xl {
+    box-shadow: 0 24px 80px rgba(27, 42, 71, .18);
+}
+
+@media (max-width: 640px) {
+    #view-guest-gate.guest-gate-overlay > div {
+        padding-top: 4.5rem;
+    }
+}
+
+/* =========================================================
+   Profile Avatar Picker
+   ========================================================= */
+
+.avatar-moa {
+    background: linear-gradient(180deg, #fffaf2 0%, #eef6ef 100%);
+}
+
+.avatar-choice {
+    position: relative;
+}
+
+.avatar-choice input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.avatar-choice span {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .25rem;
+    min-height: 5.4rem;
+    padding: .45rem .25rem;
+    border: 1px solid var(--bm-line);
+    border-radius: 1rem;
+    background: var(--bm-bg);
+    cursor: pointer;
+    transition: all .15s ease;
+}
+
+.avatar-choice img {
+    width: 2.8rem;
+    height: 2.8rem;
+    object-fit: contain;
+}
+
+.avatar-choice b {
+    font-size: 10px;
+    color: var(--bm-navy);
+}
+
+.avatar-choice input:checked + span {
+    border-color: var(--bm-green);
+    background: var(--bm-surface-green);
+    box-shadow: 0 0 0 2px rgba(95, 133, 117, .14);
+}
+
+.bookmate-avatar img,
+#profile-card-modal .avatar-moa img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: .1rem;
+}
+
+/* =========================================================
+   Official Book Lounge
+   기존 북라운지 HTML과 호환되도록 클래스 유지
+   ========================================================= */
+
+.official-lounge {
+    position: relative;
+    width: 100%;
+    max-width: 980px;
+    margin: 0 auto;
+    aspect-ratio: 3 / 2;
+    overflow: hidden;
+    border-radius: 28px;
+    background: #fff8ee;
+    border: 1px solid var(--bm-line);
+    box-shadow: 0 14px 35px rgba(27, 42, 71, .08);
+}
+
+.official-lounge--preview {
+    max-width: 360px;
+    border-radius: 22px;
+    box-shadow: none;
+}
+
+.official-lounge-layer {
+    position: absolute;
+    display: block;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    object-fit: contain;
+}
+
+.official-lounge-layer.locked {
+    display: none;
+}
+
+.official-lounge-layer--background {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+}
+
+.official-lounge-layer--plant {
+    width: 20.2%;
+    left: 2.2%;
+    top: 10.2%;
+    z-index: 4;
+    transform: translate(-25px, 85px) scale(1.2);
+    transform-origin: center center;
+}
+
+.official-lounge-layer--frame {
+    width: 22.5%;
+    left: 13%;
+    top: 9.8%;
+    z-index: 5;
+    transform: translateY(20px);
+}
+
+.official-lounge-layer--clock {
+    width: 20.5%;
+    right: 16%;
+    top: 9.8%;
+    z-index: 4;
+}
+
+.official-lounge-layer--shelf {
+    width: 53.5%;
+    right: -15.5%;
+    top: 14%;
+    z-index: 5;
+    transform: translateY(15px);
+}
+
+.official-lounge-layer--snack {
+    width: 23.2%;
+    left: 38.4%;
+    bottom: 20.4%;
+    z-index: 9;
+    transform: translateX(-4px);
+}
+
+.official-lounge-layer--cat {
+    animation: none;
+    transform-origin: center center;
+}
+
+.official-lounge-layer--cat1 {
+    width: 16.6%;
+    left: 21.6%;
+    top: 41.2%;
+    z-index: 7;
+    transform: translate(-25px, 10px) scaleX(-1) scale(1.1);
+}
+
+.official-lounge-layer--cat2 {
+    width: 16.6%;
+    left: 63.8%;
+    top: 41.2%;
+    z-index: 7;
+    transform: translate(-4px, 15px) scaleX(1);
+}
+
+.official-lounge-layer--cat3 {
+    width: 16.6%;
+    left: 12.6%;
+    top: 60%;
+    z-index: 10;
+    transform: translate(-8px, 1px) scaleX(-1);
+}
+
+.official-lounge-layer--cat4 {
+    width: 16.6%;
+    left: 70%;
+    top: 62%;
+    z-index: 10;
+    transform: translate(0, 0) scale(1.1);
+}
+
+.lounge-guestbook-button {
+    position: absolute;
+    right: 1.5rem;
+    bottom: 1.5rem;
+    z-index: 20;
+    width: 48px;
+    height: 48px;
+    border-radius: 999px;
+    background: #fff;
+    border: 1px solid var(--bm-line);
+    box-shadow: 0 12px 28px rgba(27, 42, 71, .14);
+    font-size: 22px;
+    transition: transform .16s ease, box-shadow .16s ease;
+}
+
+.lounge-guestbook-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 32px rgba(27, 42, 71, .18);
+}
+
+/* Lounge controls */
+.lounge-option,
+.lounge-cat-option,
+.acquire-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .55rem;
+    padding: .75rem .85rem;
+    border: 1px solid var(--bm-line);
+    background: var(--bm-bg);
+    border-radius: 1rem;
+    color: var(--bm-navy);
+    font-size: 12px;
+    font-weight: 800;
+    transition: .16s ease;
+    text-align: left;
+}
+
+.lounge-cat-option,
+.acquire-btn.small {
+    justify-content: center;
+}
+
+.lounge-option:hover,
+.lounge-cat-option:hover,
+.acquire-btn:hover {
+    border-color: var(--bm-green);
+    background: var(--bm-surface-green);
+}
+
+.lounge-option::after,
+.lounge-cat-option::after,
+.acquire-btn::after {
+    content: "숨김";
+    font-size: 10px;
+    color: var(--bm-muted);
+    background: white;
+    border: 1px solid var(--bm-line);
+    border-radius: 999px;
+    padding: .15rem .45rem;
+}
+
+.acquire-btn::after { content: "획득"; }
+.lounge-cat-option::after { margin-left: .35rem; }
+.acquire-btn.small::after { display: none; }
+
+.lounge-option.active,
+.lounge-cat-option.active,
+.acquire-btn.active {
+    background: var(--bm-green);
+    color: white;
+    border-color: var(--bm-green);
+}
+
+.lounge-option.active::after,
+.lounge-cat-option.active::after,
+.acquire-btn.active::after {
+    content: "배치됨";
+    color: var(--bm-green-dark);
+    background: #fff;
+}
+
+/* Mission reward cards */
+.lounge-mission-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: .8rem;
+}
+
+.lounge-mission-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 132px;
+    gap: .25rem;
+    padding: .85rem .65rem;
+    border: 1px solid var(--bm-line);
+    border-radius: 1.15rem;
+    background: var(--bm-bg);
+    text-align: center;
+}
+
+.lounge-mission-card.acquired {
+    background: var(--bm-surface-green);
+    border-color: #C7D8CE;
+}
+
+.lounge-mission-icon {
+    width: 3.65rem;
+    height: 3.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: grayscale(1);
+    opacity: .34;
+}
+
+.lounge-mission-img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.lounge-mission-card.acquired .lounge-mission-icon {
+    filter: none;
+    opacity: 1;
+}
+
+.lounge-mission-reward-name {
+    font-size: 13px;
+    font-weight: 900;
+    color: var(--bm-muted);
+    line-height: 1.2;
+}
+
+.lounge-mission-title {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--bm-muted);
+    line-height: 1.25;
+    word-break: keep-all;
+}
+
+.lounge-mission-state {
+    font-size: 10px;
+    font-weight: 900;
+    color: var(--bm-faint);
+}
+
+.lounge-mission-card.acquired .lounge-mission-reward-name,
+.lounge-mission-card.acquired .lounge-mission-title,
+.lounge-mission-card.acquired .lounge-mission-state {
+    color: var(--bm-green-dark);
+}
+
+/* Bookmate cards */
+.lounge-bookmates-row {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: .9rem;
+}
+
+.bookmate-card {
+    min-height: 150px;
+    border: 1px solid var(--bm-line);
+    border-radius: 1.25rem;
+    background: var(--bm-bg);
+    padding: 1rem .8rem;
+    text-align: center;
+    color: var(--bm-navy);
+}
+
+.bookmate-avatar {
+    width: 3.2rem;
+    height: 3.2rem;
+    margin: 0 auto .55rem;
+    border-radius: 999px;
+    background: #7A9272;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+    font-weight: 900;
+    box-shadow: 0 10px 20px rgba(27, 42, 71, .12);
+    overflow: hidden;
+}
+
+.bookmate-name {
+    font-size: 14px;
+    font-weight: 900;
+    margin-bottom: .25rem;
+}
+
+.bookmate-since,
+.bookmate-gathering {
+    font-size: 10.5px;
+    line-height: 1.35;
+    color: var(--bm-muted);
+    word-break: keep-all;
+}
+
+.bookmate-gathering { margin-top: .2rem; }
+
+.bookmate-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .45rem .65rem;
+    border-radius: 999px;
+    background: var(--bm-bg);
+    border: 1px solid var(--bm-line);
+    color: var(--bm-navy);
+    font-size: 11px;
+    font-weight: 800;
+}
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+@media (max-width: 1024px) {
+    .lounge-bookmates-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .lounge-mission-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 760px) {
+    .official-lounge {
+        aspect-ratio: 3 / 2;
+        border-radius: 22px;
+    }
+
+}
+
+@media (max-width: 640px) {
+    .bm-primary-button,
+    .bm-secondary-button {
+        width: 100%;
+    }
+
+    .home-question-spotlight {
+        border-radius: 1.35rem;
+    }
+}
+
+@media (max-width: 520px) {
+    .lounge-bookmates-row { grid-template-columns: 1fr; }
+    .lounge-mission-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

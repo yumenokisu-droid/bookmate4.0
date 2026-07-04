@@ -1,0 +1,12 @@
+{
+  "name": "bookmate",
+  "version": "3.1.0",
+  "private": true,
+  "scripts": {
+    "build": "echo \"BOOKMATE static build ready\""
+  },
+  "dependencies": {
+    "@google/genai": "latest"
+  },
+  "devDependencies": {}
+}

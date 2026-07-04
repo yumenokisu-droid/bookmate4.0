@@ -1,0 +1,12 @@
+{
+  "name": "BOOKMATE",
+  "short_name": "BOOKMATE",
+  "description": "책을 넘어 독자를 연결하는 독서공동체 플랫폼",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FAF6F0",
+  "theme_color": "#1B2A47",
+  "icons": [
+    { "src": "assets/icons/bookmate-logo.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
