@@ -113,3 +113,26 @@ body{background:var(--bm-bg,#FAF6F0)!important;color:var(--bm-navy,#1B2A47)}
 #view-club-meeting .comment-box{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:8px}
 @media(max-width:1000px){#view-club-meeting .refined-home-grid,#view-club-meeting .members-layout,#view-club-meeting .board-layout{grid-template-columns:1fr}#view-club-meeting .board-filter,#view-club-meeting .member-side{position:static}#view-club-meeting .board-filter{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:560px){#view-club-meeting .hero-actions{width:100%}#view-club-meeting .hero-actions button{flex:1}#view-club-meeting .book-overview{display:grid;grid-template-columns:1fr}#view-club-meeting .visual-cover{width:100%;height:130px}#view-club-meeting .refined-chat-form{grid-template-columns:auto auto 1fr}#view-club-meeting .refined-chat-form .primary-button{grid-column:1/-1}#view-club-meeting .board-filter{grid-template-columns:repeat(2,1fr)}#view-club-meeting .member-stats{grid-template-columns:1fr}}
+
+/* BOOKMATE 4.0 focused meeting/live patch */
+#view-club-meeting .book-card-cover{position:relative;width:100%;height:100%;min-height:120px;border-radius:inherit;background:linear-gradient(160deg,#5F8575,#1B2A47);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;padding:16px;box-shadow:inset 10px 0 0 rgba(255,255,255,.11)}
+#view-club-meeting .book-card-cover strong{font-family:"Noto Serif KR",serif;font-size:1.25rem;line-height:1.25;word-break:keep-all}
+#view-club-meeting .book-card-cover small,#view-club-meeting .book-card-label{font-size:.62rem;letter-spacing:.18em;font-weight:900;opacity:.72;margin-top:10px}
+#view-club-meeting .topic-mini-cover{font-size:.72rem;text-align:center;line-height:1.18;padding:7px;word-break:keep-all;align-items:center}
+#view-club-meeting .moa-img-avatar{background:#fff!important;border:1px solid var(--bm-line,#F3EDE2);overflow:hidden;padding:2px}
+#view-club-meeting .moa-img-avatar img{width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block}
+#view-club-meeting .chat-avatar{width:38px;height:38px;border-radius:15px;flex:0 0 auto}
+#view-club-meeting .message{display:flex;gap:10px;align-items:flex-start;max-width:86%;padding:10px;background:#fff}
+#view-club-meeting .message.me{margin-left:auto;flex-direction:row-reverse;background:var(--bm-sageLight,#EAF2E8)}
+#view-club-meeting .message.ai{background:#f3fbf6;border-color:#cfe6d9}
+#view-club-meeting .message-bubble p{margin:3px 0 0;line-height:1.58}
+#view-club-meeting .post-author-line{align-items:center}.post-author-line strong{color:var(--bm-navy,#1B2A47)}
+#view-club-meeting .post-avatar{width:32px;height:32px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;flex:0 0 auto}
+#view-club-meeting .vote-comment{display:flex;gap:9px;align-items:flex-start;background:var(--bm-surface-green,#F4F8F2);border:1px solid var(--bm-line,#F3EDE2);border-radius:14px;padding:10px;color:var(--bm-navy,#1B2A47)}
+#view-club-meeting .live-vote-btn{transition:.18s}.live-vote-btn.active{box-shadow:0 8px 18px rgba(95,133,117,.13)}
+.live-body{background:linear-gradient(135deg,#F4F8F2,#FFF9EF);color:var(--navy)}
+.live-header-v2,.live-chat-main,.compact-panel{border-color:var(--line);box-shadow:0 12px 28px rgba(19,36,59,.06)}
+.live-chat-main{background:rgba(255,255,255,.96)}
+.moa-avatar,.participant-avatar{background:#fff!important;border:1px solid var(--line);overflow:hidden;padding:2px}.moa-avatar img,.participant-avatar img{width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block}
+.live-msg.ai .msg-bubble{background:#f3fbf6}.live-msg.user .msg-bubble{background:var(--mint)}
+@media(min-width:1280px){#view-club-meeting #view-live > .grid > aside{grid-column:2;grid-row:1 / span 2}#view-club-meeting #view-live .live-vote-card{grid-column:1;grid-row:2}}

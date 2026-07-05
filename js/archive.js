@@ -748,7 +748,6 @@
             const user = getAuthUsers().find(u => u.id === id && u.password === password);
             if (!user) { showToast('아이디 또는 비밀번호가 맞지 않습니다.', 'error'); return; }
             applyLoggedInUser(user);
-            setTimeout(() => showFirstMissionModal(), 300);
         }
 
         function resetSignupLibraryVerification() {
@@ -911,7 +910,6 @@
             document.getElementById('auth-signup-form')?.reset();
             resetSignupLibraryVerification();
             applyLoggedInUser(user);
-            setTimeout(() => showFirstMissionModal(), 300);
         }
 
         function createDefaultFirstMissions() {
@@ -928,14 +926,9 @@
             return state.currentUser.missions;
         }
         function showFirstMissionModal() {
-            if (!state.currentUser || state.currentUser.isGuest) return;
-            ensureUserMissions();
-            const nick = state.currentUser.nickname || '회원';
-            const msg = document.getElementById('first-mission-welcome');
-            if (msg) msg.textContent = `${nick}님, 이제 책을 읽고, 생각을 나누고, 사람을 만나며 나만의 독서 이야기를 만들어가 보세요.`;
-            renderFirstMissionButtons();
-            const modal = document.getElementById('first-mission-modal');
-            if (modal) modal.classList.remove('hidden');
+            // BOOKMATE 4.0: 로그인 피로도 완화를 위해 첫 미션 팝업은 자동 노출하지 않습니다.
+            // 첫 미션은 추후 '내 서재'의 카드형 미션으로 이동합니다.
+            return;
         }
         function closeFirstMissionModal() {
             const modal = document.getElementById('first-mission-modal');
