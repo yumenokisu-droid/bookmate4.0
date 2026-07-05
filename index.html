@@ -962,186 +962,289 @@
         </section>
 
         <!-- VIEW: Book Club Community Room (embedded, no page navigation) -->
-        <section id="view-club-meeting" class="view-section hidden animate-fadeIn">
-          <div class="meeting-shell bm-meeting-v2">
-            <aside class="meeting-sidebar">
-              <button class="brand embedded-brand" type="button" onclick="navigate('home')" aria-label="BOOKMATE 홈으로 이동">
-                <img src="assets/icons/bookmate-logo.png" alt="BOOKMATE" onerror="this.style.display='none'" />
-                <span>BOOKMATE</span>
-              </button>
-
-              <section class="club-card-mini">
-                <div class="club-mark">문</div>
-                <div>
-                  <strong id="miniClubTitle">우리의 문학</strong>
-                  <p id="miniClubMeta">문학 · 비공개모임 · 18명</p>
-                </div>
-              </section>
-
-              <nav class="meeting-nav" aria-label="독서모임 메뉴">
-                <button class="nav-item active" data-view="home">HOME</button>
-                <button class="nav-item" data-view="chat">채팅</button>
-                <button class="nav-item" data-view="board">게시판</button>
-                <button class="nav-item" data-view="book">주제도서</button>
-                <button class="nav-item" data-view="live">LIVE</button>
-                <button class="nav-item" data-view="members">멤버</button>
-                <button class="nav-item" data-view="schedule">일정</button>
-                <button class="nav-item master-only" data-view="admin">관리</button>
-              </nav>
-
-              <div class="sidebar-bottom">
-                <p>AI 역할</p>
-                <strong id="sidebarAiMode">퍼실리테이터</strong>
-              </div>
-            </aside>
-
-            <main class="meeting-main">
-              <header class="meeting-hero refined-hero">
-                <div class="hero-top">
-                  <button class="back-link embedded-back" type="button" onclick="navigate('search-results')">← 되돌아가기</button>
-                  <div class="hero-actions">
-                    <button class="ghost-button" id="copyInviteBtn">초대링크</button>
-                    <button class="membership-button" id="membershipActionBtn">탈퇴하기</button>
-                  </div>
-                </div>
-                <div class="hero-content simple-hero-content">
-                  <div>
-                    <p class="eyebrow">AI 기반 독서공동체</p>
-                    <h1 id="clubTitle">우리의 문학</h1>
-                    <p class="hero-desc" id="clubDesc">좋은 책은 사람을 만나 완성됩니다. 함께 읽고, 묻고, 기록하는 문학 독서모임입니다.</p>
-                    <div class="hero-meta" id="clubMetaBadges">
-                      <span>👥 18명</span><span>📚 문학</span><span>🔒 비공개</span><span>🗓 매주 토요일</span>
+        <section id="view-club-meeting" class="view-section hidden animate-fadeIn space-y-6">
+            <div class="border-b border-brand-ivoryDark pb-6">
+                <button type="button" onclick="navigate('search-results')" class="mb-4 inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-brand-ivoryDark text-brand-navy text-xs font-bold hover:bg-brand-sageLight transition-colors">
+                    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> 되돌아가기
+                </button>
+                <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5">
+                    <div>
+                        <span class="text-xs font-bold text-brand-sage tracking-wider uppercase">BOOK CLUB COMMUNITY</span>
+                        <h1 id="clubTitle" class="serif-title text-3xl font-bold text-brand-navy mt-1">우리의 문학</h1>
+                        <p id="clubDesc" class="text-gray-500 text-xs mt-2 leading-relaxed max-w-2xl">좋은 책은 사람을 만나 완성됩니다. 함께 읽고, 묻고, 기록하는 문학 독서모임입니다.</p>
+                        <div id="clubMetaBadges" class="flex flex-wrap gap-2 mt-4 text-[11px] font-bold text-brand-navy">
+                            <span class="px-3 py-1.5 rounded-full bg-brand-ivory border border-brand-ivoryDark">👥 18명</span>
+                            <span class="px-3 py-1.5 rounded-full bg-brand-ivory border border-brand-ivoryDark">📚 문학</span>
+                            <span class="px-3 py-1.5 rounded-full bg-brand-ivory border border-brand-ivoryDark">🔒 비공개</span>
+                            <span class="px-3 py-1.5 rounded-full bg-brand-ivory border border-brand-ivoryDark">🗓 매주 토요일</span>
+                        </div>
                     </div>
-                  </div>
-                </div>
-              </header>
-
-              <section id="view-home" class="view active">
-                <div class="dashboard-grid refined-home-grid">
-                  <article class="card current-book-card wide">
-                    <div class="card-head">
-                      <div><p class="eyebrow">현재 주제도서</p><h2 id="homeBookTitle">작별인사</h2></div>
-                      <button class="small-button" data-go="book">자세히</button>
+                    <div class="flex flex-wrap gap-2">
+                        <button id="copyInviteBtn" class="px-4 py-2.5 rounded-xl bg-white border border-brand-ivoryDark text-brand-navy text-xs font-bold hover:bg-brand-sageLight transition-colors inline-flex items-center gap-1.5">
+                            <i data-lucide="link" class="w-3.5 h-3.5"></i> 초대링크
+                        </button>
+                        <button id="membershipActionBtn" class="px-4 py-2.5 rounded-xl bg-orange-50 text-orange-700 border border-orange-100 text-xs font-bold hover:bg-orange-100 transition-colors">탈퇴하기</button>
                     </div>
-                    <div class="book-overview">
-                      <div class="book-cover visual-cover" id="homeBookCover"><span>작별인사</span></div>
-                      <div class="book-info">
-                        <p id="homeBookInfo">김영하 · 복복서가</p>
-                        <p id="homeBookMeeting" class="book-meeting-line">7월 11일 오후 8시 · LIVE ROOM</p>
-                        <div class="progress-row"><span>진행률</span><strong>80%</strong></div>
-                        <div class="progress"><i style="width:80%"></i></div>
-                        <p class="muted">논제 12개 · 완독자 9명 · 토론 후 아카이브 자동 저장</p>
-                      </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-[220px_minmax(0,1fr)] gap-6">
+                <aside class="space-y-4">
+                    <div class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-4">
+                        <div class="flex items-center gap-3 pb-4 border-b border-brand-ivoryDark">
+                            <div class="w-11 h-11 rounded-2xl bg-brand-sage text-white flex items-center justify-center font-serif font-bold">문</div>
+                            <div class="min-w-0">
+                                <h2 id="miniClubTitle" class="font-bold text-sm text-brand-navy truncate">우리의 문학</h2>
+                                <p id="miniClubMeta" class="text-[11px] text-gray-500 mt-0.5 truncate">문학 · 비공개모임 · 18명</p>
+                            </div>
+                        </div>
+                        <nav class="meeting-nav nav-item-list grid gap-1.5 mt-4" aria-label="독서모임 메뉴">
+                            <button class="nav-item active w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-gray-500 hover:text-brand-navy hover:bg-brand-ivory transition-colors" data-view="home">HOME</button>
+                            <button class="nav-item w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-gray-500 hover:text-brand-navy hover:bg-brand-ivory transition-colors" data-view="chat">채팅</button>
+                            <button class="nav-item w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-gray-500 hover:text-brand-navy hover:bg-brand-ivory transition-colors" data-view="board">게시판</button>
+                            <button class="nav-item w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-gray-500 hover:text-brand-navy hover:bg-brand-ivory transition-colors" data-view="book">주제도서</button>
+                            <button class="nav-item w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-gray-500 hover:text-brand-navy hover:bg-brand-ivory transition-colors" data-view="live">LIVE</button>
+                            <button class="nav-item w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-gray-500 hover:text-brand-navy hover:bg-brand-ivory transition-colors" data-view="members">멤버</button>
+                            <button class="nav-item w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-gray-500 hover:text-brand-navy hover:bg-brand-ivory transition-colors" data-view="schedule">일정</button>
+                            <button class="nav-item master-only w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-gray-500 hover:text-brand-navy hover:bg-brand-ivory transition-colors" data-view="admin">관리</button>
+                        </nav>
                     </div>
-                  </article>
-                  <article class="card live-card"><div class="status-pill live">LIVE 예정</div><h2>7월 11일 오후 8:00</h2><p>채팅 중심 LIVE ROOM · 음성 AI 요약 · 참여 예정 14명</p><button class="primary-button" data-go="live">LIVE 탭 보기</button></article>
-                  <article class="card"><p class="eyebrow">다음 일정</p><h2 id="homeNextSchedule">7월 18일</h2><p>『아몬드』 사전 대화 · 일반 채팅방</p><button class="small-button" data-go="schedule">일정 보기</button></article>
-                  <article class="card activity-card wide"><div class="card-head"><h2>최근 활동</h2><button class="small-button" data-go="board">게시판</button></div><ul class="activity-list" id="activityList"></ul></article>
-                </div>
-              </section>
 
-              <section id="view-chat" class="view">
-                <div class="section-title"><p class="eyebrow">Community Chat</p><h2>채팅</h2><p>평소 모임 대화, 사진 공유, AI 호출을 위한 공간입니다.</p></div>
-                <div class="chat-layout refined-chat-layout">
-                  <article class="card chat-card">
-                    <div class="pinned-chat-notice">📌 이번 주 토론 전까지 『작별인사』 4장까지 읽어주세요.</div>
-                    <div class="chat-feed" id="chatFeed"></div>
-                    <form class="chat-form refined-chat-form" id="chatForm">
-                      <button type="button" class="icon-chat-btn" id="addPhotoMessageBtn" title="사진 첨부">＋</button>
-                      <button type="button" class="icon-chat-btn" id="emojiChatBtn" title="이모지">😊</button>
-                      <input id="chatInput" placeholder="메시지를 입력하세요. 예: 모아야, 이 장면 설명해줘" autocomplete="off" />
-                      <button class="primary-button" type="submit">전송</button>
-                    </form>
-                  </article>
-                  <aside class="card side-card"><h3>현재 접속자</h3><div class="online-list refined-online-list"><span>달빛독서가</span><span>문장수집가</span><span>책읽는고양이</span><span>AI 모아</span></div><p class="muted">사진 첨부는 입력창의 ＋ 버튼에서 바로 추가할 수 있습니다.</p></aside>
-                </div>
-              </section>
+                    <div class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-4 space-y-2">
+                        <p class="text-[10px] font-bold text-gray-400 tracking-wider uppercase">AI LIVE ROLE</p>
+                        <p id="sidebarAiMode" class="serif-title text-lg font-bold text-brand-navy">퍼실리테이터</p>
+                        <p class="text-xs text-gray-500 leading-relaxed">LIVE 탭에서 모임 성격에 맞게 AI 역할을 바꿀 수 있어요.</p>
+                    </div>
+                </aside>
 
-              <section id="view-board" class="view">
-                <div class="section-title"><p class="eyebrow">Board</p><h2>게시판</h2><p>공지, 자유게시판, 독후감, 사진, 자료실을 한 화면에서 관리합니다.</p></div>
-                <div class="board-layout">
-                  <aside class="board-filter card">
-                    <button class="board-tab active" data-board-filter="전체">전체</button>
-                    <button class="board-tab" data-board-filter="공지">공지</button>
-                    <button class="board-tab" data-board-filter="자유게시판">자유게시판</button>
-                    <button class="board-tab" data-board-filter="독후감">독후감</button>
-                    <button class="board-tab" data-board-filter="사진">사진</button>
-                    <button class="board-tab" data-board-filter="자료실">자료실</button>
-                  </aside>
-                  <div>
-                    <form class="card write-card" id="postForm"><div class="form-grid"><select id="postCategory"><option>자유게시판</option><option>공지</option><option>독후감</option><option>사진</option><option>자료실</option></select><input id="postTitle" placeholder="글 제목" /></div><textarea id="postBody" placeholder="함께 나누고 싶은 생각을 적어보세요."></textarea><button class="primary-button" type="submit">글쓰기</button></form>
-                    <div id="postList" class="post-list refined-post-list"></div>
-                  </div>
-                </div>
-              </section>
+                <main class="min-w-0 space-y-6">
+                    <section id="view-home" class="view active space-y-6">
+                        <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,.65fr)] gap-6">
+                            <article class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-6">
+                                <div class="flex items-start justify-between gap-4 mb-5">
+                                    <div>
+                                        <span class="text-xs font-bold text-brand-sage tracking-wider uppercase">현재 주제도서</span>
+                                        <h2 id="homeBookTitle" class="serif-title text-2xl font-bold text-brand-navy mt-1">작별인사</h2>
+                                    </div>
+                                    <button class="px-3 py-2 rounded-xl bg-brand-ivory text-brand-navy text-[11px] font-bold hover:bg-brand-sageLight transition-colors" data-go="book">자세히</button>
+                                </div>
+                                <div class="grid grid-cols-[96px_minmax(0,1fr)] sm:grid-cols-[120px_minmax(0,1fr)] gap-5 items-center">
+                                    <div id="homeBookCover" class="aspect-[2/3] rounded-2xl bg-gradient-to-br from-brand-sage to-brand-navy text-white shadow-sm flex items-center justify-center text-center px-3 overflow-hidden">
+                                        <span class="serif-title font-bold leading-snug">작별인사</span>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p id="homeBookInfo" class="text-sm font-bold text-brand-navy">김영하 · 복복서가</p>
+                                        <p id="homeBookMeeting" class="inline-flex mt-2 px-3 py-1.5 rounded-full bg-brand-sageLight text-brand-sageDark text-[11px] font-bold">7월 11일 오후 8시 · LIVE ROOM</p>
+                                        <div class="mt-4 flex items-center justify-between text-xs font-bold text-brand-navy"><span>진행률</span><span>80%</span></div>
+                                        <div class="mt-2 h-2 bg-brand-ivory rounded-full overflow-hidden"><i class="block h-full w-4/5 bg-brand-sage rounded-full"></i></div>
+                                        <p class="text-xs text-gray-500 leading-relaxed mt-3">논제 12개 · 완독자 9명 · 토론 후 아카이브 자동 저장</p>
+                                    </div>
+                                </div>
+                            </article>
 
-              <section id="view-book" class="view">
-                <div class="section-title"><p class="eyebrow">Reading Books</p><h2>전체 주제도서</h2><p>이전·현재·다음 주제도서를 한 흐름으로 관리하고, 토론 기록과 아카이브를 연결합니다.</p></div>
-                <div class="topic-books-layout">
-                  <article class="card topic-section current-topic-section">
-                    <div class="card-head"><div><p class="eyebrow">현재 주제도서</p><h2 id="bookTitle">작별인사</h2></div><span class="role">LIVE 예정</span></div>
-                    <div class="book-overview large"><div class="book-cover visual-cover" id="bookCoverTitle"><span>작별인사</span></div><div class="book-info"><h3 id="bookMeta">김영하 · 복복서가</h3><p id="bookDiscussDate">토론일: 7월 11일 오후 8시</p><p id="bookDiscussionPoints" class="muted">논제: 인간다움, 선택, 작별의 의미</p><button class="small-button" data-go="live">LIVE 정보 보기</button></div></div>
-                  </article>
-                  <article class="card topic-section">
-                    <div class="card-head"><h2>이전 주제도서</h2><span class="role">Archive</span></div>
-                    <div class="topic-list" id="previousTopicList"></div>
-                  </article>
-                  <article class="card topic-section">
-                    <div class="card-head"><h2>다음 주제도서</h2><button class="small-button master-only" id="showNextBookFormBtn">추가</button></div>
-                    <div class="topic-list" id="nextTopicList"></div>
-                    <form class="next-book-form master-only hidden" id="nextTopicForm"><input id="nextTopicTitle" placeholder="도서명" /><input id="nextTopicAuthor" placeholder="저자" /><input id="nextTopicDate" placeholder="예정일 예: 8월 9일 오후 8시" /><textarea id="nextTopicMemo" placeholder="상세내용 메모"></textarea><button class="primary-button" type="submit">다음 주제도서 추가</button></form>
-                  </article>
-                </div>
-              </section>
+                            <div class="space-y-6">
+                                <article class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-5">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-50 text-orange-700 text-[11px] font-bold border border-orange-100">🔴 LIVE 예정</span>
+                                    <h2 class="serif-title text-xl font-bold text-brand-navy mt-4">7월 11일 오후 8:00</h2>
+                                    <p class="text-xs text-gray-500 leading-relaxed mt-2">채팅 중심 LIVE ROOM · 음성 AI 요약 · 참여 예정 14명</p>
+                                    <button class="mt-4 w-full py-3 rounded-xl bg-brand-navy text-white text-xs font-bold hover:bg-brand-navyLight transition-colors" data-go="live">LIVE 탭 보기</button>
+                                </article>
+                                <article class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-5">
+                                    <span class="text-xs font-bold text-brand-sage tracking-wider uppercase">다음 일정</span>
+                                    <h2 id="homeNextSchedule" class="serif-title text-xl font-bold text-brand-navy mt-1">7월 18일</h2>
+                                    <p class="text-xs text-gray-500 leading-relaxed mt-2">『아몬드』 사전 대화 · 일반 채팅방</p>
+                                    <button class="mt-4 w-full py-3 rounded-xl bg-brand-ivory text-brand-navy text-xs font-bold hover:bg-brand-sageLight transition-colors" data-go="schedule">일정 보기</button>
+                                </article>
+                            </div>
+                        </div>
 
-              <section id="view-live" class="view">
-                <div class="section-title"><p class="eyebrow">Live Room</p><h2>LIVE</h2><p>LIVE는 커뮤니티 탭이 아니라 별도의 채팅 중심 독서토론방으로 입장합니다.</p></div>
-                <div class="dashboard-grid">
-                  <article class="card wide live-entry-card">
-                    <div class="status-pill live">7월 11일 오후 8:00 · 시작 1시간 전부터 입장</div>
-                    <h2>『<span id="liveBookTitle">작별인사</span>』 LIVE 독서토론</h2>
-                    <p>채팅방을 중심으로 음성, AI 퍼실리테이터, 발언순서, 음성 AI 요약 기능이 함께 작동합니다.</p>
-                    <div class="live-feature-row"><span>💬 대화 중심</span><span>🎤 음성 참여</span><span>🤖 AI 역할 선택</span><span>📝 종료 리포트</span></div>
-                    <div class="button-row"><a class="primary-button" href="live.html">LIVE ROOM 입장</a><button class="small-button" id="previewLiveReportBtn">지난 리포트 보기</button></div>
-                  </article>
-                  <article class="card"><p class="eyebrow">AI 역할</p><h2 id="communityAiMode">퍼실리테이터</h2><p>모임장은 LIVE에서 AI 기본 역할을 선택합니다.</p><div class="ai-mode-mini"><button class="small-button ai-role-choice" data-role="퍼실리테이터">퍼실리테이터</button><button class="small-button ai-role-choice" data-role="보조">보조</button><button class="small-button ai-role-choice" data-role="없음">AI 없음</button></div></article>
-                  <article class="card"><p class="eyebrow">음성 보조</p><h2>AI 음성인식 요약</h2><p>음성 발언을 1인칭 요약으로 채팅방에 올려 이어폰이 없는 참여자도 흐름을 따라갈 수 있습니다.</p></article>
-                  <article class="card wide"><div class="card-head"><h2>최근 LIVE 리포트</h2><span class="role">Archive Sync</span></div><div id="reportPreviewList" class="report-preview-list"></div></article>
-                </div>
-              </section>
+                        <article class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-6">
+                            <div class="flex items-center justify-between gap-3 mb-4">
+                                <h2 class="serif-title text-xl font-bold text-brand-navy">최근 활동</h2>
+                                <button class="px-3 py-2 rounded-xl bg-brand-ivory text-brand-navy text-[11px] font-bold hover:bg-brand-sageLight transition-colors" data-go="board">게시판</button>
+                            </div>
+                            <ul id="activityList" class="space-y-2 text-xs text-brand-navy"></ul>
+                        </article>
+                    </section>
 
-              <section id="view-members" class="view">
-                <div class="section-title"><p class="eyebrow">Members</p><h2>멤버</h2><p>멤버 활동 내역과 권한 관리는 이곳에서 확인합니다.</p></div>
-                <div class="members-layout">
-                  <div class="member-list card" id="memberList"></div>
-                  <aside class="member-side card">
-                    <h3>멤버 관리</h3>
-                    <div class="member-actions master-only"><button class="small-button full" id="inviteMemberBtn">초대하기</button><button class="small-button full">가입신청 보기</button><button class="small-button full">권한 설정</button></div>
-                    <div id="memberDetail" class="member-detail"><p class="muted">멤버를 선택하면 활동 내역이 표시됩니다.</p></div>
-                  </aside>
-                </div>
-              </section>
+                    <section id="view-chat" class="view space-y-6">
+                        <div class="border-b border-brand-ivoryDark pb-5">
+                            <span class="text-xs font-bold text-brand-sage tracking-wider uppercase">COMMUNITY CHAT</span>
+                            <h2 class="serif-title text-2xl font-bold text-brand-navy mt-1">채팅</h2>
+                            <p class="text-xs text-gray-500 mt-2">평소 모임 대화, 사진 공유, AI 호출을 위한 공간입니다.</p>
+                        </div>
+                        <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_280px] gap-6">
+                            <article class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm overflow-hidden flex flex-col min-h-[560px]">
+                                <div class="px-5 py-4 border-b border-brand-ivoryDark bg-brand-ivory/40 text-xs font-bold text-brand-navy">📌 이번 주 토론 전까지 『작별인사』 4장까지 읽어주세요.</div>
+                                <div id="chatFeed" class="chat-feed flex-1 p-5 overflow-y-auto space-y-3 bg-gradient-to-b from-brand-ivory/30 to-white custom-scrollbar"></div>
+                                <form id="chatForm" class="p-4 border-t border-brand-ivoryDark bg-white flex items-center gap-2">
+                                    <button type="button" id="addPhotoMessageBtn" title="사진 첨부" class="w-10 h-10 rounded-xl bg-brand-ivory border border-brand-ivoryDark text-brand-navy font-bold hover:bg-brand-sageLight transition-colors">＋</button>
+                                    <button type="button" id="emojiChatBtn" title="이모지" class="w-10 h-10 rounded-xl bg-brand-ivory border border-brand-ivoryDark text-brand-navy font-bold hover:bg-brand-sageLight transition-colors">😊</button>
+                                    <input id="chatInput" class="flex-1 px-4 py-3 rounded-xl bg-brand-ivory/70 border border-brand-ivoryDark text-sm outline-none focus:border-brand-sage" placeholder="메시지를 입력하세요. 예: 모아야, 이 장면 설명해줘" autocomplete="off" />
+                                    <button class="px-5 py-3 rounded-xl bg-brand-navy text-white text-xs font-bold hover:bg-brand-navyLight transition-colors" type="submit">전송</button>
+                                </form>
+                            </article>
+                            <aside class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-5 h-fit">
+                                <h3 class="font-bold text-sm text-brand-navy mb-3">현재 접속자</h3>
+                                <div class="space-y-2 text-xs font-bold text-brand-navy">
+                                    <span class="flex items-center gap-2 px-3 py-2 rounded-xl bg-brand-ivory">🟢 달빛독서가</span>
+                                    <span class="flex items-center gap-2 px-3 py-2 rounded-xl bg-brand-ivory">🟢 문장수집가</span>
+                                    <span class="flex items-center gap-2 px-3 py-2 rounded-xl bg-brand-ivory">🟢 책읽는고양이</span>
+                                    <span class="flex items-center gap-2 px-3 py-2 rounded-xl bg-brand-sageLight text-brand-sageDark">🤖 AI 모아</span>
+                                </div>
+                            </aside>
+                        </div>
+                    </section>
 
-              <section id="view-schedule" class="view">
-                <div class="section-title"><p class="eyebrow">Calendar</p><h2>일정</h2><p>정기 모임, LIVE, 자율 모임 일정을 모임장이 등록할 수 있습니다.</p></div>
-                <form class="card write-card master-only" id="scheduleForm"><div class="form-grid"><input id="scheduleDate" placeholder="날짜 예: 7.25" /><input id="scheduleTitle" placeholder="일정명" /></div><input id="scheduleMeta" placeholder="시간/장소 예: 20:00 · 온라인" /><button class="primary-button" type="submit">일정 등록</button></form>
-                <div class="schedule-list" id="scheduleList"></div>
-              </section>
+                    <section id="view-board" class="view space-y-6">
+                        <div class="border-b border-brand-ivoryDark pb-5">
+                            <span class="text-xs font-bold text-brand-sage tracking-wider uppercase">BOARD</span>
+                            <h2 class="serif-title text-2xl font-bold text-brand-navy mt-1">게시판</h2>
+                            <p class="text-xs text-gray-500 mt-2">공지, 자유게시판, 독후감, 사진, 자료실을 한 화면에서 관리합니다.</p>
+                        </div>
+                        <div class="grid grid-cols-1 xl:grid-cols-[160px_minmax(0,1fr)] gap-6">
+                            <aside class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-3 h-fit board-filter">
+                                <button class="board-tab active w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-gray-500 hover:bg-brand-ivory" data-board-filter="전체">전체</button>
+                                <button class="board-tab w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-gray-500 hover:bg-brand-ivory" data-board-filter="공지">공지</button>
+                                <button class="board-tab w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-gray-500 hover:bg-brand-ivory" data-board-filter="자유게시판">자유게시판</button>
+                                <button class="board-tab w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-gray-500 hover:bg-brand-ivory" data-board-filter="독후감">독후감</button>
+                                <button class="board-tab w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-gray-500 hover:bg-brand-ivory" data-board-filter="사진">사진</button>
+                                <button class="board-tab w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-gray-500 hover:bg-brand-ivory" data-board-filter="자료실">자료실</button>
+                            </aside>
+                            <div class="space-y-5">
+                                <form id="postForm" class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-5 space-y-3">
+                                    <div class="grid grid-cols-1 sm:grid-cols-[160px_minmax(0,1fr)] gap-3">
+                                        <select id="postCategory" class="px-3 py-3 bg-brand-ivory/70 border border-brand-ivoryDark rounded-xl text-xs outline-none"><option>자유게시판</option><option>공지</option><option>독후감</option><option>사진</option><option>자료실</option></select>
+                                        <input id="postTitle" class="px-3 py-3 bg-brand-ivory/70 border border-brand-ivoryDark rounded-xl text-xs outline-none" placeholder="글 제목" />
+                                    </div>
+                                    <textarea id="postBody" rows="3" class="w-full p-4 bg-brand-ivory/50 rounded-xl border border-brand-ivoryDark text-xs leading-relaxed outline-none focus:border-brand-sage" placeholder="함께 나누고 싶은 생각을 적어보세요."></textarea>
+                                    <div class="flex justify-end"><button class="px-5 py-2.5 bg-brand-navy hover:bg-brand-navyLight text-white rounded-xl text-xs font-bold transition-all" type="submit">글쓰기</button></div>
+                                </form>
+                                <div id="postList" class="space-y-4"></div>
+                            </div>
+                        </div>
+                    </section>
 
-              <section id="view-admin" class="view">
-                <div class="section-title"><p class="eyebrow">Club Settings</p><h2>관리</h2><p>모임 생성 시 입력했던 기본 정보를 수정하는 곳입니다.</p></div>
-                <form class="card admin-club-form" id="clubSettingsForm">
-                  <div class="form-grid"><label>모임 이름<input id="clubNameInput" placeholder="우리의 문학" /></label><label>모임 분야<input id="clubCategoryInput" placeholder="문학" /></label></div>
-                  <label>모임 소개<textarea id="clubDescInput" placeholder="모임 소개"></textarea></label>
-                  <div class="form-grid"><label>공개 여부<select id="clubPrivacyInput"><option>공개</option><option>비공개</option></select></label><label>가입 방식<select id="clubJoinTypeInput"><option>바로 가입</option><option>승인 후 가입</option><option>초대링크 가입</option></select></label></div>
-                  <div class="form-grid"><label>연령대<input id="clubAgeInput" placeholder="20~40대" /></label><label>지역<input id="clubRegionInput" placeholder="익산 / 온라인" /></label></div>
-                  <label>모임 규칙<textarea id="clubRuleInput" placeholder="모임 규칙"></textarea></label>
-                  <button class="primary-button" type="submit">모임 정보 저장</button>
-                </form>
-              </section>
-            </main>
-          </div>
-          <div class="toast" id="toast"></div>
+                    <section id="view-book" class="view space-y-6">
+                        <div class="border-b border-brand-ivoryDark pb-5">
+                            <span class="text-xs font-bold text-brand-sage tracking-wider uppercase">READING BOOKS</span>
+                            <h2 class="serif-title text-2xl font-bold text-brand-navy mt-1">전체 주제도서</h2>
+                            <p class="text-xs text-gray-500 mt-2">이전·현재·다음 주제도서를 한 흐름으로 관리하고, 토론 기록과 아카이브를 연결합니다.</p>
+                        </div>
+                        <article class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-6">
+                            <span class="text-xs font-bold text-brand-sage tracking-wider uppercase">현재 주제도서</span>
+                            <div class="grid grid-cols-[100px_minmax(0,1fr)] sm:grid-cols-[140px_minmax(0,1fr)] gap-5 mt-4 items-center">
+                                <div id="bookCoverTitle" class="aspect-[2/3] rounded-2xl bg-gradient-to-br from-brand-sage to-brand-navy text-white shadow-sm flex items-center justify-center text-center px-3 overflow-hidden"><span class="serif-title font-bold">작별인사</span></div>
+                                <div>
+                                    <h3 id="bookTitle" class="serif-title text-2xl font-bold text-brand-navy">작별인사</h3>
+                                    <p id="bookMeta" class="text-sm font-bold text-brand-navy mt-1">김영하 · 복복서가</p>
+                                    <p id="bookDiscussDate" class="text-xs text-gray-500 mt-3">토론일: 7월 11일 오후 8시 · LIVE ROOM</p>
+                                    <p id="bookDiscussionPoints" class="text-xs text-gray-500 leading-relaxed mt-2">논제: 인간다움, 선택, 작별의 의미</p>
+                                </div>
+                            </div>
+                        </article>
+                        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                            <article class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-5">
+                                <h3 class="font-bold text-sm text-brand-navy mb-3">이전 주제도서</h3>
+                                <div id="previousTopicList" class="space-y-3"></div>
+                            </article>
+                            <article class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-5">
+                                <div class="flex items-center justify-between gap-3 mb-3"><h3 class="font-bold text-sm text-brand-navy">다음 주제도서</h3><button id="showNextBookFormBtn" class="master-only px-3 py-2 rounded-xl bg-brand-ivory text-brand-navy text-[11px] font-bold hover:bg-brand-sageLight">추가</button></div>
+                                <form id="nextTopicForm" class="hidden space-y-2 mb-4 border border-brand-ivoryDark rounded-2xl p-3 bg-brand-ivory/30">
+                                    <input id="nextTopicTitle" class="w-full px-3 py-2 bg-white border border-brand-ivoryDark rounded-xl text-xs" placeholder="도서명" />
+                                    <input id="nextTopicAuthor" class="w-full px-3 py-2 bg-white border border-brand-ivoryDark rounded-xl text-xs" placeholder="저자" />
+                                    <input id="nextTopicDate" class="w-full px-3 py-2 bg-white border border-brand-ivoryDark rounded-xl text-xs" placeholder="모임 예정일" />
+                                    <textarea id="nextTopicMemo" rows="2" class="w-full px-3 py-2 bg-white border border-brand-ivoryDark rounded-xl text-xs" placeholder="상세내용 메모"></textarea>
+                                    <button class="w-full py-2.5 rounded-xl bg-brand-navy text-white text-xs font-bold" type="submit">다음 도서 저장</button>
+                                </form>
+                                <div id="nextTopicList" class="space-y-3"></div>
+                            </article>
+                        </div>
+                    </section>
+
+                    <section id="view-live" class="view space-y-6">
+                        <div class="border-b border-brand-ivoryDark pb-5">
+                            <span class="text-xs font-bold text-brand-sage tracking-wider uppercase">LIVE ROOM</span>
+                            <h2 class="serif-title text-2xl font-bold text-brand-navy mt-1">LIVE</h2>
+                            <p class="text-xs text-gray-500 mt-2">LIVE는 커뮤니티 탭이 아니라 별도의 채팅 중심 독서토론방으로 입장합니다.</p>
+                        </div>
+                        <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px] gap-6">
+                            <article class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-6">
+                                <span class="inline-flex px-3 py-1.5 rounded-full bg-orange-50 text-orange-700 text-[11px] font-bold border border-orange-100">🔴 시작 1시간 전 입장 가능</span>
+                                <h3 id="liveBookTitle" class="serif-title text-2xl font-bold text-brand-navy mt-4">작별인사</h3>
+                                <p class="text-xs text-gray-500 mt-2 leading-relaxed">LIVE ROOM은 대화창 중심으로 열리며, 음성 참여자의 발언은 AI가 채팅에 요약해 대화 흐름을 이어줍니다.</p>
+                                <button onclick="location.href='live.html'" class="mt-5 px-6 py-3 rounded-xl bg-brand-navy text-white text-xs font-bold hover:bg-brand-navyLight transition-colors inline-flex items-center gap-2"><i data-lucide="radio" class="w-4 h-4"></i> LIVE ROOM 입장</button>
+                            </article>
+                            <aside class="space-y-4">
+                                <div class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-5">
+                                    <h3 class="font-bold text-sm text-brand-navy mb-3">AI 역할</h3>
+                                    <div class="space-y-2">
+                                        <button class="ai-role-choice w-full px-3 py-2.5 rounded-xl bg-brand-sageLight text-brand-sageDark text-xs font-bold text-left" data-role="퍼실리테이터">퍼실리테이터</button>
+                                        <button class="ai-role-choice w-full px-3 py-2.5 rounded-xl bg-brand-ivory text-brand-navy text-xs font-bold text-left" data-role="보조">보조</button>
+                                        <button class="ai-role-choice w-full px-3 py-2.5 rounded-xl bg-brand-ivory text-brand-navy text-xs font-bold text-left" data-role="AI 없음">AI 없음</button>
+                                    </div>
+                                    <p class="text-xs text-gray-500 leading-relaxed mt-3">현재 설정: <strong id="communityAiMode" class="text-brand-navy">퍼실리테이터</strong></p>
+                                </div>
+                                <div class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-5">
+                                    <h3 class="font-bold text-sm text-brand-navy mb-3">음성 보조</h3>
+                                    <div class="space-y-2 text-xs text-brand-navy"><label class="flex items-center gap-2"><input type="checkbox" checked> AI 음성인식 요약</label><label class="flex items-center gap-2"><input type="checkbox" checked> 종료 리포트 생성</label></div>
+                                </div>
+                            </aside>
+                        </div>
+                        <article class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-5">
+                            <div class="flex items-center justify-between gap-3 mb-3"><h3 class="font-bold text-sm text-brand-navy">최근 LIVE 리포트</h3><button id="previewLiveReportBtn" class="px-3 py-2 rounded-xl bg-brand-ivory text-brand-navy text-[11px] font-bold">새로고침</button></div>
+                            <div id="reportPreviewList" class="space-y-3"></div>
+                        </article>
+                    </section>
+
+                    <section id="view-members" class="view space-y-6">
+                        <div class="border-b border-brand-ivoryDark pb-5">
+                            <span class="text-xs font-bold text-brand-sage tracking-wider uppercase">MEMBERS</span>
+                            <h2 class="serif-title text-2xl font-bold text-brand-navy mt-1">멤버</h2>
+                            <p class="text-xs text-gray-500 mt-2">멤버 활동 내역과 권한 관리는 이곳에서 확인합니다.</p>
+                        </div>
+                        <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px] gap-6">
+                            <div id="memberList" class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-4 space-y-2"></div>
+                            <aside class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-5 h-fit">
+                                <h3 class="font-bold text-sm text-brand-navy mb-3">멤버 관리</h3>
+                                <div class="member-actions master-only grid gap-2 mb-4"><button id="inviteMemberBtn" class="px-3 py-2.5 rounded-xl bg-brand-ivory text-brand-navy text-xs font-bold hover:bg-brand-sageLight">초대하기</button><button class="px-3 py-2.5 rounded-xl bg-brand-ivory text-brand-navy text-xs font-bold hover:bg-brand-sageLight">가입신청 보기</button><button class="px-3 py-2.5 rounded-xl bg-brand-ivory text-brand-navy text-xs font-bold hover:bg-brand-sageLight">권한 설정</button></div>
+                                <div id="memberDetail"><p class="text-xs text-gray-500">멤버를 선택하면 활동 내역이 표시됩니다.</p></div>
+                            </aside>
+                        </div>
+                    </section>
+
+                    <section id="view-schedule" class="view space-y-6">
+                        <div class="border-b border-brand-ivoryDark pb-5">
+                            <span class="text-xs font-bold text-brand-sage tracking-wider uppercase">CALENDAR</span>
+                            <h2 class="serif-title text-2xl font-bold text-brand-navy mt-1">일정</h2>
+                            <p class="text-xs text-gray-500 mt-2">정기 모임, LIVE, 자율 모임 일정을 모임장이 등록할 수 있습니다.</p>
+                        </div>
+                        <form id="scheduleForm" class="master-only bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-5 space-y-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3"><input id="scheduleDate" class="px-3 py-3 bg-brand-ivory/70 border border-brand-ivoryDark rounded-xl text-xs" placeholder="날짜 예: 7.25" /><input id="scheduleTitle" class="px-3 py-3 bg-brand-ivory/70 border border-brand-ivoryDark rounded-xl text-xs" placeholder="일정명" /></div>
+                            <input id="scheduleMeta" class="w-full px-3 py-3 bg-brand-ivory/70 border border-brand-ivoryDark rounded-xl text-xs" placeholder="시간/장소 예: 20:00 · 온라인" />
+                            <button class="px-5 py-2.5 bg-brand-navy hover:bg-brand-navyLight text-white rounded-xl text-xs font-bold" type="submit">일정 등록</button>
+                        </form>
+                        <div id="scheduleList" class="space-y-3"></div>
+                    </section>
+
+                    <section id="view-admin" class="view space-y-6">
+                        <div class="border-b border-brand-ivoryDark pb-5">
+                            <span class="text-xs font-bold text-brand-sage tracking-wider uppercase">CLUB SETTINGS</span>
+                            <h2 class="serif-title text-2xl font-bold text-brand-navy mt-1">관리</h2>
+                            <p class="text-xs text-gray-500 mt-2">모임 생성 시 입력했던 기본 정보를 수정하는 곳입니다.</p>
+                        </div>
+                        <form id="clubSettingsForm" class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-6 space-y-4 max-w-4xl">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4"><label class="text-xs font-bold text-brand-navy space-y-1">모임 이름<input id="clubNameInput" class="w-full px-3 py-3 bg-brand-ivory/70 border border-brand-ivoryDark rounded-xl text-xs" placeholder="우리의 문학" /></label><label class="text-xs font-bold text-brand-navy space-y-1">모임 분야<input id="clubCategoryInput" class="w-full px-3 py-3 bg-brand-ivory/70 border border-brand-ivoryDark rounded-xl text-xs" placeholder="문학" /></label></div>
+                            <label class="text-xs font-bold text-brand-navy space-y-1 block">모임 소개<textarea id="clubDescInput" rows="4" class="w-full p-4 bg-brand-ivory/50 rounded-xl border border-brand-ivoryDark text-xs leading-relaxed" placeholder="모임 소개"></textarea></label>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4"><label class="text-xs font-bold text-brand-navy space-y-1">공개 여부<select id="clubPrivacyInput" class="w-full px-3 py-3 bg-brand-ivory/70 border border-brand-ivoryDark rounded-xl text-xs"><option>공개</option><option>비공개</option></select></label><label class="text-xs font-bold text-brand-navy space-y-1">가입 방식<select id="clubJoinTypeInput" class="w-full px-3 py-3 bg-brand-ivory/70 border border-brand-ivoryDark rounded-xl text-xs"><option>바로 가입</option><option>승인 후 가입</option><option>초대링크 가입</option></select></label></div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4"><label class="text-xs font-bold text-brand-navy space-y-1">연령대<input id="clubAgeInput" class="w-full px-3 py-3 bg-brand-ivory/70 border border-brand-ivoryDark rounded-xl text-xs" placeholder="20~40대" /></label><label class="text-xs font-bold text-brand-navy space-y-1">지역<input id="clubRegionInput" class="w-full px-3 py-3 bg-brand-ivory/70 border border-brand-ivoryDark rounded-xl text-xs" placeholder="익산 / 온라인" /></label></div>
+                            <label class="text-xs font-bold text-brand-navy space-y-1 block">모임 규칙<textarea id="clubRuleInput" rows="4" class="w-full p-4 bg-brand-ivory/50 rounded-xl border border-brand-ivoryDark text-xs leading-relaxed" placeholder="모임 규칙"></textarea></label>
+                            <button class="px-5 py-3 bg-brand-navy hover:bg-brand-navyLight text-white rounded-xl text-xs font-bold" type="submit">모임 정보 저장</button>
+                        </form>
+                    </section>
+                </main>
+            </div>
+            <div class="toast" id="toast"></div>
         </section>
 
         <!-- VIEW: My Page (내 서재) -->
