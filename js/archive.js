@@ -43,8 +43,8 @@
             const guest = isGuestUser();
             const live = document.getElementById('top-live-meeting-badge');
             if (live) {
-                live.classList.toggle('hidden', guest);
-                live.setAttribute('aria-hidden', guest ? 'true' : 'false');
+                live.classList.add('hidden');
+                live.setAttribute('aria-hidden', 'true');
             }
             const schedule = document.getElementById('home-reading-schedule-card');
             if (schedule) {

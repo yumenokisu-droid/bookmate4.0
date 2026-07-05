@@ -14,17 +14,17 @@ const defaultState = {
     '등장인물의 선택 중 가장 이해하기 어려웠던 부분은 무엇인가요?'
   ],
   participants: [
-    {name:'윤', status:'음성 ON', count:2},
-    {name:'민지', status:'채팅 참여', count:1},
-    {name:'수현', status:'음성 대기', count:0},
-    {name:'지훈', status:'읽는 중', count:0},
+    {name:'달빛독서가', status:'음성 ON', count:2},
+    {name:'문장수집가', status:'채팅 참여', count:1},
+    {name:'책읽는고양이', status:'음성 대기', count:0},
+    {name:'초록책갈피', status:'읽는 중', count:0},
     {name:'AI 모아', status:'퍼실리테이터', count:3}
   ],
-  queue: ['윤','민지','수현','지훈'],
+  queue: ['달빛독서가','문장수집가','책읽는고양이','초록책갈피'],
   messages: [
     {user:'AI 모아', type:'ai', text:'안녕하세요. 오늘 LIVE 독서토론을 시작할게요. 첫 질문입니다. “인간다움의 기준은 무엇이라고 생각하나요?”'},
-    {user:'윤', type:'voice-summary', text:'(AI 음성인식 요약) 저는 마지막 장면에서 인물이 보여준 선택이 가장 인상 깊었고, 제 경험과 연결되어 더 공감되었습니다.'},
-    {user:'민지', type:'user', text:'저도 그 부분이 좋았어요. 다만 저는 조금 더 쓸쓸하게 느껴졌어요.'}
+    {user:'달빛독서가', type:'voice-summary', text:'(AI 음성인식 요약) 저는 마지막 장면에서 인물이 보여준 선택이 가장 인상 깊었고, 제 경험과 연결되어 더 공감되었습니다.'},
+    {user:'문장수집가', type:'user', text:'저도 그 부분이 좋았어요. 다만 저는 조금 더 쓸쓸하게 느껴졌어요.'}
   ]
 };
 let state = load();
@@ -74,14 +74,14 @@ function createReport(){
   toast('아카이브에 LIVE 리포트를 저장했어요.');
 }
 function boot(){
-  $('liveRoomForm').onsubmit = e => {e.preventDefault(); const v=$('liveRoomInput').value.trim(); if(!v) return; add('나',v,'user'); $('liveRoomInput').value=''; if(state.aiRole==='보조' && v.includes('모아')) ai('네, 이 장면은 인물의 선택과 기억의 의미를 함께 보면 이해하기 쉬워요.');};
+  $('liveRoomForm').onsubmit = e => {e.preventDefault(); const v=$('liveRoomInput').value.trim(); if(!v) return; add('달빛독서가',v,'user'); $('liveRoomInput').value=''; if(state.aiRole==='보조' && v.includes('모아')) ai('네, 이 장면은 인물의 선택과 기억의 의미를 함께 보면 이해하기 쉬워요.');};
   $('micBtn').onclick = () => { if(state.running) stopTimer(); else {startTimer(); ai('LIVE 진행을 시작합니다. 채팅과 음성 요약이 함께 기록됩니다.')} };
   $('nextPromptBtn').onclick = () => {state.promptIndex=(state.promptIndex+1)%state.prompts.length; ai(`${state.promptIndex+1}번 발제문입니다. ${state.prompts[state.promptIndex]}`)};
   $('summaryBtn').onclick = () => ai('현재까지는 마지막 장면에 대한 공감, 인간다움의 기준, 인물의 선택에 관한 의견이 나왔습니다.');
-  $('balanceBtn').onclick = () => ai('발언 균형을 보면 윤님과 AI 발언이 많고, 수현님과 지훈님의 의견이 아직 적습니다. 다음 순서로 넘겨보면 좋아요.');
+  $('balanceBtn').onclick = () => ai('발언 균형을 보면 달빛독서가님과 AI 발언이 많고, 책읽는고양이님과 초록책갈피님의 의견이 아직 적습니다. 다음 순서로 넘겨보면 좋아요.');
   $('encourageBtn').onclick = () => ai('아직 말하지 않은 분도 한 문장만 남겨주세요. “가장 기억나는 장면”부터 시작해도 괜찮아요.');
   $('finishBtn').onclick = createReport;
-  $('simulateVoiceBtn').onclick = () => { if(!$('voiceSummaryToggle').checked) return toast('AI 음성인식 요약이 꺼져 있어요.'); add('수현','(AI 음성인식 요약) 저는 주인공의 선택이 쉽게 이해되지는 않았지만, 관계를 지키려는 마음이 있었다고 느꼈습니다.','voice-summary'); };
+  $('simulateVoiceBtn').onclick = () => { if(!$('voiceSummaryToggle').checked) return toast('AI 음성인식 요약이 꺼져 있어요.'); add('책읽는고양이','(AI 음성인식 요약) 저는 주인공의 선택이 쉽게 이해되지는 않았지만, 관계를 지키려는 마음이 있었다고 느꼈습니다.','voice-summary'); };
   document.querySelectorAll('input[name="liveAiRole"]').forEach(r=>r.onchange=e=>{state.aiRole=e.target.value; save(); render(); ai(`AI 역할이 ${state.aiRole}(으)로 변경되었습니다.`)});
   render();
 }

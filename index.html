@@ -91,9 +91,9 @@
                 <!-- Right Utility Actions -->
                 <div class="flex items-center space-x-3">
                     <!-- Top Pulsing LIVE badge -->
-                    <div id="top-live-meeting-badge" onclick="enterMeetingRoom('달러구트 꿈 백화점')" class="hidden flex items-center gap-1.5 bg-red-50 text-red-600 border border-red-100 px-3 py-1.5 rounded-full text-xs font-bold cursor-pointer animate-pulse mr-1">
+                    <div id="top-live-meeting-badge" style="display:none" aria-hidden="true" class="hidden">
                         <span class="w-2 h-2 rounded-full bg-red-600 block"></span>
-                        <span class="hidden sm:inline">오늘 20:00 모임</span>
+                        
                     </div>
 
                     <button onclick="navigate('notifications')" class="relative p-2 rounded-full hover:bg-brand-ivory transition-colors text-gray-500 hover:text-brand-navy" title="알림">
@@ -964,138 +964,185 @@
 
         <!-- VIEW: Book Club Community Room (embedded, no page navigation) -->
         <section id="view-club-meeting" class="view-section hidden animate-fadeIn">
+          <div class="meeting-shell bm-meeting-v2">
+            <aside class="meeting-sidebar">
+              <button class="brand embedded-brand" type="button" onclick="navigate('home')" aria-label="BOOKMATE 홈으로 이동">
+                <img src="assets/icons/bookmate-logo.png" alt="BOOKMATE" onerror="this.style.display='none'" />
+                <span>BOOKMATE</span>
+              </button>
 
-  <div class="meeting-shell">
-    <aside class="meeting-sidebar">
-      <button class="brand embedded-brand" type="button" onclick="navigate('home')" aria-label="BOOKMATE 홈으로 이동">
-        <img src="assets/icons/bookmate-logo.png" alt="BOOKMATE" onerror="this.style.display='none'" />
-        <span>BOOKMATE</span>
-      </button>
+              <section class="club-card-mini">
+                <div class="club-mark">문</div>
+                <div>
+                  <strong id="miniClubTitle">우리의 문학</strong>
+                  <p id="miniClubMeta">문학 · 비공개모임 · 18명</p>
+                </div>
+              </section>
 
-      <section class="club-card-mini">
-        <div class="club-mark">문</div>
-        <div>
-          <strong>우리의 문학</strong>
-          <p>문학 · 공개모임 · 18명</p>
-        </div>
-      </section>
+              <nav class="meeting-nav" aria-label="독서모임 메뉴">
+                <button class="nav-item active" data-view="home">HOME</button>
+                <button class="nav-item" data-view="chat">채팅</button>
+                <button class="nav-item" data-view="board">게시판</button>
+                <button class="nav-item" data-view="book">주제도서</button>
+                <button class="nav-item" data-view="live">LIVE</button>
+                <button class="nav-item" data-view="members">멤버</button>
+                <button class="nav-item" data-view="schedule">일정</button>
+                <button class="nav-item master-only" data-view="admin">관리</button>
+              </nav>
 
-      <nav class="meeting-nav" aria-label="독서모임 메뉴">
-        <button class="nav-item active" data-view="home">HOME</button>
-        <button class="nav-item" data-view="chat">채팅</button>
-        <button class="nav-item" data-view="board">게시판</button>
-        <button class="nav-item" data-view="book">주제도서</button>
-        <button class="nav-item" data-view="live">LIVE</button>
-        <button class="nav-item" data-view="members">멤버</button>
-        <button class="nav-item" data-view="schedule">일정</button>
-        <button class="nav-item master-only" data-view="admin">관리</button>
-      </nav>
+              <div class="sidebar-bottom">
+                <p>AI 역할</p>
+                <strong id="sidebarAiMode">퍼실리테이터</strong>
+              </div>
+            </aside>
 
-      <div class="sidebar-bottom">
-        <p>AI 역할</p>
-        <strong id="sidebarAiMode">퍼실리테이터</strong>
-      </div>
-    </aside>
+            <main class="meeting-main">
+              <header class="meeting-hero refined-hero">
+                <div class="hero-top">
+                  <button class="back-link embedded-back" type="button" onclick="navigate('search-results')">← 되돌아가기</button>
+                  <div class="hero-actions">
+                    <button class="ghost-button" id="copyInviteBtn">초대링크</button>
+                    <button class="membership-button" id="membershipActionBtn">탈퇴하기</button>
+                  </div>
+                </div>
+                <div class="hero-content simple-hero-content">
+                  <div>
+                    <p class="eyebrow">AI 기반 독서공동체</p>
+                    <h1 id="clubTitle">우리의 문학</h1>
+                    <p class="hero-desc" id="clubDesc">좋은 책은 사람을 만나 완성됩니다. 함께 읽고, 묻고, 기록하는 문학 독서모임입니다.</p>
+                    <div class="hero-meta" id="clubMetaBadges">
+                      <span>👥 18명</span><span>📚 문학</span><span>🔒 비공개</span><span>🗓 매주 토요일</span>
+                    </div>
+                  </div>
+                </div>
+              </header>
 
-    <main class="meeting-main">
-      <header class="meeting-hero">
-        <div class="hero-top">
-          <button class="back-link embedded-back" type="button" onclick="navigate('search-results')">← 되돌아가기</button>
-          <button class="ghost-button" id="copyInviteBtn">초대링크</button>
-        </div>
-        <div class="hero-content">
-          <div>
-            <p class="eyebrow">AI 기반 독서공동체</p>
-            <h1>우리의 문학</h1>
-            <p class="hero-desc">좋은 책은 사람을 만나 완성됩니다. 함께 읽고, 묻고, 기록하는 문학 독서모임입니다.</p>
-            <div class="hero-meta">
-              <span>👥 18명</span><span>📚 문학</span><span>🗓 매주 토요일</span><span>🔥 독서온도 87℃</span>
-            </div>
+              <section id="view-home" class="view active">
+                <div class="dashboard-grid refined-home-grid">
+                  <article class="card current-book-card wide">
+                    <div class="card-head">
+                      <div><p class="eyebrow">현재 주제도서</p><h2 id="homeBookTitle">작별인사</h2></div>
+                      <button class="small-button" data-go="book">자세히</button>
+                    </div>
+                    <div class="book-overview">
+                      <div class="book-cover visual-cover" id="homeBookCover"><span>작별인사</span></div>
+                      <div class="book-info">
+                        <p id="homeBookInfo">김영하 · 복복서가</p>
+                        <p id="homeBookMeeting" class="book-meeting-line">7월 11일 오후 8시 · LIVE ROOM</p>
+                        <div class="progress-row"><span>진행률</span><strong>80%</strong></div>
+                        <div class="progress"><i style="width:80%"></i></div>
+                        <p class="muted">논제 12개 · 완독자 9명 · 토론 후 아카이브 자동 저장</p>
+                      </div>
+                    </div>
+                  </article>
+                  <article class="card live-card"><div class="status-pill live">LIVE 예정</div><h2>7월 11일 오후 8:00</h2><p>채팅 중심 LIVE ROOM · 음성 AI 요약 · 참여 예정 14명</p><button class="primary-button" data-go="live">LIVE 탭 보기</button></article>
+                  <article class="card"><p class="eyebrow">다음 일정</p><h2 id="homeNextSchedule">7월 18일</h2><p>『아몬드』 사전 대화 · 일반 채팅방</p><button class="small-button" data-go="schedule">일정 보기</button></article>
+                  <article class="card activity-card wide"><div class="card-head"><h2>최근 활동</h2><button class="small-button" data-go="board">게시판</button></div><ul class="activity-list" id="activityList"></ul></article>
+                </div>
+              </section>
+
+              <section id="view-chat" class="view">
+                <div class="section-title"><p class="eyebrow">Community Chat</p><h2>채팅</h2><p>평소 모임 대화, 사진 공유, AI 호출을 위한 공간입니다.</p></div>
+                <div class="chat-layout refined-chat-layout">
+                  <article class="card chat-card">
+                    <div class="pinned-chat-notice">📌 이번 주 토론 전까지 『작별인사』 4장까지 읽어주세요.</div>
+                    <div class="chat-feed" id="chatFeed"></div>
+                    <form class="chat-form refined-chat-form" id="chatForm">
+                      <button type="button" class="icon-chat-btn" id="addPhotoMessageBtn" title="사진 첨부">＋</button>
+                      <button type="button" class="icon-chat-btn" id="emojiChatBtn" title="이모지">😊</button>
+                      <input id="chatInput" placeholder="메시지를 입력하세요. 예: 모아야, 이 장면 설명해줘" autocomplete="off" />
+                      <button class="primary-button" type="submit">전송</button>
+                    </form>
+                  </article>
+                  <aside class="card side-card"><h3>현재 접속자</h3><div class="online-list refined-online-list"><span>달빛독서가</span><span>문장수집가</span><span>책읽는고양이</span><span>AI 모아</span></div><p class="muted">사진 첨부는 입력창의 ＋ 버튼에서 바로 추가할 수 있습니다.</p></aside>
+                </div>
+              </section>
+
+              <section id="view-board" class="view">
+                <div class="section-title"><p class="eyebrow">Board</p><h2>게시판</h2><p>공지, 자유게시판, 독후감, 사진, 자료실을 한 화면에서 관리합니다.</p></div>
+                <div class="board-layout">
+                  <aside class="board-filter card">
+                    <button class="board-tab active" data-board-filter="전체">전체</button>
+                    <button class="board-tab" data-board-filter="공지">공지</button>
+                    <button class="board-tab" data-board-filter="자유게시판">자유게시판</button>
+                    <button class="board-tab" data-board-filter="독후감">독후감</button>
+                    <button class="board-tab" data-board-filter="사진">사진</button>
+                    <button class="board-tab" data-board-filter="자료실">자료실</button>
+                  </aside>
+                  <div>
+                    <form class="card write-card" id="postForm"><div class="form-grid"><select id="postCategory"><option>자유게시판</option><option>공지</option><option>독후감</option><option>사진</option><option>자료실</option></select><input id="postTitle" placeholder="글 제목" /></div><textarea id="postBody" placeholder="함께 나누고 싶은 생각을 적어보세요."></textarea><button class="primary-button" type="submit">글쓰기</button></form>
+                    <div id="postList" class="post-list refined-post-list"></div>
+                  </div>
+                </div>
+              </section>
+
+              <section id="view-book" class="view">
+                <div class="section-title"><p class="eyebrow">Reading Books</p><h2>전체 주제도서</h2><p>이전·현재·다음 주제도서를 한 흐름으로 관리하고, 토론 기록과 아카이브를 연결합니다.</p></div>
+                <div class="topic-books-layout">
+                  <article class="card topic-section current-topic-section">
+                    <div class="card-head"><div><p class="eyebrow">현재 주제도서</p><h2 id="bookTitle">작별인사</h2></div><span class="role">LIVE 예정</span></div>
+                    <div class="book-overview large"><div class="book-cover visual-cover" id="bookCoverTitle"><span>작별인사</span></div><div class="book-info"><h3 id="bookMeta">김영하 · 복복서가</h3><p id="bookDiscussDate">토론일: 7월 11일 오후 8시</p><p id="bookDiscussionPoints" class="muted">논제: 인간다움, 선택, 작별의 의미</p><button class="small-button" data-go="live">LIVE 정보 보기</button></div></div>
+                  </article>
+                  <article class="card topic-section">
+                    <div class="card-head"><h2>이전 주제도서</h2><span class="role">Archive</span></div>
+                    <div class="topic-list" id="previousTopicList"></div>
+                  </article>
+                  <article class="card topic-section">
+                    <div class="card-head"><h2>다음 주제도서</h2><button class="small-button master-only" id="showNextBookFormBtn">추가</button></div>
+                    <div class="topic-list" id="nextTopicList"></div>
+                    <form class="next-book-form master-only hidden" id="nextTopicForm"><input id="nextTopicTitle" placeholder="도서명" /><input id="nextTopicAuthor" placeholder="저자" /><input id="nextTopicDate" placeholder="예정일 예: 8월 9일 오후 8시" /><textarea id="nextTopicMemo" placeholder="상세내용 메모"></textarea><button class="primary-button" type="submit">다음 주제도서 추가</button></form>
+                  </article>
+                </div>
+              </section>
+
+              <section id="view-live" class="view">
+                <div class="section-title"><p class="eyebrow">Live Room</p><h2>LIVE</h2><p>LIVE는 커뮤니티 탭이 아니라 별도의 채팅 중심 독서토론방으로 입장합니다.</p></div>
+                <div class="dashboard-grid">
+                  <article class="card wide live-entry-card">
+                    <div class="status-pill live">7월 11일 오후 8:00 · 시작 1시간 전부터 입장</div>
+                    <h2>『<span id="liveBookTitle">작별인사</span>』 LIVE 독서토론</h2>
+                    <p>채팅방을 중심으로 음성, AI 퍼실리테이터, 발언순서, 음성 AI 요약 기능이 함께 작동합니다.</p>
+                    <div class="live-feature-row"><span>💬 대화 중심</span><span>🎤 음성 참여</span><span>🤖 AI 역할 선택</span><span>📝 종료 리포트</span></div>
+                    <div class="button-row"><a class="primary-button" href="live.html">LIVE ROOM 입장</a><button class="small-button" id="previewLiveReportBtn">지난 리포트 보기</button></div>
+                  </article>
+                  <article class="card"><p class="eyebrow">AI 역할</p><h2 id="communityAiMode">퍼실리테이터</h2><p>모임장은 LIVE에서 AI 기본 역할을 선택합니다.</p><div class="ai-mode-mini"><button class="small-button ai-role-choice" data-role="퍼실리테이터">퍼실리테이터</button><button class="small-button ai-role-choice" data-role="보조">보조</button><button class="small-button ai-role-choice" data-role="없음">AI 없음</button></div></article>
+                  <article class="card"><p class="eyebrow">음성 보조</p><h2>AI 음성인식 요약</h2><p>음성 발언을 1인칭 요약으로 채팅방에 올려 이어폰이 없는 참여자도 흐름을 따라갈 수 있습니다.</p></article>
+                  <article class="card wide"><div class="card-head"><h2>최근 LIVE 리포트</h2><span class="role">Archive Sync</span></div><div id="reportPreviewList" class="report-preview-list"></div></article>
+                </div>
+              </section>
+
+              <section id="view-members" class="view">
+                <div class="section-title"><p class="eyebrow">Members</p><h2>멤버</h2><p>멤버 활동 내역과 권한 관리는 이곳에서 확인합니다.</p></div>
+                <div class="members-layout">
+                  <div class="member-list card" id="memberList"></div>
+                  <aside class="member-side card">
+                    <h3>멤버 관리</h3>
+                    <div class="member-actions master-only"><button class="small-button full" id="inviteMemberBtn">초대하기</button><button class="small-button full">가입신청 보기</button><button class="small-button full">권한 설정</button></div>
+                    <div id="memberDetail" class="member-detail"><p class="muted">멤버를 선택하면 활동 내역이 표시됩니다.</p></div>
+                  </aside>
+                </div>
+              </section>
+
+              <section id="view-schedule" class="view">
+                <div class="section-title"><p class="eyebrow">Calendar</p><h2>일정</h2><p>정기 모임, LIVE, 자율 모임 일정을 모임장이 등록할 수 있습니다.</p></div>
+                <form class="card write-card master-only" id="scheduleForm"><div class="form-grid"><input id="scheduleDate" placeholder="날짜 예: 7.25" /><input id="scheduleTitle" placeholder="일정명" /></div><input id="scheduleMeta" placeholder="시간/장소 예: 20:00 · 온라인" /><button class="primary-button" type="submit">일정 등록</button></form>
+                <div class="schedule-list" id="scheduleList"></div>
+              </section>
+
+              <section id="view-admin" class="view">
+                <div class="section-title"><p class="eyebrow">Club Settings</p><h2>관리</h2><p>모임 생성 시 입력했던 기본 정보를 수정하는 곳입니다.</p></div>
+                <form class="card admin-club-form" id="clubSettingsForm">
+                  <div class="form-grid"><label>모임 이름<input id="clubNameInput" placeholder="우리의 문학" /></label><label>모임 분야<input id="clubCategoryInput" placeholder="문학" /></label></div>
+                  <label>모임 소개<textarea id="clubDescInput" placeholder="모임 소개"></textarea></label>
+                  <div class="form-grid"><label>공개 여부<select id="clubPrivacyInput"><option>공개</option><option>비공개</option></select></label><label>가입 방식<select id="clubJoinTypeInput"><option>바로 가입</option><option>승인 후 가입</option><option>초대링크 가입</option></select></label></div>
+                  <div class="form-grid"><label>연령대<input id="clubAgeInput" placeholder="20~40대" /></label><label>지역<input id="clubRegionInput" placeholder="익산 / 온라인" /></label></div>
+                  <label>모임 규칙<textarea id="clubRuleInput" placeholder="모임 규칙"></textarea></label>
+                  <button class="primary-button" type="submit">모임 정보 저장</button>
+                </form>
+              </section>
+            </main>
           </div>
-          <div class="hero-book">
-            <span>현재 주제도서</span>
-            <strong id="heroBookTitle">작별인사</strong>
-            <p id="heroBookAuthor">김영하</p>
-          </div>
-        </div>
-      </header>
-
-      <section id="view-home" class="view active">
-        <div class="dashboard-grid">
-          <article class="card current-book-card wide">
-            <div class="card-head"><div><p class="eyebrow">현재 주제도서</p><h2 id="homeBookTitle">작별인사</h2></div><button class="small-button" data-go="book">자세히</button></div>
-            <div class="book-overview"><div class="book-cover">작별<br/>인사</div><div class="book-info"><p id="homeBookInfo">김영하 · 복복서가</p><div class="progress-row"><span>진행률</span><strong>80%</strong></div><div class="progress"><i style="width:80%"></i></div><p class="muted">이번 논제 12개 · 완독자 9명 · 월별 읽기 계획 운영 중</p></div></div>
-          </article>
-          <article class="card live-card"><div class="status-pill live">LIVE 예정</div><h2>오늘 오후 8:00</h2><p>채팅 + 음성 + AI 진행 도구 · 참여 예정 14명</p><button class="primary-button" data-go="live">LIVE 입장</button></article>
-          <article class="card ai-card"><div class="ai-profile"><img src="assets/characters/ai-moa.png" alt="AI 모아" onerror="this.style.display='none'" /><div><p class="eyebrow">AI 모아</p><h2>오늘의 질문</h2></div></div><p class="quote" id="homeAiQuestion">“민이의 선택을 여러분은 어떻게 생각하시나요?”</p><button class="small-button" data-go="chat">AI와 대화하기</button></article>
-          <article class="card"><p class="eyebrow">다음 일정</p><h2 id="homeNextSchedule">7월 18일</h2><p>『아몬드』 토론 · 문화카페</p><button class="small-button" data-go="schedule">일정 보기</button></article>
-          <article class="card activity-card wide"><div class="card-head"><h2>최근 활동</h2><button class="small-button" data-go="board">게시판</button></div><ul class="activity-list" id="activityList"></ul></article>
-        </div>
-      </section>
-
-      <section id="view-chat" class="view">
-        <div class="section-title"><p class="eyebrow">일반 채팅방</p><h2>채팅</h2><p>평소 모임 대화, 사진 공유, AI 호출을 위한 공간입니다.</p></div>
-        <div class="chat-layout">
-          <article class="card chat-card"><div class="chat-feed" id="chatFeed"></div><form class="chat-form" id="chatForm"><input id="chatInput" placeholder="메시지를 입력하세요. 예: 모아야, 이 장면 설명해줘" autocomplete="off" /><button class="primary-button" type="submit">전송</button></form></article>
-          <aside class="card side-card"><h3>현재 접속자</h3><div class="online-list"><span>윤</span><span>민</span><span>지</span><span>AI</span></div><button class="small-button full" id="addPhotoMessageBtn">사진 첨부</button><p class="muted">대화·사진 첨부 기록은 브라우저에 저장됩니다.</p></aside>
-        </div>
-      </section>
-
-      <section id="view-board" class="view">
-        <div class="section-title"><p class="eyebrow">모임 기록</p><h2>게시판</h2><p>공지, 자유게시판, 독후감, 사진, 자료실을 통합한 게시판입니다.</p></div>
-        <form class="card write-card" id="postForm"><div class="form-grid"><select id="postCategory"><option>자유게시판</option><option>공지</option><option>독후감</option><option>사진</option><option>자료실</option></select><input id="postTitle" placeholder="글 제목" /></div><textarea id="postBody" placeholder="함께 나누고 싶은 생각을 적어보세요."></textarea><button class="primary-button" type="submit">글쓰기</button></form>
-        <div id="postList" class="post-list"></div>
-      </section>
-
-      <section id="view-book" class="view">
-        <div class="section-title"><p class="eyebrow">Reading Plan</p><h2>주제도서</h2><p>현재 도서, 다음 도서, 월별 도서 계획을 모임장이 지정할 수 있습니다.</p></div>
-        <div class="dashboard-grid">
-          <article class="card wide"><h2>현재 주제도서</h2><div class="book-overview large"><div class="book-cover" id="bookCoverTitle">작별<br/>인사</div><div class="book-info"><h3 id="bookTitle">작별인사</h3><p id="bookMeta">김영하 · 복복서가</p><p id="bookDiscussDate">토론일: 7월 11일 오후 8시</p><p id="bookDiscussionPoints" class="muted">논제: 인간다움, 선택, 작별의 의미</p></div></div></article>
-          <article class="card"><h2>다음 주제도서</h2><p id="nextBookText">아몬드 · 손원평</p><h2>이번 달 읽기 목표</h2><p id="monthGoalText">7월: 작별인사 → 아몬드</p></article>
-          <article class="card wide"><div class="card-head"><h2>월별 주제도서</h2><button class="small-button master-only" data-go="admin">도서 지정</button></div><div class="month-book-list" id="monthBookList"></div></article>
-        </div>
-      </section>
-
-      <section id="view-live" class="view">
-        <div class="section-title"><p class="eyebrow">Live Room</p><h2>LIVE</h2><p>LIVE는 커뮤니티 탭이 아니라 별도의 몰입형 독서토론방으로 입장합니다.</p></div>
-        <div class="dashboard-grid">
-          <article class="card wide live-entry-card">
-            <div class="status-pill live">오늘 오후 8:00 · 시작 1시간 전부터 입장</div>
-            <h2>『<span id="liveBookTitle">작별인사</span>』 LIVE 독서토론</h2>
-            <p>채팅방을 중심으로 음성, AI 퍼실리테이터, 발언순서, 음성 AI 요약 기능이 함께 작동합니다.</p>
-            <div class="live-feature-row">
-              <span>💬 대화 중심</span><span>🎤 음성 참여</span><span>🤖 AI 역할 선택</span><span>📝 종료 리포트</span>
-            </div>
-            <div class="button-row"><a class="primary-button" href="live.html">LIVE ROOM 입장</a><button class="small-button" id="previewLiveReportBtn">지난 리포트 보기</button></div>
-          </article>
-          <article class="card"><p class="eyebrow">AI 역할</p><h2 id="communityAiMode">퍼실리테이터</h2><p>모임장은 LIVE 입장 전 기본 역할을 정할 수 있습니다.</p><button class="small-button" data-go="admin">AI 설정</button></article>
-          <article class="card"><p class="eyebrow">아카이브 연동</p><h2>토론 기록 저장</h2><p>LIVE 종료 후 AI 요약·채팅 기록·발언 흐름이 모임 아카이브에 저장됩니다.</p><button class="small-button" id="openArchivePreviewBtn">저장 기록 확인</button></article>
-          <article class="card wide"><div class="card-head"><h2>최근 LIVE 리포트</h2><span class="role">Archive Sync</span></div><div id="reportPreviewList" class="report-preview-list"></div></article>
-        </div>
-      </section>
-
-      <section id="view-members" class="view"><div class="section-title"><p class="eyebrow">Members</p><h2>멤버</h2></div><div class="member-grid" id="memberGrid"></div></section>
-
-      <section id="view-schedule" class="view">
-        <div class="section-title"><p class="eyebrow">Calendar</p><h2>일정</h2><p>정기 모임, LIVE, 자율 모임 일정을 모임장이 등록할 수 있습니다.</p></div>
-        <form class="card write-card master-only" id="scheduleForm"><div class="form-grid"><input id="scheduleDate" placeholder="날짜 예: 7.25" /><input id="scheduleTitle" placeholder="일정명" /></div><input id="scheduleMeta" placeholder="시간/장소 예: 20:00 · 온라인" /><button class="primary-button" type="submit">일정 등록</button></form>
-        <div class="schedule-list" id="scheduleList"></div>
-      </section>
-
-      <section id="view-admin" class="view">
-        <div class="section-title"><p class="eyebrow">모임장 도구</p><h2>관리</h2><p>모임장만 사용하는 운영 설정입니다.</p></div>
-        <div class="admin-grid">
-          <form class="card admin-card" id="bookForm"><h3>현재 주제도서 지정</h3><input id="newBookTitle" placeholder="도서명" /><input id="newBookAuthor" placeholder="저자" /><input id="newBookDate" placeholder="토론일 예: 7월 25일 오후 8시" /><textarea id="newBookPoints" placeholder="주요 논제 예: 인간다움, 기억, 선택"></textarea><button class="primary-button" type="submit">현재 도서 적용</button></form>
-          <form class="card admin-card" id="monthBookForm"><h3>월별 도서 추가</h3><input id="monthBookMonth" placeholder="월 예: 9월" /><input id="monthBookTitleInput" placeholder="도서명" /><input id="monthBookAuthorInput" placeholder="저자" /><button class="primary-button" type="submit">월별 도서 추가</button></form>
-          <article class="card admin-card"><h3>권한관리</h3><button class="small-button full">부모임장 지정</button><button class="small-button full">모임장 변경</button><button class="small-button full">가입 승인</button><button class="danger-button full">강제퇴장</button></article>
-          <article class="card admin-card"><h3>초대</h3><p class="muted">초대 링크를 생성해 모임원을 받을 수 있습니다.</p><button class="primary-button full" id="adminInviteBtn">초대링크 복사</button></article>
-          <article class="card admin-card"><h3>AI 기본 설정</h3><p>기본 역할: <strong id="adminAiMode">퍼실리테이터</strong></p><button class="small-button full" data-go="live">LIVE 설정으로 이동</button></article>
-        </div>
-      </section>
-    </main>
-  </div>
-  <div class="toast" id="toast"></div>
-
+          <div class="toast" id="toast"></div>
         </section>
 
         <!-- VIEW: My Page (내 서재) -->
