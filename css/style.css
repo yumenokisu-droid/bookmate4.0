@@ -846,3 +846,573 @@ button:active,
     .lounge-bookmates-row { grid-template-columns: 1fr; }
     .lounge-mission-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* =========================================================
+   BOOKMATE Meeting Community - integrated with core design
+   독서모임 화면은 기존 BOOKMATE 카드/버튼/타이포 문법에 맞춰 index 내부에서만 동작합니다.
+   ========================================================= */
+#view-club-meeting {
+    color: var(--bm-navy);
+}
+#view-club-meeting button,
+#view-club-meeting input,
+#view-club-meeting textarea,
+#view-club-meeting select {
+    font-family: 'Inter', 'Noto Sans KR', sans-serif;
+}
+#view-club-meeting .meeting-shell {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 1.25rem;
+    align-items: start;
+}
+#view-club-meeting .meeting-sidebar {
+    position: sticky;
+    top: 5.25rem;
+    background: rgba(255,255,255,.88);
+    border: 1px solid var(--bm-line);
+    border-radius: var(--bm-radius-xl);
+    padding: 1rem;
+    box-shadow: var(--bm-shadow-soft);
+}
+#view-club-meeting .brand.embedded-brand {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: var(--bm-navy);
+    font-weight: 900;
+    font-size: .92rem;
+    letter-spacing: -.01em;
+    padding: .25rem .25rem .9rem;
+    border-bottom: 1px solid var(--bm-line);
+    text-align: left;
+}
+#view-club-meeting .brand.embedded-brand img {
+    width: 1.8rem;
+    height: 1.8rem;
+    object-fit: contain;
+}
+#view-club-meeting .club-card-mini {
+    display: flex;
+    gap: .75rem;
+    align-items: center;
+    margin: .9rem 0;
+    padding: .85rem;
+    background: var(--bm-surface-soft);
+    border: 1px solid var(--bm-line);
+    border-radius: 1rem;
+}
+#view-club-meeting .club-mark,
+#view-club-meeting .avatar,
+#view-club-meeting .member-avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: .95rem;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    background: var(--bm-green);
+    color: white;
+    font-weight: 900;
+}
+#view-club-meeting .club-card-mini strong {
+    display: block;
+    font-size: .92rem;
+    color: var(--bm-navy);
+}
+#view-club-meeting .club-card-mini p,
+#view-club-meeting .sidebar-bottom p,
+#view-club-meeting .muted {
+    margin: .15rem 0 0;
+    font-size: .76rem;
+    line-height: 1.55;
+    color: var(--bm-muted);
+}
+#view-club-meeting .meeting-nav {
+    display: grid;
+    gap: .35rem;
+}
+#view-club-meeting .nav-item {
+    border: 0;
+    background: transparent;
+    color: var(--bm-navy-soft);
+    text-align: left;
+    border-radius: .9rem;
+    padding: .72rem .8rem;
+    font-size: .84rem;
+    font-weight: 800;
+    transition: background .18s ease, color .18s ease, transform .18s ease;
+}
+#view-club-meeting .nav-item:hover {
+    background: var(--bm-surface-green);
+    color: var(--bm-green-dark);
+}
+#view-club-meeting .nav-item.active {
+    background: var(--bm-navy);
+    color: #fff;
+    box-shadow: 0 10px 22px rgba(27,42,71,.13);
+}
+#view-club-meeting .sidebar-bottom {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--bm-line);
+}
+#view-club-meeting .sidebar-bottom strong {
+    font-size: .88rem;
+    color: var(--bm-green-dark);
+}
+#view-club-meeting .meeting-main {
+    min-width: 0;
+}
+#view-club-meeting .meeting-hero {
+    overflow: hidden;
+    margin-bottom: 1.25rem;
+    background:
+        radial-gradient(circle at 92% 12%, rgba(247,213,111,.18), transparent 20rem),
+        linear-gradient(135deg, var(--bm-navy), #243854 48%, var(--bm-green-dark));
+    color: #fff;
+    border-radius: var(--bm-radius-xl);
+    box-shadow: var(--bm-shadow);
+}
+#view-club-meeting .hero-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding: 1rem 1.25rem 0;
+}
+#view-club-meeting .back-link {
+    border: 0;
+    background: rgba(255,255,255,.12);
+    color: #fff;
+    border-radius: 999px;
+    padding: .48rem .8rem;
+    font-size: .78rem;
+    font-weight: 800;
+}
+#view-club-meeting .hero-actions {
+    display: flex;
+    gap: .45rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+#view-club-meeting .hero-content {
+    padding: 1.15rem 1.4rem 1.5rem;
+}
+#view-club-meeting .eyebrow {
+    margin: 0 0 .35rem;
+    font-size: .68rem;
+    font-weight: 900;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--bm-green);
+}
+#view-club-meeting .meeting-hero .eyebrow,
+#view-club-meeting .hero-book span {
+    color: rgba(255,255,255,.68);
+}
+#view-club-meeting .hero-content h1 {
+    margin: 0;
+    font-family: 'Noto Serif KR', serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 800;
+    letter-spacing: -.04em;
+}
+#view-club-meeting .hero-desc {
+    max-width: 42rem;
+    margin: .55rem 0 1rem;
+    color: rgba(255,255,255,.78);
+    font-size: .92rem;
+    line-height: 1.75;
+}
+#view-club-meeting .hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .45rem;
+}
+#view-club-meeting .hero-meta span,
+#view-club-meeting .status-pill,
+#view-club-meeting .role {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: .38rem .62rem;
+    font-size: .72rem;
+    font-weight: 800;
+    line-height: 1;
+}
+#view-club-meeting .hero-meta span,
+#view-club-meeting .status-pill {
+    background: rgba(255,255,255,.13);
+    border: 1px solid rgba(255,255,255,.18);
+    color: #fff;
+}
+#view-club-meeting .role {
+    background: var(--bm-surface-green);
+    color: var(--bm-green-dark);
+}
+#view-club-meeting .view { display: none; }
+#view-club-meeting .view.active { display: block; animation: fadeIn .28s ease-out both; }
+#view-club-meeting .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+#view-club-meeting .refined-home-grid { grid-template-columns: 1.45fr .8fr; }
+#view-club-meeting .wide { grid-column: span 2; }
+#view-club-meeting .card,
+#view-club-meeting .post,
+#view-club-meeting .member-row,
+#view-club-meeting .schedule-item,
+#view-club-meeting .topic-item,
+#view-club-meeting .comment,
+#view-club-meeting .message {
+    background: rgba(255,255,255,.94);
+    border: 1px solid var(--bm-line);
+    border-radius: var(--bm-radius-lg);
+    box-shadow: var(--bm-shadow-soft);
+}
+#view-club-meeting .card { padding: 1.15rem; }
+#view-club-meeting .card h2,
+#view-club-meeting .section-title h2 {
+    margin: 0;
+    color: var(--bm-navy);
+    font-family: 'Noto Serif KR', serif;
+    font-weight: 800;
+    letter-spacing: -.035em;
+}
+#view-club-meeting .card h2 { font-size: 1.35rem; }
+#view-club-meeting .card h3 { margin: .15rem 0; font-size: .98rem; color: var(--bm-navy); }
+#view-club-meeting .card p { font-size: .86rem; line-height: 1.65; color: var(--bm-muted); }
+#view-club-meeting .card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: .75rem;
+    margin-bottom: .75rem;
+}
+#view-club-meeting .book-overview {
+    display: grid;
+    grid-template-columns: 112px minmax(0,1fr);
+    gap: 1rem;
+    align-items: center;
+}
+#view-club-meeting .book-overview.large { grid-template-columns: 140px minmax(0,1fr); }
+#view-club-meeting .book-cover,
+#view-club-meeting .visual-cover,
+#view-club-meeting .topic-mini-cover {
+    position: relative;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    color: #fff;
+    text-align: center;
+    word-break: keep-all;
+    background: linear-gradient(155deg, var(--bm-green), var(--bm-navy));
+    box-shadow: 0 16px 30px rgba(27,42,71,.14);
+}
+#view-club-meeting .visual-cover {
+    width: 112px;
+    height: 156px;
+    border-radius: 1rem;
+    padding: .9rem;
+}
+#view-club-meeting .book-overview.large .visual-cover { width: 140px; height: 190px; }
+#view-club-meeting .visual-cover span {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 1.05rem;
+    font-weight: 900;
+    line-height: 1.25;
+}
+#view-club-meeting .visual-cover:after {
+    content: 'BOOKMATE';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: .55rem;
+    color: rgba(255,255,255,.55);
+    font-size: .43rem;
+    letter-spacing: .18em;
+}
+#view-club-meeting .book-meeting-line {
+    display: inline-flex;
+    width: fit-content;
+    margin: .25rem 0 .7rem;
+    padding: .35rem .6rem;
+    border-radius: 999px;
+    background: var(--bm-surface-green);
+    color: var(--bm-green-dark) !important;
+    font-size: .78rem !important;
+    font-weight: 800;
+}
+#view-club-meeting .progress-row {
+    display: flex;
+    justify-content: space-between;
+    margin: .45rem 0 .28rem;
+    color: var(--bm-navy);
+    font-size: .8rem;
+    font-weight: 900;
+}
+#view-club-meeting .progress {
+    height: .48rem;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--bm-surface-green);
+}
+#view-club-meeting .progress i {
+    display: block;
+    height: 100%;
+    background: var(--bm-green);
+    border-radius: inherit;
+}
+#view-club-meeting .primary-button,
+#view-club-meeting .small-button,
+#view-club-meeting .ghost-button,
+#view-club-meeting .danger-button,
+#view-club-meeting .membership-button,
+#view-club-meeting .archive-view-btn {
+    border: 0;
+    border-radius: .9rem;
+    padding: .68rem .9rem;
+    font-size: .8rem;
+    font-weight: 900;
+    line-height: 1;
+    transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+}
+#view-club-meeting .primary-button { background: var(--bm-navy); color: #fff; }
+#view-club-meeting .small-button { background: var(--bm-surface-green); color: var(--bm-green-dark); }
+#view-club-meeting .ghost-button,
+#view-club-meeting .membership-button { background: rgba(255,255,255,.14); color: #fff; border: 1px solid rgba(255,255,255,.18); }
+#view-club-meeting .danger-button,
+#view-club-meeting .membership-button.danger-state { background: #FFF2EA; color: #C2410C; }
+#view-club-meeting .full { width: 100%; }
+#view-club-meeting input,
+#view-club-meeting textarea,
+#view-club-meeting select {
+    width: 100%;
+    background: #fff;
+    border: 1px solid var(--bm-line);
+    border-radius: .9rem;
+    padding: .75rem .85rem;
+    color: var(--bm-navy);
+    font-size: .86rem;
+    outline: none;
+}
+#view-club-meeting textarea { min-height: 7.5rem; resize: vertical; }
+#view-club-meeting input:focus,
+#view-club-meeting textarea:focus,
+#view-club-meeting select:focus {
+    border-color: rgba(95,133,117,.45);
+    box-shadow: 0 0 0 3px rgba(95,133,117,.12);
+}
+#view-club-meeting .section-title {
+    margin: .25rem 0 1rem;
+    padding-bottom: .9rem;
+    border-bottom: 1px solid var(--bm-line);
+}
+#view-club-meeting .section-title h2 { font-size: 1.7rem; }
+#view-club-meeting .section-title p:not(.eyebrow) {
+    margin: .35rem 0 0;
+    color: var(--bm-muted);
+    font-size: .84rem;
+}
+#view-club-meeting .activity-list { margin: 0; padding: 0; list-style: none; display: grid; gap: .55rem; }
+#view-club-meeting .activity-list li,
+#view-club-meeting .pinned-chat-notice {
+    border: 1px solid var(--bm-line);
+    background: var(--bm-surface-soft);
+    border-radius: .95rem;
+    padding: .72rem .85rem;
+    color: var(--bm-navy-soft);
+    font-size: .82rem;
+    font-weight: 700;
+}
+#view-club-meeting .live-card,
+#view-club-meeting .live-entry-card { background: linear-gradient(135deg, #fff, var(--bm-surface-soft)); }
+#view-club-meeting .status-pill.live { background: #FFF2EA; color: #C2410C; border-color: #FED7AA; }
+#view-club-meeting .chat-layout,
+#view-club-meeting .live-room,
+#view-club-meeting .members-layout {
+    display: grid;
+    grid-template-columns: minmax(0,1fr) 280px;
+    gap: 1rem;
+    align-items: start;
+}
+#view-club-meeting .chat-card {
+    min-height: 34rem;
+    display: grid;
+    grid-template-rows: auto minmax(0,1fr) auto;
+    gap: .75rem;
+}
+#view-club-meeting .chat-feed,
+#view-club-meeting .live-chat-feed {
+    min-height: 22rem;
+    max-height: 29rem;
+    overflow: auto;
+    padding: .9rem;
+    border: 1px solid var(--bm-line);
+    border-radius: var(--bm-radius-lg);
+    background: var(--bm-surface-green);
+}
+#view-club-meeting .message {
+    max-width: 78%;
+    margin: .5rem 0;
+    padding: .72rem .85rem;
+    box-shadow: none;
+    font-size: .86rem;
+    line-height: 1.55;
+}
+#view-club-meeting .message.me { margin-left: auto; background: var(--bm-mint); }
+#view-club-meeting .message.ai { border-color: rgba(95,133,117,.30); background: #F7FBF8; }
+#view-club-meeting .message.live-system { max-width: 100%; background: var(--bm-surface-soft); }
+#view-club-meeting .message small { display: block; margin-bottom: .25rem; color: var(--bm-muted); font-size: .72rem; font-weight: 900; }
+#view-club-meeting .chat-form,
+#view-club-meeting .comment-box {
+    display: grid;
+    grid-template-columns: auto auto minmax(0,1fr) auto;
+    gap: .45rem;
+    align-items: center;
+}
+#view-club-meeting .icon-chat-btn {
+    width: 2.6rem;
+    height: 2.6rem;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--bm-line);
+    background: #fff;
+    border-radius: .9rem;
+    color: var(--bm-green-dark);
+    font-weight: 900;
+}
+#view-club-meeting .side-card { display: grid; gap: .7rem; align-content: start; }
+#view-club-meeting .online-list { display: grid; gap: .45rem; }
+#view-club-meeting .online-list span {
+    display: flex;
+    align-items: center;
+    min-height: 2.35rem;
+    border-radius: .9rem;
+    background: var(--bm-surface-green);
+    color: var(--bm-navy);
+    padding: .6rem .75rem;
+    font-size: .8rem;
+    font-weight: 850;
+}
+#view-club-meeting .board-layout { display: grid; grid-template-columns: 150px minmax(0,1fr); gap: 1rem; align-items: start; }
+#view-club-meeting .board-filter { position: sticky; top: 5.25rem; display: grid; gap: .35rem; padding: .75rem; }
+#view-club-meeting .board-tab {
+    border: 0;
+    background: transparent;
+    border-radius: .8rem;
+    padding: .65rem .7rem;
+    text-align: left;
+    color: var(--bm-navy-soft);
+    font-size: .8rem;
+    font-weight: 850;
+}
+#view-club-meeting .board-tab.active,
+#view-club-meeting .board-tab:hover { background: var(--bm-surface-green); color: var(--bm-green-dark); }
+#view-club-meeting .write-card,
+#view-club-meeting .admin-club-form,
+#view-club-meeting .next-book-form { display: grid; gap: .7rem; }
+#view-club-meeting .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; }
+#view-club-meeting .post,
+#view-club-meeting .refined-post { padding: 1rem; margin: .75rem 0 0; box-shadow: none; }
+#view-club-meeting .post-header,
+#view-club-meeting .post-top,
+#view-club-meeting .post-meta-line,
+#view-club-meeting .post-actions,
+#view-club-meeting .button-row,
+#view-club-meeting .topic-actions {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    flex-wrap: wrap;
+}
+#view-club-meeting .post h3,
+#view-club-meeting .refined-post h3 { margin: .4rem 0 .25rem; font-size: 1rem; color: var(--bm-navy); }
+#view-club-meeting .post-meta-line { margin-top: .7rem; padding-top: .7rem; border-top: 1px solid var(--bm-line); color: var(--bm-muted); font-size: .76rem; }
+#view-club-meeting .comment { padding: .65rem .75rem; box-shadow: none; font-size: .78rem; background: var(--bm-surface-green); }
+#view-club-meeting .topic-books-layout,
+#view-club-meeting .topic-list,
+#view-club-meeting .schedule-list { display: grid; gap: .8rem; }
+#view-club-meeting .topic-item { display: grid; grid-template-columns: 50px minmax(0,1fr); gap: .75rem; padding: .85rem; box-shadow: none; }
+#view-club-meeting .topic-mini-cover { width: 50px; height: 68px; border-radius: .8rem; font-family: 'Noto Serif KR', serif; font-weight: 900; }
+#view-club-meeting .topic-item h3 { margin: .1rem 0 .25rem; font-family: 'Noto Serif KR', serif; color: var(--bm-navy); font-size: 1rem; }
+#view-club-meeting .next-book-form { margin-top: .85rem; padding-top: .85rem; border-top: 1px solid var(--bm-line); }
+#view-club-meeting .live-feature-row,
+#view-club-meeting .ai-mode-mini { display: flex; flex-wrap: wrap; gap: .45rem; margin: .85rem 0; }
+#view-club-meeting .live-feature-row span,
+#view-club-meeting .ai-mode-mini label {
+    border: 1px solid var(--bm-line);
+    background: var(--bm-surface-green);
+    border-radius: 999px;
+    padding: .45rem .65rem;
+    color: var(--bm-navy-soft);
+    font-size: .76rem;
+    font-weight: 850;
+}
+#view-club-meeting .member-list { display: grid; gap: .55rem; padding: .9rem; }
+#view-club-meeting .member-row { display: flex; align-items: center; gap: .75rem; width: 100%; padding: .8rem; text-align: left; box-shadow: none; }
+#view-club-meeting .member-row.active,
+#view-club-meeting .member-row:hover { background: var(--bm-surface-green); border-color: rgba(95,133,117,.25); }
+#view-club-meeting .member-row strong { display: block; font-size: .9rem; color: var(--bm-navy); }
+#view-club-meeting .member-row small { display: block; margin-top: .12rem; color: var(--bm-muted); font-size: .74rem; }
+#view-club-meeting .member-side { position: sticky; top: 5.25rem; }
+#view-club-meeting .member-actions,
+#view-club-meeting .member-manage { display: grid; gap: .45rem; margin: .75rem 0; }
+#view-club-meeting .member-detail-head { display: flex; gap: .75rem; align-items: center; padding-top: .9rem; border-top: 1px solid var(--bm-line); }
+#view-club-meeting .member-avatar.big { width: 3.25rem; height: 3.25rem; border-radius: 1.1rem; font-size: 1.15rem; }
+#view-club-meeting .member-stats { display: grid; grid-template-columns: repeat(2,1fr); gap: .5rem; margin-top: .85rem; }
+#view-club-meeting .member-stats div { background: var(--bm-surface-green); border: 1px solid var(--bm-line); border-radius: .9rem; padding: .75rem; text-align: center; }
+#view-club-meeting .member-stats strong { display: block; font-family: 'Noto Serif KR', serif; color: var(--bm-navy); font-size: 1.15rem; }
+#view-club-meeting .member-stats span { color: var(--bm-muted); font-size: .72rem; font-weight: 850; }
+#view-club-meeting .schedule-item { display: grid; grid-template-columns: 5.5rem minmax(0,1fr) auto; gap: .75rem; align-items: center; padding: .95rem; box-shadow: none; }
+#view-club-meeting .schedule-date { color: var(--bm-green-dark); font-family: 'Noto Serif KR', serif; font-size: 1.05rem; font-weight: 900; }
+#view-club-meeting .admin-club-form { max-width: 860px; }
+#view-club-meeting .admin-club-form label { display: grid; gap: .35rem; color: var(--bm-navy); font-size: .78rem; font-weight: 850; }
+#view-club-meeting .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 1.5rem;
+    transform: translateX(-50%) translateY(.75rem);
+    opacity: 0;
+    pointer-events: none;
+    padding: .8rem 1rem;
+    border-radius: 999px;
+    background: var(--bm-navy);
+    color: #fff;
+    font-size: .82rem;
+    font-weight: 800;
+    transition: .2s ease;
+    z-index: 100;
+}
+#view-club-meeting .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+@media (max-width: 1080px) {
+    #view-club-meeting .meeting-shell,
+    #view-club-meeting .chat-layout,
+    #view-club-meeting .members-layout,
+    #view-club-meeting .board-layout,
+    #view-club-meeting .refined-home-grid { grid-template-columns: 1fr; }
+    #view-club-meeting .meeting-sidebar,
+    #view-club-meeting .board-filter,
+    #view-club-meeting .member-side { position: static; }
+    #view-club-meeting .meeting-nav { grid-template-columns: repeat(4, minmax(0,1fr)); }
+    #view-club-meeting .wide { grid-column: auto; }
+}
+@media (max-width: 640px) {
+    #view-club-meeting .meeting-nav { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    #view-club-meeting .hero-top { align-items: flex-start; flex-direction: column; }
+    #view-club-meeting .hero-actions { width: 100%; }
+    #view-club-meeting .hero-actions button { flex: 1; }
+    #view-club-meeting .book-overview,
+    #view-club-meeting .book-overview.large,
+    #view-club-meeting .form-grid,
+    #view-club-meeting .schedule-item { grid-template-columns: 1fr; }
+    #view-club-meeting .visual-cover,
+    #view-club-meeting .book-overview.large .visual-cover { width: 100%; height: 128px; }
+    #view-club-meeting .chat-form { grid-template-columns: auto auto 1fr; }
+    #view-club-meeting .chat-form .primary-button { grid-column: 1 / -1; }
+}
