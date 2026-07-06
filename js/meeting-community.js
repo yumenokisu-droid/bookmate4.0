@@ -1,6 +1,6 @@
 (function(){
   const ROOT_ID = 'view-club-meeting';
-  const STORAGE_KEY = 'bookmate_meeting_phase12_guest_cover_fix';
+  const STORAGE_KEY = 'bookmate_meeting_phase13_realfix';
   const REPORT_KEY = 'bookmate_live_reports';
   const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const defaultState = {
@@ -13,7 +13,7 @@
       category:'문학', privacy:'비공개', joinType:'초대링크 가입', age:'20~40대', region:'익산 / 온라인', membersCount:18,
       rule:'스포일러는 토론 전 표시하고, 서로의 해석을 존중합니다.'
     },
-    currentBook:{title:'작별인사', author:'김영하', publisher:'복복서가', date:'7월 11일 오후 8시', place:'LIVE ROOM', points:'인간다움, 선택, 작별의 의미', coverUrl:'', isbn:'9791191114225'},
+    currentBook:{title:'작별인사', author:'김영하', publisher:'복복서가', date:'7월 11일 오후 8시', place:'LIVE ROOM', points:'인간다움, 선택, 작별의 의미', coverUrl:'https://image.yes24.com/goods/108887930/XL', isbn:'9791191114225'},
     previousBooks:[
       {title:'데미안', author:'헤르만 헤세', date:'6월 12일', method:'온라인', archive:true, memo:'자아와 성장에 대한 토론', isbn:'9788937460449'},
       {title:'노인과 바다', author:'어니스트 헤밍웨이', date:'5월 18일', method:'오프라인', archive:false, memo:'포기하지 않는 태도에 대한 대화', isbn:'9788937462788'}
@@ -115,7 +115,7 @@
   }
   function syncAiMode(){ ['#sidebarAiMode','#communityAiMode'].forEach(sel=>{const el=q(sel); if(el) el.textContent=state.aiMode;}); }
   function memberByName(name){ return state.members.find(m=>m.name===name) || null; }
-  function currentNickname(){ return (typeof getCurrentNickname === 'function') ? getCurrentNickname() : '달빛독서가'; }
+  function currentNickname(){ return (typeof getCurrentNickname === 'function') ? getCurrentNickname() : ((typeof state !== 'undefined' && state.currentUser && state.currentUser.nickname) ? state.currentUser.nickname : '게스트 독자'); }
   function avatarHTML(name, cls='member-avatar'){
     const sizeMap = {
       'member-avatar':'w-10 h-10',
@@ -213,7 +213,7 @@
     q('#copyInviteBtn')?.addEventListener('click',copyInvite); q('#inviteMemberBtn')?.addEventListener('click',copyInvite);
     q('#membershipActionBtn')?.addEventListener('click',()=>{ if(isInvited() && state.membership !== 'member'){ state.membership='member'; toast('모임에 참여했어요.'); } else { state.membership='invited'; toast('모임에서 탈퇴했습니다. 초대링크로 다시 참여할 수 있어요.'); } saveState(); renderMembershipButton(); });
     q('#chatForm')?.addEventListener('submit',e=>{e.preventDefault(); const input=q('#chatInput'), text=input.value.trim(); if(!text) return; state.chat.push({user:currentNickname(),text}); if(text.includes('모아')) state.chat.push({user:'AI 모아',text:'좋아요. 이 장면은 인물의 선택과 관계의 변화에 집중해 보면 이해하기 쉬워요.'}); input.value=''; saveState(); renderChat();});
-    q('#addPhotoMessageBtn')?.addEventListener('click',()=>{state.chat.push({user:'달빛독서가',text:'📷 사진을 첨부했습니다.'}); saveState(); renderChat(); toast('사진 메시지를 추가했어요.');});
+    q('#addPhotoMessageBtn')?.addEventListener('click',()=>{state.chat.push({user:currentNickname(),text:'📷 사진을 첨부했습니다.'}); saveState(); renderChat(); toast('사진 메시지를 추가했어요.');});
     q('#emojiChatBtn')?.addEventListener('click',()=>{ const input=q('#chatInput'); if(input){ input.value += ' 😊'; input.focus(); }});
     qa('.board-tab').forEach(btn=>btn.addEventListener('click',()=>{ state.boardFilter=btn.dataset.boardFilter; qa('.board-tab').forEach(b=>b.classList.toggle('active',b===btn)); renderPosts(); }));
     q('#postForm')?.addEventListener('submit',e=>{e.preventDefault(); const title=q('#postTitle').value.trim(), body=q('#postBody').value.trim(), category=q('#postCategory').value; if(!title||!body) return toast('제목과 내용을 입력해주세요.'); state.posts.unshift({id:Date.now(),category,author:currentNickname(),title,body,likes:0,comments:[],time:'방금 전'}); q('#postTitle').value=''; q('#postBody').value=''; saveState(); renderPosts(); toast('게시글을 등록했어요.');});

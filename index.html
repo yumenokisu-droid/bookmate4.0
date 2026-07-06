@@ -45,12 +45,10 @@
         html.bookmate-startup-lock body #view-home { display: block !important; }
     </style>
     <script>
-        // BOOKMATE startup guard: 첫 렌더링부터 게스트 홈만 보이게 잠급니다.
+        // BOOKMATE startup guard: 첫 렌더링부터 로그인/모임 잔여 화면이 보이지 않도록 잠급니다.
         document.documentElement.classList.add('bookmate-startup-lock');
         try {
-            localStorage.removeItem('bookmate_v2_auth_session');
-            localStorage.removeItem('bookmate_auth_session');
-            localStorage.removeItem('bookmate_current_view');
+            ['bookmate_v2_auth_session','bookmate_auth_session','bookmate_current_view','bookmate_last_view','bookmate_active_view'].forEach(k => localStorage.removeItem(k));
             if (location.hash === '#club-meeting' || location.hash === '#meeting') {
                 history.replaceState(null, '', location.pathname + location.search);
             }
@@ -127,7 +125,7 @@
                     <!-- Display Name Badge with Avatar -->
                     <div onclick="navigate('mypage')" class="flex items-center space-x-2 cursor-pointer bg-brand-ivory hover:bg-brand-ivoryDark px-3 py-1.5 rounded-full transition-colors">
                         <button type="button" onclick="openProfileCard()" class="rounded-full focus:outline-none focus:ring-2 focus:ring-brand-sage" aria-label="프로필 크게 보기"><div class="w-6 h-6 bg-brand-sage rounded-full flex items-center justify-center text-white text-xs font-bold font-serif" id="header-avatar-initial">달</div></button>
-                        <span class="text-xs font-semibold text-brand-navy" id="header-nickname">달빛독서가</span>
+                        <span class="text-xs font-semibold text-brand-navy" id="header-nickname">게스트 독자</span>
                     </div>
                     <button onclick="navigate('realtime-room')" class="hidden sm:inline-flex items-center justify-center px-4 py-2 border border-transparent text-xs font-semibold rounded-lg text-white bg-brand-navy hover:bg-brand-navyLight shadow-sm transition-all">
                         토론방 가기
@@ -1286,7 +1284,7 @@
                         <div class="absolute top-0 left-0 w-full h-16 bg-brand-sage/10"></div>
                         <button type="button" onclick="openProfileCard()" class="rounded-full relative z-10 focus:outline-none focus:ring-2 focus:ring-brand-sage" aria-label="프로필 크게 보기"><div class="w-20 h-20 bg-brand-sage rounded-full flex items-center justify-center text-white text-2xl font-bold font-serif shadow-inner border-4 border-white" id="profile-avatar-initial">달</div></button>
                         <div class="relative z-10 w-full">
-                            <h2 class="font-bold text-xl text-brand-navy" id="profile-nickname">달빛독서가</h2>
+                            <h2 class="font-bold text-xl text-brand-navy" id="profile-nickname">게스트 독자</h2>
                             <div class="mt-1 flex items-center justify-center gap-1.5 flex-wrap">
                                 <span class="px-2 py-0.5 bg-brand-ivoryDark text-brand-navy rounded text-[10px] font-bold" id="mypage-library-name">익산시립도서관</span>
                                 <span class="px-2 py-0.5 bg-brand-sageLight text-brand-sageDark rounded text-[10px] font-bold">인증회원</span>
@@ -1332,7 +1330,7 @@
                             <i data-lucide="brain-circuit" class="w-5 h-5 text-brand-sage"></i> AI 독서 성향 분석
                         </h3>
                         <div class="p-4 bg-brand-sageLight/50 rounded-xl border border-brand-sage/20 text-brand-navy text-sm leading-relaxed">
-                            <span class="font-bold" id="mypage-info-nickname-span">달빛독서가</span>님은 현실의 무게 속에서 한 편의 아름다운 이야기와 비유를 통해 마음을 치유하는 독서 방식을 즐깁니다. 타인의 감상적인 일상 고백에 가장 깊게 호응하며 풍부한 피드백을 공유하는 모임의 꽃입니다.
+                            <span class="font-bold" id="mypage-info-nickname-span">게스트 독자</span>님은 현실의 무게 속에서 한 편의 아름다운 이야기와 비유를 통해 마음을 치유하는 독서 방식을 즐깁니다. 타인의 감상적인 일상 고백에 가장 깊게 호응하며 풍부한 피드백을 공유하는 모임의 꽃입니다.
                         </div>
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
                             <div class="p-3 bg-brand-ivory rounded-lg text-center border border-brand-ivoryDark">
@@ -1740,7 +1738,7 @@
         <div class="bg-white rounded-3xl shadow-2xl border border-brand-ivoryDark w-full max-w-sm overflow-hidden animate-fadeIn">
             <div class="p-6 text-center bg-gradient-to-b from-brand-ivory to-white">
                 <div id="profile-card-avatar" class="flex justify-center mb-4"></div>
-                <h3 id="profile-card-name" class="serif-title text-2xl font-bold text-brand-navy">달빛독서가</h3>
+                <h3 id="profile-card-name" class="serif-title text-2xl font-bold text-brand-navy">게스트 독자</h3>
                 <p id="profile-card-library" class="text-xs text-brand-sage font-bold mt-1">익산시립도서관</p>
                 <p class="text-xs text-gray-500 mt-4 leading-relaxed">프로필 이미지는 설정에서 모아 캐릭터 또는 내 사진으로 바꿀 수 있어요.</p>
             </div>
@@ -2346,5 +2344,39 @@
     <script src="js/archive.js"></script>
     <script src="js/lounge.js"></script>
     <script src="js/ui.js"></script>
+
+    <script id="bookmate-final-guest-landing-guard">
+    (function(){
+        function makeGuest(){
+            return { id:'guest', name:'게스트', age:'', gender:'선택 안 함', nickname:'게스트 독자', library:'소속도서관 없음', libraryVerified:false, tastes:['소설','에세이'], readingType:'둘러보는 독자', readingTypeIcon:'👀', avatarType:'moa', avatarId:1, avatarImage:'', readBooksCount:0, gatheringCount:0, chatMessagesCount:0, isGuest:true };
+        }
+        function setText(id, text){ var el=document.getElementById(id); if(el) el.textContent=text; }
+        function forceGuestLanding(){
+            if (!window.__BOOKMATE_FORCE_GUEST_HOME__) return;
+            try {
+                ['bookmate_v2_auth_session','bookmate_auth_session','bookmate_current_view','bookmate_last_view','bookmate_active_view'].forEach(function(k){ localStorage.removeItem(k); });
+                if (location.hash === '#club-meeting' || location.hash === '#meeting') history.replaceState(null, '', location.pathname + location.search);
+            } catch(e) {}
+            try {
+                if (typeof state !== 'undefined') { state.currentUser = makeGuest(); state.currentView = 'home'; }
+            } catch(e) {}
+            document.querySelectorAll('.view-section').forEach(function(section){ section.classList.add('hidden'); section.classList.remove('guest-blur-base'); });
+            var home = document.querySelector('main > section#view-home.view-section') || document.querySelector('section#view-home.view-section');
+            if (home) home.classList.remove('hidden');
+            var auth = document.getElementById('auth-screen'); if (auth) auth.classList.add('hidden');
+            setText('header-nickname','게스트 독자');
+            setText('profile-nickname','게스트 독자');
+            setText('profile-card-name','게스트 독자');
+            setText('mypage-info-nickname-span','게스트 독자');
+            try { if (typeof updateGuestHomeVisibility === 'function') updateGuestHomeVisibility(); } catch(e) {}
+            try { if (typeof updateAuthHeader === 'function') updateAuthHeader(); } catch(e) {}
+            document.documentElement.classList.remove('bookmate-startup-lock');
+            var style = document.getElementById('bookmate-startup-guard-style'); if (style) style.remove();
+        }
+        [0,30,120,300,700].forEach(function(ms){ setTimeout(forceGuestLanding, ms); });
+        window.addEventListener('load', function(){ setTimeout(forceGuestLanding, 0); setTimeout(function(){ window.__BOOKMATE_FORCE_GUEST_HOME__ = false; }, 1000); });
+    })();
+    </script>
+
 </body>
 </html>

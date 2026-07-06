@@ -3,7 +3,7 @@ function googleIsbnCover(isbn, zoom = 2) {
     return `https://books.google.com/books?vid=ISBN${cleanIsbn(isbn)}&printsec=frontcover&img=1&zoom=${zoom}&source=gbs_api`;
 }
 
-const COVER_CACHE_VERSION = '2026-07-06-v1.4i-meeting-covers';
+const COVER_CACHE_VERSION = '2026-07-06-v1.5-real-guest-cover-fix';
 
 const DIRECT_COVER_MAP = {
     // 검증 완료: 브라우저 <img>에서 바로 표시되는 image.aladin.co.kr 직접 JPG 주소만 사용합니다.
@@ -15,9 +15,9 @@ const DIRECT_COVER_MAP = {
     "아몬드": "https://image.aladin.co.kr/product/31893/32/cover500/k212833749_2.jpg",
     "채식주의자": "https://image.aladin.co.kr/product/29137/2/cover500/8936434594_2.jpg",
     "82년생 김지영": "https://image.aladin.co.kr/product/9476/48/cover500/8937473135_1.jpg",
-    "작별인사": "",
-    "노인과 바다": "",
-    "소년이 온다": ""
+    "작별인사": "https://image.yes24.com/goods/108887930/XL",
+    "노인과 바다": "https://image.yes24.com/goods/5763163/XL",
+    "소년이 온다": "https://image.yes24.com/goods/13137546/XL"
 };
 
 function getDirectCoverByTitle(title) {
@@ -32,6 +32,7 @@ function getDirectCoverByTitle(title) {
 
 const KNOWN_BOOKS = {
     // 시연 화면의 핵심 도서는 API보다 먼저 검증된 실제 표지 URL을 우선 사용합니다.
+    "작별인사": { author: "김영하", isbn: "9791191114225", alternateIsbns: ["9791191114225"], category: "소설", fixedCoverUrl: "https://image.yes24.com/goods/108887930/XL" },
     "사피엔스": { author: "유발 하라리", isbn: "9788934972464", alternateIsbns: ["9788934972464", "9788934972624", "9788934972976"], category: "인문·사회", fixedCoverUrl: "https://image.aladin.co.kr/product/31424/4/cover500/k482832219_1.jpg" },
     "달러구트 꿈 백화점": { author: "이미예", isbn: "9791165341909", alternateIsbns: ["9791165341909"], category: "소설", fixedCoverUrl: "https://image.aladin.co.kr/product/24512/70/cover/k392630952_1.jpg" },
     "도둑맞은 집중력": { author: "요한 하리", isbn: "9791167740984", alternateIsbns: ["9791167740984", "9791167740991"], category: "사회·과학", fixedCoverUrl: "https://image.aladin.co.kr/product/31559/97/cover500/s102936816_3.jpg" },
