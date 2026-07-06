@@ -1,6 +1,6 @@
 (function(){
   const ROOT_ID = 'view-club-meeting';
-  const STORAGE_KEY = 'bookmate_meeting_phase11_clean_community';
+  const STORAGE_KEY = 'bookmate_meeting_phase12_guest_cover_fix';
   const REPORT_KEY = 'bookmate_live_reports';
   const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const defaultState = {
@@ -15,11 +15,11 @@
     },
     currentBook:{title:'작별인사', author:'김영하', publisher:'복복서가', date:'7월 11일 오후 8시', place:'LIVE ROOM', points:'인간다움, 선택, 작별의 의미', coverUrl:'', isbn:'9791191114225'},
     previousBooks:[
-      {title:'데미안', author:'헤르만 헤세', date:'6월 12일', method:'온라인', archive:true, memo:'자아와 성장에 대한 토론'},
+      {title:'데미안', author:'헤르만 헤세', date:'6월 12일', method:'온라인', archive:true, memo:'자아와 성장에 대한 토론', isbn:'9788937460449'},
       {title:'노인과 바다', author:'어니스트 헤밍웨이', date:'5월 18일', method:'오프라인', archive:false, memo:'포기하지 않는 태도에 대한 대화', isbn:'9788937462788'}
     ],
     nextBooks:[
-      {title:'아몬드', author:'손원평', date:'8월 9일 오후 8시', memo:'공감 능력과 성장에 대해 이야기하기'},
+      {title:'아몬드', author:'손원평', date:'8월 9일 오후 8시', memo:'공감 능력과 성장에 대해 이야기하기', isbn:'9788936434267'},
       {title:'소년이 온다', author:'한강', date:'9월 예정', memo:'역사와 기억을 다루는 방식 함께 읽기', isbn:'9788936434120'}
     ],
     chat:[

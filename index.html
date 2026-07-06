@@ -40,6 +40,24 @@
     <!-- External CSS -->
     <link rel="stylesheet" href="css/style.css">
 
+    <style id="bookmate-startup-guard-style">
+        html.bookmate-startup-lock body .view-section { display: none !important; }
+        html.bookmate-startup-lock body #view-home { display: block !important; }
+    </style>
+    <script>
+        // BOOKMATE startup guard: 첫 렌더링부터 게스트 홈만 보이게 잠급니다.
+        document.documentElement.classList.add('bookmate-startup-lock');
+        try {
+            localStorage.removeItem('bookmate_v2_auth_session');
+            localStorage.removeItem('bookmate_auth_session');
+            localStorage.removeItem('bookmate_current_view');
+            if (location.hash === '#club-meeting' || location.hash === '#meeting') {
+                history.replaceState(null, '', location.pathname + location.search);
+            }
+        } catch(e) {}
+        window.__BOOKMATE_FORCE_GUEST_HOME__ = true;
+    </script>
+
     <style>
         .ai-chip {
             display: inline-flex;

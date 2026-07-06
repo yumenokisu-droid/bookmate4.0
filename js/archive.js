@@ -657,17 +657,35 @@
             showToast(`${user.nickname}님, 환영합니다!`);
         }
 
-        function initAuthSystem() {
-            renderDemoAccounts();
-            // BOOKMATE 2.0: 첫 접속은 항상 게스트 상태로 시작합니다.
-            // 이전 세션이 남아 있어도 자동 로그인하지 않고, 사용자가 직접 로그인해야 합니다.
-            try { localStorage.removeItem(AUTH_SESSION_KEY); } catch(e) {}
+        function forceGuestHomeStartup() {
+            // 첫 접속/새로고침 때는 어떤 이전 세션·해시·모임 상태가 남아 있어도 게스트 홈으로 고정합니다.
+            try {
+                localStorage.removeItem(AUTH_SESSION_KEY);
+                localStorage.removeItem('bookmate_auth_session');
+                localStorage.removeItem('bookmate_current_view');
+                if (location.hash === '#club-meeting' || location.hash === '#meeting') {
+                    history.replaceState(null, '', location.pathname + location.search);
+                }
+            } catch(e) {}
             state.currentUser = createGuestUser();
+            state.currentView = 'home';
             applyActivityDataForAccount(state.currentUser);
-            saveAppState();
             hideAuthScreen();
+            document.querySelectorAll('.view-section').forEach(section => section.classList.add('hidden'));
+            document.getElementById('view-home')?.classList.remove('hidden');
             updateAuthHeader();
             updateGuestHomeVisibility();
+            updateUIProfileData();
+            try {
+                document.documentElement.classList.remove('bookmate-startup-lock');
+                document.getElementById('bookmate-startup-guard-style')?.remove();
+            } catch(e) {}
+        }
+
+        function initAuthSystem() {
+            renderDemoAccounts();
+            forceGuestHomeStartup();
+            saveAppState();
         }
 
         function showAuthScreen(mode = 'login') {
@@ -974,10 +992,10 @@
         window.onload = function() {
             loadAppState();
             initAuthSystem();
-            state.currentView = 'home';
+            forceGuestHomeStartup();
             try { history.replaceState(null, '', location.pathname); } catch(e) {}
             if (typeof navigate === 'function') navigate('home');
-            updateGuestHomeVisibility();
+            forceGuestHomeStartup();
             lucide.createIcons();
             updateUIProfileData();
             renderSocialFeed();

@@ -3,7 +3,7 @@ function googleIsbnCover(isbn, zoom = 2) {
     return `https://books.google.com/books?vid=ISBN${cleanIsbn(isbn)}&printsec=frontcover&img=1&zoom=${zoom}&source=gbs_api`;
 }
 
-const COVER_CACHE_VERSION = '2026-06-26-v1.4h-cover-map-first';
+const COVER_CACHE_VERSION = '2026-07-06-v1.4i-meeting-covers';
 
 const DIRECT_COVER_MAP = {
     // 검증 완료: 브라우저 <img>에서 바로 표시되는 image.aladin.co.kr 직접 JPG 주소만 사용합니다.
@@ -14,7 +14,10 @@ const DIRECT_COVER_MAP = {
     "데미안": "https://image.aladin.co.kr/product/26/0/cover500/s452139198_1.jpg",
     "아몬드": "https://image.aladin.co.kr/product/31893/32/cover500/k212833749_2.jpg",
     "채식주의자": "https://image.aladin.co.kr/product/29137/2/cover500/8936434594_2.jpg",
-    "82년생 김지영": "https://image.aladin.co.kr/product/9476/48/cover500/8937473135_1.jpg"
+    "82년생 김지영": "https://image.aladin.co.kr/product/9476/48/cover500/8937473135_1.jpg",
+    "작별인사": "",
+    "노인과 바다": "",
+    "소년이 온다": ""
 };
 
 function getDirectCoverByTitle(title) {
@@ -281,7 +284,23 @@ async function getBookCover(bookOrTitle, author = '') {
         dropCoverCache(key);
     }
 
-    // 1) OpenLibrary ISBN → 2) Google ISBN(static) → 3) Google Books API → 4) OpenLibrary title
+    // 1) Google Books API(제목/ISBN) → 2) OpenLibrary ISBN → 3) Google ISBN(static) → 4) OpenLibrary title
+    // 독서모임 주제도서는 OpenLibrary/Google static에서 'image not available'이 먼저 잡히는 경우가 있어
+    // 실제 표지 성공률이 높은 Google Books API를 우선합니다.
+    try {
+        const googleQueries = [];
+        isbns.forEach(isbn => googleQueries.push(buildGoogleBooksIsbnQuery(isbn)));
+        googleQueries.push(buildGoogleBooksQuery(`${title} ${book.author || author || known?.author || ''}`.trim()));
+
+        for (const queryUrl of googleQueries) {
+            const googleBooks = await fetchGoogleBooks(queryUrl);
+            const sorted = googleBooks.filter(b => b.thumbnail && !/no_thumbnail|notavailable|no-cover/i.test(b.thumbnail)).sort((a,b)=>scoreBookResult(b,title)-scoreBookResult(a,title));
+            const googleApiCandidates = sorted.map(b => ({ label: `Google API ${b.title}`, url: b.thumbnail }));
+            const googleApiHit = await firstVerifiedCandidate(googleApiCandidates, title, cache, key, memoryKey);
+            if (googleApiHit) return googleApiHit;
+        }
+    } catch(e) { console.info('[BOOKMATE Cover] Google API 실패:', title, e); }
+
     const openLibraryIsbnCandidates = isbns.map(isbn => ({
         label: `OpenLibrary ISBN ${isbn}`,
         url: `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg?default=false`
@@ -295,20 +314,6 @@ async function getBookCover(bookOrTitle, author = '') {
     }));
     const googleStaticHit = await firstVerifiedCandidate(googleStaticCandidates, title, cache, key, memoryKey);
     if (googleStaticHit) return googleStaticHit;
-
-    try {
-        const googleQueries = [];
-        isbns.forEach(isbn => googleQueries.push(buildGoogleBooksIsbnQuery(isbn)));
-        googleQueries.push(buildGoogleBooksQuery(`${title} ${book.author || author || known?.author || ''}`.trim()));
-
-        for (const queryUrl of googleQueries) {
-            const googleBooks = await fetchGoogleBooks(queryUrl);
-            const sorted = googleBooks.filter(b => b.thumbnail).sort((a,b)=>scoreBookResult(b,title)-scoreBookResult(a,title));
-            const googleApiCandidates = sorted.map(b => ({ label: `Google API ${b.title}`, url: b.thumbnail }));
-            const googleApiHit = await firstVerifiedCandidate(googleApiCandidates, title, cache, key, memoryKey);
-            if (googleApiHit) return googleApiHit;
-        }
-    } catch(e) { console.info('[BOOKMATE Cover] Google API 실패:', title, e); }
 
     try {
         const response = await fetch(`https://openlibrary.org/search.json?title=${encodeURIComponent(title)}&limit=12`);
