@@ -25,9 +25,11 @@
                 const raw = localStorage.getItem(BOOKMATE_STORAGE_KEY);
                 if (!raw) return;
                 const saved = JSON.parse(raw);
-                ['currentUser', 'recentBooks', 'recentArchives', 'gatherings', 'notifications', 'socialPosts', 'aiChatHistory', 'currentAIBook'].forEach(key => {
+                ['recentBooks', 'recentArchives', 'gatherings', 'notifications', 'socialPosts', 'aiChatHistory', 'currentAIBook'].forEach(key => {
                     if (saved[key] !== undefined) state[key] = saved[key];
                 });
+                // 첫 화면은 항상 게스트로 시작해야 하므로 저장된 currentUser/currentView는 복원하지 않습니다.
+                // 이전 배포본에서 남은 '달빛독서가' 자동 로그인/독서모임 진입 잔여값을 차단합니다.
                 // 기존 브라우저 저장값에서 '나'가 모아4 등으로 남아 있던 문제를 1회 보정합니다.
                 // 사용자가 직접 첨부한 사진은 유지하고, 모아 기본값만 모아1로 맞춥니다.
                 if (!localStorage.getItem(BOOKMATE_AVATAR_MIGRATION_KEY)) {

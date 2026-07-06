@@ -1,6 +1,6 @@
 (function(){
   const ROOT_ID = 'view-club-meeting';
-  const STORAGE_KEY = 'bookmate_meeting_phase7_community';
+  const STORAGE_KEY = 'bookmate_meeting_phase11_clean_community';
   const REPORT_KEY = 'bookmate_live_reports';
   const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const defaultState = {
@@ -13,14 +13,14 @@
       category:'문학', privacy:'비공개', joinType:'초대링크 가입', age:'20~40대', region:'익산 / 온라인', membersCount:18,
       rule:'스포일러는 토론 전 표시하고, 서로의 해석을 존중합니다.'
     },
-    currentBook:{title:'작별인사', author:'김영하', publisher:'복복서가', date:'7월 11일 오후 8시', place:'LIVE ROOM', points:'인간다움, 선택, 작별의 의미', coverUrl:'', isbn:''},
+    currentBook:{title:'작별인사', author:'김영하', publisher:'복복서가', date:'7월 11일 오후 8시', place:'LIVE ROOM', points:'인간다움, 선택, 작별의 의미', coverUrl:'', isbn:'9791191114225'},
     previousBooks:[
       {title:'데미안', author:'헤르만 헤세', date:'6월 12일', method:'온라인', archive:true, memo:'자아와 성장에 대한 토론'},
-      {title:'노인과 바다', author:'어니스트 헤밍웨이', date:'5월 18일', method:'오프라인', archive:false, memo:'포기하지 않는 태도에 대한 대화'}
+      {title:'노인과 바다', author:'어니스트 헤밍웨이', date:'5월 18일', method:'오프라인', archive:false, memo:'포기하지 않는 태도에 대한 대화', isbn:'9788937462788'}
     ],
     nextBooks:[
       {title:'아몬드', author:'손원평', date:'8월 9일 오후 8시', memo:'공감 능력과 성장에 대해 이야기하기'},
-      {title:'소년이 온다', author:'한강', date:'9월 예정', memo:'역사와 기억을 다루는 방식 함께 읽기'}
+      {title:'소년이 온다', author:'한강', date:'9월 예정', memo:'역사와 기억을 다루는 방식 함께 읽기', isbn:'9788936434120'}
     ],
     chat:[
       {user:'문장수집가', text:'이번 책은 마지막 장면 이야기가 제일 많을 것 같아요.'},
@@ -117,12 +117,20 @@
   function memberByName(name){ return state.members.find(m=>m.name===name) || null; }
   function currentNickname(){ return (typeof getCurrentNickname === 'function') ? getCurrentNickname() : '달빛독서가'; }
   function avatarHTML(name, cls='member-avatar'){
-    if(name && name.includes('AI')) return `<span class="${cls} moa-img-avatar ai"><img src="assets/characters/ai-moa.png" alt="AI 모아"></span>`;
+    const sizeMap = {
+      'member-avatar':'w-10 h-10',
+      'member-avatar big':'w-14 h-14',
+      'chat-avatar':'w-10 h-10',
+      'post-avatar':'w-9 h-9'
+    };
+    const size = sizeMap[cls] || cls;
+    const extra = ['member-avatar','member-avatar big','chat-avatar','post-avatar'].includes(cls) ? cls.replace(/ /g,'-') : 'meeting-avatar';
+    if(name && name.includes('AI')) return (typeof getAIAvatarHTML === 'function') ? getAIAvatarHTML(size, extra) : `<span class="${extra}"><img src="assets/characters/ai-moa.png" alt="AI 모아"></span>`;
     const m = memberByName(name) || { name, avatarType:'moa', avatarId: ((String(name||'모아').charCodeAt(0)||0)%4)+1 };
     const target = { name:m.name, nickname:m.name, avatarType:m.avatarType || 'moa', avatarId:m.avatarId || 1, avatarImage:m.avatarImage || '' };
-    if(typeof getAvatarHTML === 'function') return getAvatarHTML(target, cls);
+    if(typeof getAvatarHTML === 'function') return getAvatarHTML(target, size, extra);
     const id = target.avatarId || 1;
-    return `<span class="${cls} moa-img-avatar"><img src="assets/characters/moa-${id}.png" alt="${esc(name)}"></span>`;
+    return `<span class="${extra}"><img src="assets/characters/moa-${id}.png" alt="${esc(name)}"></span>`;
   }
   function renderMembershipButton(){
     const btn=q('#membershipActionBtn'); if(!btn) return;

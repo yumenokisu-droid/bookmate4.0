@@ -1074,3 +1074,34 @@ button:active,
     #view-club-meeting .comment-box { flex-direction: column; }
     #view-club-meeting .schedule-item { grid-template-columns: 1fr; }
 }
+
+
+/* Phase 11 clean patch: 독서모임 안의 모아 프로필 이미지가 원본 크기로 터지지 않도록 고정 */
+#view-club-meeting .member-avatar,
+#view-club-meeting .member-avatar-big,
+#view-club-meeting .chat-avatar,
+#view-club-meeting .post-avatar,
+#view-club-meeting .meeting-avatar {
+    border-radius: 9999px;
+    overflow: hidden;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bm-surface-green);
+    border: 1px solid var(--bm-line);
+}
+#view-club-meeting .chat-avatar { width: 2.5rem !important; height: 2.5rem !important; }
+#view-club-meeting .post-avatar { width: 2.25rem !important; height: 2.25rem !important; }
+#view-club-meeting .member-avatar { width: 2.65rem !important; height: 2.65rem !important; }
+#view-club-meeting .member-avatar-big { width: 3.5rem !important; height: 3.5rem !important; }
+#view-club-meeting .chat-avatar img,
+#view-club-meeting .post-avatar img,
+#view-club-meeting .member-avatar img,
+#view-club-meeting .member-avatar-big img,
+#view-club-meeting .meeting-avatar img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    display: block;
+}

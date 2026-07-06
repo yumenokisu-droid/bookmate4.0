@@ -974,6 +974,9 @@
         window.onload = function() {
             loadAppState();
             initAuthSystem();
+            state.currentView = 'home';
+            try { history.replaceState(null, '', location.pathname); } catch(e) {}
+            if (typeof navigate === 'function') navigate('home');
             updateGuestHomeVisibility();
             lucide.createIcons();
             updateUIProfileData();
