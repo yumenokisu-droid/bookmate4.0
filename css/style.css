@@ -1105,3 +1105,23 @@ button:active,
     object-fit: contain !important;
     display: block;
 }
+
+
+/* Phase14: 독서모임 주제도서 표지는 장식 날개 없이 실제 표지만 표시 */
+#view-club-meeting #homeBookCover,
+#view-club-meeting #bookCoverTitle,
+#view-club-meeting .topic-mini-cover {
+    background: #fff !important;
+    padding: 0 !important;
+    box-shadow: none;
+}
+#view-club-meeting #homeBookCover img,
+#view-club-meeting #bookCoverTitle img,
+#view-club-meeting .topic-mini-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain !important;
+    background: #fff;
+    box-shadow: none !important;
+    transform: none !important;
+}

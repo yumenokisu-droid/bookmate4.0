@@ -1,6 +1,6 @@
 (function(){
   const ROOT_ID = 'view-club-meeting';
-  const STORAGE_KEY = 'bookmate_meeting_phase13_realfix';
+  const STORAGE_KEY = 'bookmate_meeting_phase14_flatcover_guestavatar';
   const REPORT_KEY = 'bookmate_live_reports';
   const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const defaultState = {
@@ -13,7 +13,7 @@
       category:'문학', privacy:'비공개', joinType:'초대링크 가입', age:'20~40대', region:'익산 / 온라인', membersCount:18,
       rule:'스포일러는 토론 전 표시하고, 서로의 해석을 존중합니다.'
     },
-    currentBook:{title:'작별인사', author:'김영하', publisher:'복복서가', date:'7월 11일 오후 8시', place:'LIVE ROOM', points:'인간다움, 선택, 작별의 의미', coverUrl:'https://image.yes24.com/goods/108887930/XL', isbn:'9791191114225'},
+    currentBook:{title:'작별인사', author:'김영하', publisher:'복복서가', date:'7월 11일 오후 8시', place:'LIVE ROOM', points:'인간다움, 선택, 작별의 의미', coverUrl:'https://cover.bookoob.co.kr/9/3/org/707093_org.jpg', isbn:'9791191114225'},
     previousBooks:[
       {title:'데미안', author:'헤르만 헤세', date:'6월 12일', method:'온라인', archive:true, memo:'자아와 성장에 대한 토론', isbn:'9788937460449'},
       {title:'노인과 바다', author:'어니스트 헤밍웨이', date:'5월 18일', method:'오프라인', archive:false, memo:'포기하지 않는 태도에 대한 대화', isbn:'9788937462788'}
@@ -56,7 +56,7 @@
   function isInvited(){ return new URLSearchParams(location.search).get('invite') === '1' || state.membership === 'invited'; }
   function bookCoverSlot(id, book, cls='w-full h-full object-cover rounded-2xl'){
     const title = book?.title || book?.book || 'BOOKMATE';
-    return `<div id="${id}" class="w-full h-full rounded-2xl bg-brand-ivory border border-brand-ivoryDark overflow-hidden flex items-center justify-center text-center text-brand-navy text-xs font-bold px-2">${esc(title)}</div>`;
+    return `<div id="${id}" class="w-full h-full rounded-2xl bg-white border border-brand-ivoryDark overflow-hidden flex items-center justify-center text-center text-brand-navy text-xs font-bold">${esc(title)}</div>`;
   }
   function hydrateBookCover(id, book, cls='w-full h-full object-cover rounded-2xl'){
     if(typeof loadBookCover === 'function') setTimeout(()=>loadBookCover(book?.title || book?.book || '', id, cls, book?.coverUrl || '', {title:book?.title||book?.book||'', author:book?.author||'', isbn:book?.isbn||'', coverUrl:book?.coverUrl||''}), 0);
@@ -109,8 +109,8 @@
     const meta=q('#bookMeta'); if(meta) meta.textContent=`${b.author} · ${b.publisher}`;
     const date=q('#bookDiscussDate'); if(date) date.textContent=`토론일: ${b.date} · ${b.place}`;
     const points=q('#bookDiscussionPoints'); if(points) points.textContent=`논제: ${b.points}`;
-    const homeCover=q('#homeBookCover'); if(homeCover){ homeCover.innerHTML = bookCoverSlot('homeBookCoverImg', b); hydrateBookCover('homeBookCoverImg', b, 'w-full h-full object-cover rounded-2xl'); }
-    const bookCover=q('#bookCoverTitle'); if(bookCover){ bookCover.innerHTML = bookCoverSlot('bookCoverMainImg', b); hydrateBookCover('bookCoverMainImg', b, 'w-full h-full object-cover rounded-2xl'); }
+    const homeCover=q('#homeBookCover'); if(homeCover){ homeCover.innerHTML = bookCoverSlot('homeBookCoverImg', b); hydrateBookCover('homeBookCoverImg', b, 'w-full h-full object-contain rounded-2xl bg-white'); }
+    const bookCover=q('#bookCoverTitle'); if(bookCover){ bookCover.innerHTML = bookCoverSlot('bookCoverMainImg', b); hydrateBookCover('bookCoverMainImg', b, 'w-full h-full object-contain rounded-2xl bg-white'); }
     renderTopicBooks();
   }
   function syncAiMode(){ ['#sidebarAiMode','#communityAiMode'].forEach(sel=>{const el=q(sel); if(el) el.textContent=state.aiMode;}); }
@@ -166,13 +166,13 @@
   function renderTopicBooks(){
     const prev=q('#previousTopicList');
     if(prev) {
-      prev.innerHTML=state.previousBooks.map((b,i)=>`<article class="topic-item previous"><div class="topic-mini-cover">${bookCoverSlot(`prevTopicCover${i}`, b, 'w-full h-full object-cover rounded-xl')}</div><div><span class="role">이전</span><h3>${esc(b.title)}</h3><p>${esc(b.author)} · ${esc(b.date)} · ${esc(b.method)}</p><p class="muted">${esc(b.memo)}</p><div class="topic-actions"><button class="small-button">토론 내역</button>${b.archive?'<button class="primary-button archive-view-btn">아카이브 보기</button>':'<span class="muted small-muted">아카이브 없음</span>'}</div></div></article>`).join('');
-      state.previousBooks.forEach((b,i)=>hydrateBookCover(`prevTopicCover${i}`, b, 'w-full h-full object-cover rounded-xl'));
+      prev.innerHTML=state.previousBooks.map((b,i)=>`<article class="topic-item previous"><div class="topic-mini-cover">${bookCoverSlot(`prevTopicCover${i}`, b, 'w-full h-full object-contain rounded-xl bg-white')}</div><div><span class="role">이전</span><h3>${esc(b.title)}</h3><p>${esc(b.author)} · ${esc(b.date)} · ${esc(b.method)}</p><p class="muted">${esc(b.memo)}</p><div class="topic-actions"><button class="small-button">토론 내역</button>${b.archive?'<button class="primary-button archive-view-btn">아카이브 보기</button>':'<span class="muted small-muted">아카이브 없음</span>'}</div></div></article>`).join('');
+      state.previousBooks.forEach((b,i)=>hydrateBookCover(`prevTopicCover${i}`, b, 'w-full h-full object-contain rounded-xl bg-white'));
     }
     const next=q('#nextTopicList');
     if(next) {
-      next.innerHTML=state.nextBooks.map((b,i)=>`<article class="topic-item next"><div class="topic-mini-cover">${bookCoverSlot(`nextTopicCover${i}`, b, 'w-full h-full object-cover rounded-xl')}</div><div><span class="role">다음 ${i+1}</span><h3>${esc(b.title)}</h3><p>${esc(b.author)} · ${esc(b.date)}</p><p class="muted">메모: ${esc(b.memo)}</p><div class="topic-actions master-only"><button class="small-button promote-next-book" data-index="${i}">현재 도서로 지정</button><button class="small-button remove-next-book" data-index="${i}">삭제</button></div></div></article>`).join('');
-      state.nextBooks.forEach((b,i)=>hydrateBookCover(`nextTopicCover${i}`, b, 'w-full h-full object-cover rounded-xl'));
+      next.innerHTML=state.nextBooks.map((b,i)=>`<article class="topic-item next"><div class="topic-mini-cover">${bookCoverSlot(`nextTopicCover${i}`, b, 'w-full h-full object-contain rounded-xl bg-white')}</div><div><span class="role">다음 ${i+1}</span><h3>${esc(b.title)}</h3><p>${esc(b.author)} · ${esc(b.date)}</p><p class="muted">메모: ${esc(b.memo)}</p><div class="topic-actions master-only"><button class="small-button promote-next-book" data-index="${i}">현재 도서로 지정</button><button class="small-button remove-next-book" data-index="${i}">삭제</button></div></div></article>`).join('');
+      state.nextBooks.forEach((b,i)=>hydrateBookCover(`nextTopicCover${i}`, b, 'w-full h-full object-contain rounded-xl bg-white'));
     }
   }
   function renderMembers(selected=0){
