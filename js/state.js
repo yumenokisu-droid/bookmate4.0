@@ -3,14 +3,21 @@
 
         const state = {
             currentUser: {
-                nickname: '달빛독서가',
-                library: '익산시립도서관',
+                id: 'guest',
+                name: '게스트',
+                nickname: '게스트 독자',
+                library: '소속도서관 없음',
+                libraryVerified: false,
+                tastes: ['소설','에세이'],
+                readingType: '둘러보는 독자',
+                readingTypeIcon: '👀',
                 avatarType: 'moa',
                 avatarId: 1,
                 avatarImage: '',
-                readBooksCount: 47,
-                gatheringCount: 3,
-                chatMessagesCount: 1284
+                readBooksCount: 0,
+                gatheringCount: 0,
+                chatMessagesCount: 0,
+                isGuest: true
             },
             aiChatHistory: [],
             aiChatTurns: 0,

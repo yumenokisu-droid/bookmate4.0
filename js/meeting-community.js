@@ -13,7 +13,7 @@
       category:'문학', privacy:'비공개', joinType:'초대링크 가입', age:'20~40대', region:'익산 / 온라인', membersCount:18,
       rule:'스포일러는 토론 전 표시하고, 서로의 해석을 존중합니다.'
     },
-    currentBook:{title:'작별인사', author:'김영하', publisher:'복복서가', date:'7월 11일 오후 8시', place:'LIVE ROOM', points:'인간다움, 선택, 작별의 의미', progress:80},
+    currentBook:{title:'작별인사', author:'김영하', publisher:'복복서가', date:'7월 11일 오후 8시', place:'LIVE ROOM', points:'인간다움, 선택, 작별의 의미', coverUrl:'', isbn:''},
     previousBooks:[
       {title:'데미안', author:'헤르만 헤세', date:'6월 12일', method:'온라인', archive:true, memo:'자아와 성장에 대한 토론'},
       {title:'노인과 바다', author:'어니스트 헤밍웨이', date:'5월 18일', method:'오프라인', archive:false, memo:'포기하지 않는 태도에 대한 대화'}
@@ -37,11 +37,11 @@
       {date:'8.03', title:'다음 주제도서 선정 회의', meta:'19:30 · 온라인'}
     ],
     members:[
-      {name:'달빛독서가', role:'모임장', visits:50, meetings:8, posts:12, chats:156, online:true, avatar:'assets/characters/moa-1.png'},
-      {name:'문장수집가', role:'부모임장', visits:42, meetings:6, posts:9, chats:121, online:true, avatar:'assets/characters/moa-2.png'},
-      {name:'책읽는고양이', role:'회원', visits:35, meetings:3, posts:3, chats:45, online:true, avatar:'assets/characters/moa-3.png'},
-      {name:'초록책갈피', role:'회원', visits:21, meetings:2, posts:1, chats:18, online:false, avatar:'assets/characters/moa-4.png'},
-      {name:'밤의서재', role:'회원', visits:17, meetings:1, posts:0, chats:9, online:false, avatar:'assets/characters/moa-1.png'}
+      {name:'달빛독서가', role:'모임장', visits:50, meetings:8, posts:12, chats:156, online:true, avatarType:'moa', avatarId:1},
+      {name:'문장수집가', role:'부모임장', visits:42, meetings:6, posts:9, chats:121, online:true, avatarType:'moa', avatarId:2},
+      {name:'책읽는고양이', role:'회원', visits:35, meetings:3, posts:3, chats:45, online:true, avatarType:'moa', avatarId:3},
+      {name:'초록책갈피', role:'회원', visits:21, meetings:2, posts:1, chats:18, online:false, avatarType:'moa', avatarId:4},
+      {name:'밤의서재', role:'회원', visits:17, meetings:1, posts:0, chats:9, online:false, avatarType:'moa', avatarId:1}
     ]
   };
   let state = loadState();
@@ -54,7 +54,13 @@
   function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
   function toast(text){ if (typeof showToast === 'function') showToast(text); else alert(text); }
   function isInvited(){ return new URLSearchParams(location.search).get('invite') === '1' || state.membership === 'invited'; }
-  function coverHTML(title){ return `<div class="book-card-cover"><span class="book-card-label">BOOKMATE</span><strong>${esc(title)}</strong><small>주제도서</small></div>`; }
+  function bookCoverSlot(id, book, cls='w-full h-full object-cover rounded-2xl'){
+    const title = book?.title || book?.book || 'BOOKMATE';
+    return `<div id="${id}" class="w-full h-full rounded-2xl bg-brand-ivory border border-brand-ivoryDark overflow-hidden flex items-center justify-center text-center text-brand-navy text-xs font-bold px-2">${esc(title)}</div>`;
+  }
+  function hydrateBookCover(id, book, cls='w-full h-full object-cover rounded-2xl'){
+    if(typeof loadBookCover === 'function') setTimeout(()=>loadBookCover(book?.title || book?.book || '', id, cls, book?.coverUrl || '', {title:book?.title||book?.book||'', author:book?.author||'', isbn:book?.isbn||'', coverUrl:book?.coverUrl||''}), 0);
+  }
   function switchCommunityView(view){
     qa('.view').forEach(v => v.classList.toggle('active', v.id === `view-${view}`));
     qa('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.view === view));
@@ -70,6 +76,17 @@
       state.club.membersCount = activeGathering.membersCount || state.club.membersCount;
       state.currentBook.title = activeGathering.book || state.currentBook.title;
       state.currentBook.author = activeGathering.author || state.currentBook.author;
+      state.currentBook.coverUrl = activeGathering.coverUrl || state.currentBook.coverUrl || '';
+      state.currentBook.isbn = activeGathering.isbn || state.currentBook.isbn || '';
+      if (typeof ensureGatheringMembers === 'function') {
+        const gatheringMembers = ensureGatheringMembers(activeGathering) || [];
+        state.members = gatheringMembers.map((m, idx) => ({
+          name: m.nickname || m.name || `멤버${idx+1}`,
+          role: m.role === 'leader' ? '모임장' : (m.role === 'coLeader' ? '부모임장' : '회원'),
+          visits: m.visits || (50 - idx * 5), meetings: m.meetings || Math.max(1, 8 - idx), posts: m.posts || idx + 1, chats: m.chats || 30 + idx * 8,
+          online: idx < 3, avatarType: m.avatarType || 'moa', avatarId: m.avatarId || ((idx % 4) + 1), avatarImage: m.avatarImage || ''
+        }));
+      }
     }
     const c=state.club;
     ['#miniClubTitle','#clubTitle'].forEach(sel=>{ const el=q(sel); if(el) el.textContent=c.title; });
@@ -92,12 +109,21 @@
     const meta=q('#bookMeta'); if(meta) meta.textContent=`${b.author} · ${b.publisher}`;
     const date=q('#bookDiscussDate'); if(date) date.textContent=`토론일: ${b.date} · ${b.place}`;
     const points=q('#bookDiscussionPoints'); if(points) points.textContent=`논제: ${b.points}`;
-    ['#homeBookCover','#bookCoverTitle'].forEach(sel=>{ const el=q(sel); if(el) el.innerHTML=coverHTML(b.title); });
+    const homeCover=q('#homeBookCover'); if(homeCover){ homeCover.innerHTML = bookCoverSlot('homeBookCoverImg', b); hydrateBookCover('homeBookCoverImg', b, 'w-full h-full object-cover rounded-2xl'); }
+    const bookCover=q('#bookCoverTitle'); if(bookCover){ bookCover.innerHTML = bookCoverSlot('bookCoverMainImg', b); hydrateBookCover('bookCoverMainImg', b, 'w-full h-full object-cover rounded-2xl'); }
     renderTopicBooks();
   }
   function syncAiMode(){ ['#sidebarAiMode','#communityAiMode'].forEach(sel=>{const el=q(sel); if(el) el.textContent=state.aiMode;}); }
   function memberByName(name){ return state.members.find(m=>m.name===name) || null; }
-  function avatarHTML(name, cls='member-avatar'){ const m = memberByName(name); if(name && name.includes('AI')) return `<span class="${cls} moa-img-avatar ai"><img src="assets/characters/ai-moa.png" alt="AI 모아"></span>`; if(m?.avatar) return `<span class="${cls} moa-img-avatar"><img src="${esc(m.avatar)}" alt="${esc(name)}"></span>`; return `<span class="${cls}">${esc(String(name||'?')[0])}</span>`; }
+  function currentNickname(){ return (typeof getCurrentNickname === 'function') ? getCurrentNickname() : '달빛독서가'; }
+  function avatarHTML(name, cls='member-avatar'){
+    if(name && name.includes('AI')) return `<span class="${cls} moa-img-avatar ai"><img src="assets/characters/ai-moa.png" alt="AI 모아"></span>`;
+    const m = memberByName(name) || { name, avatarType:'moa', avatarId: ((String(name||'모아').charCodeAt(0)||0)%4)+1 };
+    const target = { name:m.name, nickname:m.name, avatarType:m.avatarType || 'moa', avatarId:m.avatarId || 1, avatarImage:m.avatarImage || '' };
+    if(typeof getAvatarHTML === 'function') return getAvatarHTML(target, cls);
+    const id = target.avatarId || 1;
+    return `<span class="${cls} moa-img-avatar"><img src="assets/characters/moa-${id}.png" alt="${esc(name)}"></span>`;
+  }
   function renderMembershipButton(){
     const btn=q('#membershipActionBtn'); if(!btn) return;
     if(isInvited() && state.membership !== 'member') { btn.textContent='모임 참여하기'; btn.classList.remove('danger-state'); }
@@ -114,8 +140,15 @@
   }
   function renderChat(){
     const el=q('#chatFeed'); if(!el) return;
-    el.innerHTML=state.chat.map(m=>`<div class="message ${m.user==='달빛독서가'?'me':m.user.includes('AI')?'ai':''}">${avatarHTML(m.user,'chat-avatar')}<div class="message-bubble"><small>${esc(m.user)}</small><p>${esc(m.text)}</p></div></div>`).join('');
+    const me = currentNickname();
+    el.innerHTML=state.chat.map(m=>`<div class="message ${m.user===me||m.user==='달빛독서가'?'me':m.user.includes('AI')?'ai':''}">${avatarHTML(m.user,'chat-avatar')}<div class="message-bubble"><small>${esc(m.user)}</small><p>${esc(m.text)}</p></div></div>`).join('');
     el.scrollTop=el.scrollHeight;
+    renderOnlineMembers();
+  }
+  function renderOnlineMembers(){
+    const el=q('#onlineMemberList'); if(!el) return;
+    const online = state.members.filter(m=>m.online).slice(0,5);
+    el.innerHTML = online.map(m=>`<span class="flex items-center gap-2 px-3 py-2 rounded-xl bg-brand-ivory">${avatarHTML(m.name,'w-7 h-7 rounded-full overflow-hidden shrink-0')}<span class="min-w-0 truncate">🟢 ${esc(m.name)}</span></span>`).join('') + `<span class="flex items-center gap-2 px-3 py-2 rounded-xl bg-brand-sageLight text-brand-sageDark">${avatarHTML('AI 모아','w-7 h-7 rounded-full overflow-hidden shrink-0')}<span>AI 모아</span></span>`;
   }
   function renderPosts(){
     const el=q('#postList'); if(!el) return;
@@ -123,8 +156,16 @@
     el.innerHTML=posts.map(p=>`<article class="post refined-post" data-id="${p.id}"><div class="post-top post-author-line">${avatarHTML(p.author||'달빛독서가','post-avatar')}<span class="role">${esc(p.category)}</span><strong>${esc(p.author||'달빛독서가')}</strong><span>${esc(p.time||'방금 전')}</span></div><h3>${esc(p.title)}</h3><p>${esc(p.body)}</p><div class="post-meta-line"><span>좋아요 ${p.likes}</span><span>댓글 ${p.comments.length}</span></div><div class="post-actions"><button class="small-button like-btn">좋아요</button><button class="small-button comment-toggle-btn">댓글</button></div><div class="comments-wrap">${p.comments.map(c=>`<div class="comment">${esc(c)}</div>`).join('')}<form class="comment-box"><input placeholder="댓글 쓰기"/><button class="small-button" type="submit">등록</button></form></div></article>`).join('') || '<div class="empty-card">게시글이 없습니다.</div>';
   }
   function renderTopicBooks(){
-    const prev=q('#previousTopicList'); if(prev) prev.innerHTML=state.previousBooks.map(b=>`<article class="topic-item previous"><div class="topic-mini-cover">${esc(b.title)}</div><div><span class="role">이전</span><h3>${esc(b.title)}</h3><p>${esc(b.author)} · ${esc(b.date)} · ${esc(b.method)}</p><p class="muted">${esc(b.memo)}</p><div class="topic-actions"><button class="small-button">토론 내역</button>${b.archive?'<button class="primary-button archive-view-btn">아카이브 보기</button>':'<span class="muted small-muted">아카이브 없음</span>'}</div></div></article>`).join('');
-    const next=q('#nextTopicList'); if(next) next.innerHTML=state.nextBooks.map((b,i)=>`<article class="topic-item next"><div class="topic-mini-cover">${esc(b.title)}</div><div><span class="role">다음 ${i+1}</span><h3>${esc(b.title)}</h3><p>${esc(b.author)} · ${esc(b.date)}</p><p class="muted">메모: ${esc(b.memo)}</p><div class="topic-actions master-only"><button class="small-button promote-next-book" data-index="${i}">현재 도서로 지정</button><button class="small-button remove-next-book" data-index="${i}">삭제</button></div></div></article>`).join('');
+    const prev=q('#previousTopicList');
+    if(prev) {
+      prev.innerHTML=state.previousBooks.map((b,i)=>`<article class="topic-item previous"><div class="topic-mini-cover">${bookCoverSlot(`prevTopicCover${i}`, b, 'w-full h-full object-cover rounded-xl')}</div><div><span class="role">이전</span><h3>${esc(b.title)}</h3><p>${esc(b.author)} · ${esc(b.date)} · ${esc(b.method)}</p><p class="muted">${esc(b.memo)}</p><div class="topic-actions"><button class="small-button">토론 내역</button>${b.archive?'<button class="primary-button archive-view-btn">아카이브 보기</button>':'<span class="muted small-muted">아카이브 없음</span>'}</div></div></article>`).join('');
+      state.previousBooks.forEach((b,i)=>hydrateBookCover(`prevTopicCover${i}`, b, 'w-full h-full object-cover rounded-xl'));
+    }
+    const next=q('#nextTopicList');
+    if(next) {
+      next.innerHTML=state.nextBooks.map((b,i)=>`<article class="topic-item next"><div class="topic-mini-cover">${bookCoverSlot(`nextTopicCover${i}`, b, 'w-full h-full object-cover rounded-xl')}</div><div><span class="role">다음 ${i+1}</span><h3>${esc(b.title)}</h3><p>${esc(b.author)} · ${esc(b.date)}</p><p class="muted">메모: ${esc(b.memo)}</p><div class="topic-actions master-only"><button class="small-button promote-next-book" data-index="${i}">현재 도서로 지정</button><button class="small-button remove-next-book" data-index="${i}">삭제</button></div></div></article>`).join('');
+      state.nextBooks.forEach((b,i)=>hydrateBookCover(`nextTopicCover${i}`, b, 'w-full h-full object-cover rounded-xl'));
+    }
   }
   function renderMembers(selected=0){
     const list=q('#memberList'); if(list) list.innerHTML=state.members.map((m,i)=>`<button class="member-row ${i===selected?'active':''}" data-index="${i}">${avatarHTML(m.name)}<span><strong>${esc(m.name)}</strong><small>${esc(m.role)} · ${m.online?'접속중':'오프라인'}</small></span></button>`).join('');
@@ -163,11 +204,11 @@
     qa('[data-go]').forEach(b=>b.addEventListener('click',()=>switchCommunityView(b.dataset.go)));
     q('#copyInviteBtn')?.addEventListener('click',copyInvite); q('#inviteMemberBtn')?.addEventListener('click',copyInvite);
     q('#membershipActionBtn')?.addEventListener('click',()=>{ if(isInvited() && state.membership !== 'member'){ state.membership='member'; toast('모임에 참여했어요.'); } else { state.membership='invited'; toast('모임에서 탈퇴했습니다. 초대링크로 다시 참여할 수 있어요.'); } saveState(); renderMembershipButton(); });
-    q('#chatForm')?.addEventListener('submit',e=>{e.preventDefault(); const input=q('#chatInput'), text=input.value.trim(); if(!text) return; state.chat.push({user:'달빛독서가',text}); if(text.includes('모아')) state.chat.push({user:'AI 모아',text:'좋아요. 이 장면은 인물의 선택과 관계의 변화에 집중해 보면 이해하기 쉬워요.'}); input.value=''; saveState(); renderChat();});
+    q('#chatForm')?.addEventListener('submit',e=>{e.preventDefault(); const input=q('#chatInput'), text=input.value.trim(); if(!text) return; state.chat.push({user:currentNickname(),text}); if(text.includes('모아')) state.chat.push({user:'AI 모아',text:'좋아요. 이 장면은 인물의 선택과 관계의 변화에 집중해 보면 이해하기 쉬워요.'}); input.value=''; saveState(); renderChat();});
     q('#addPhotoMessageBtn')?.addEventListener('click',()=>{state.chat.push({user:'달빛독서가',text:'📷 사진을 첨부했습니다.'}); saveState(); renderChat(); toast('사진 메시지를 추가했어요.');});
     q('#emojiChatBtn')?.addEventListener('click',()=>{ const input=q('#chatInput'); if(input){ input.value += ' 😊'; input.focus(); }});
     qa('.board-tab').forEach(btn=>btn.addEventListener('click',()=>{ state.boardFilter=btn.dataset.boardFilter; qa('.board-tab').forEach(b=>b.classList.toggle('active',b===btn)); renderPosts(); }));
-    q('#postForm')?.addEventListener('submit',e=>{e.preventDefault(); const title=q('#postTitle').value.trim(), body=q('#postBody').value.trim(), category=q('#postCategory').value; if(!title||!body) return toast('제목과 내용을 입력해주세요.'); state.posts.unshift({id:Date.now(),category,author:'달빛독서가',title,body,likes:0,comments:[],time:'방금 전'}); q('#postTitle').value=''; q('#postBody').value=''; saveState(); renderPosts(); toast('게시글을 등록했어요.');});
+    q('#postForm')?.addEventListener('submit',e=>{e.preventDefault(); const title=q('#postTitle').value.trim(), body=q('#postBody').value.trim(), category=q('#postCategory').value; if(!title||!body) return toast('제목과 내용을 입력해주세요.'); state.posts.unshift({id:Date.now(),category,author:currentNickname(),title,body,likes:0,comments:[],time:'방금 전'}); q('#postTitle').value=''; q('#postBody').value=''; saveState(); renderPosts(); toast('게시글을 등록했어요.');});
     q('#postList')?.addEventListener('click',e=>{const post=e.target.closest('.post'); if(!post) return; const p=state.posts.find(x=>x.id==post.dataset.id); if(e.target.classList.contains('like-btn')){p.likes++; saveState(); renderPosts();}});
     q('#postList')?.addEventListener('submit',e=>{if(!e.target.classList.contains('comment-box')) return; e.preventDefault(); const p=state.posts.find(x=>x.id==e.target.closest('.post').dataset.id), input=e.target.querySelector('input'), text=input.value.trim(); if(!text) return; p.comments.push(text); saveState(); renderPosts();});
     q('#showNextBookFormBtn')?.addEventListener('click',()=>q('#nextTopicForm')?.classList.toggle('hidden'));
@@ -179,7 +220,7 @@
     qa('.ai-role-choice').forEach(btn=>btn.addEventListener('click',()=>{state.aiMode=btn.dataset.role; saveState(); syncAiMode(); renderActivity(); toast(`AI 역할을 ${state.aiMode}(으)로 설정했어요.`)}));
     q('#voteJoinBtn')?.addEventListener('click',()=>{ state.liveVote.choice='참여'; state.liveVote.join=Math.max(state.liveVote.join,5); saveState(); renderLiveVote(); toast('참여 예정으로 표시했어요.'); });
     q('#voteMaybeBtn')?.addEventListener('click',()=>{ state.liveVote.choice='다음에 참여'; state.liveVote.join=Math.max(0,state.liveVote.join-1); saveState(); renderLiveVote(); toast('다음에 참여로 표시했어요.'); });
-    q('#liveVoteForm')?.addEventListener('submit',e=>{ e.preventDefault(); const input=q('#liveVoteReason'); const text=input.value.trim(); if(!text) return toast('댓글 내용을 입력해주세요.'); state.liveVote.comments.unshift({user:'달빛독서가',text}); input.value=''; saveState(); renderLiveVote(); });
+    q('#liveVoteForm')?.addEventListener('submit',e=>{ e.preventDefault(); const input=q('#liveVoteReason'); const text=input.value.trim(); if(!text) return toast('댓글 내용을 입력해주세요.'); state.liveVote.comments.unshift({user:currentNickname(),text}); input.value=''; saveState(); renderLiveVote(); });
     q('#previewLiveReportBtn')?.addEventListener('click',renderReportPreview);
     syncClub(); syncBook(); syncAiMode(); renderActivity(); renderChat(); renderPosts(); renderMembers(); renderSchedule(); renderLiveVote(); renderReportPreview();
   }
