@@ -39,21 +39,33 @@
     </script>
     <!-- External CSS -->
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="meeting.css">
 
     <style id="bookmate-startup-guard-style">
+        html.bookmate-startup-lock body { opacity: 0 !important; pointer-events: none !important; }
         html.bookmate-startup-lock body .view-section { display: none !important; }
         html.bookmate-startup-lock body #view-home { display: block !important; }
     </style>
     <script>
-        // BOOKMATE startup guard: 첫 렌더링부터 로그인/모임 잔여 화면이 보이지 않도록 잠급니다.
-        document.documentElement.classList.add('bookmate-startup-lock');
-        try {
-            ['bookmate_v2_auth_session','bookmate_auth_session','bookmate_current_view','bookmate_last_view','bookmate_active_view'].forEach(k => localStorage.removeItem(k));
-            if (location.hash === '#club-meeting' || location.hash === '#meeting') {
-                history.replaceState(null, '', location.pathname + location.search);
+        // BOOKMATE startup guard
+        // 일반 첫 접속은 게스트 홈으로 고정하되, LIVE ROOM에서 돌아오는 경우에는 로그인 세션을 보존합니다.
+        (function(){
+            var returnToLive = false;
+            try {
+                returnToLive = sessionStorage.getItem('bookmate_return_live') === '1' || location.hash === '#live';
+            } catch(e) {}
+            window.__BOOKMATE_RETURN_LIVE__ = returnToLive;
+            window.__BOOKMATE_FORCE_GUEST_HOME__ = !returnToLive;
+            if (!returnToLive) {
+                document.documentElement.classList.add('bookmate-startup-lock');
+                try {
+                    ['bookmate_v2_auth_session','bookmate_auth_session','bookmate_current_view','bookmate_last_view','bookmate_active_view','bookmate_meeting_phase15_guest_lock_flat_cover','bookmate_meeting_phase14_flatcover_guestavatar','bookmate_meeting_phase13_realfix','bookmate_meeting_phase12_guest_cover_fix'].forEach(k => localStorage.removeItem(k));
+                    if (location.hash === '#club-meeting' || location.hash === '#meeting') {
+                        history.replaceState(null, '', location.pathname + location.search);
+                    }
+                } catch(e) {}
             }
-        } catch(e) {}
-        window.__BOOKMATE_FORCE_GUEST_HOME__ = true;
+        })();
     </script>
 
     <style>
@@ -76,7 +88,58 @@
             border-color: rgba(95, 133, 117, .35);
             transform: translateY(-1px);
         }
-    </style>
+    
+        .embedded-live-room { --live-navy:#1B2A47; --live-green:#5F8575; --live-mint:#EAF2E8; --live-cream:#FAF6F0; --live-line:#F3EDE2; --live-muted:#6B7280; color:var(--live-navy); }
+        .embedded-live-room .live-shell-v2 { min-height: auto; padding: 0; display:grid; grid-template-rows:auto 1fr; gap:16px; }
+        .embedded-live-room .live-header-v2 { display:grid; grid-template-columns:auto 1fr auto; gap:18px; align-items:center; background:rgba(255,255,255,.96); border:1px solid var(--live-line); border-radius:28px; padding:16px 20px; box-shadow:0 12px 28px rgba(27,42,71,.06); }
+        .embedded-live-room .back-link { color:var(--live-green); background:var(--live-mint); padding:10px 12px; border-radius:14px; font-size:.82rem; font-weight:900; border:0; }
+        .embedded-live-room .eyebrow { font-size:11px; font-weight:950; text-transform:uppercase; letter-spacing:.08em; color:var(--live-green); margin:0 0 5px; }
+        .embedded-live-room h1 { font-family:'Noto Serif KR',serif; font-size:1.55rem; margin:0; color:var(--live-navy); }
+        .embedded-live-room h2, .embedded-live-room h3 { color:var(--live-navy); font-weight:900; margin:0 0 10px; }
+        .embedded-live-room .live-header-actions { display:flex; align-items:center; gap:12px; }
+        .embedded-live-room .status-pill.live { display:inline-flex; background:#fff0e8; color:#c2410c; border:1px solid #ffd2bd; border-radius:999px; padding:7px 10px; font-size:12px; font-weight:900; }
+        .embedded-live-room .live-header-actions strong { font-size:1.6rem; color:var(--live-green); }
+        .embedded-live-room .live-main-v2 { display:grid; grid-template-columns:minmax(0,1fr) 330px; gap:16px; min-height:640px; }
+        .embedded-live-room .card { background:rgba(255,255,255,.95); border:1px solid var(--live-line); border-radius:26px; padding:20px; box-shadow:0 12px 28px rgba(27,42,71,.05); }
+        .embedded-live-room .live-chat-main { display:grid; grid-template-rows:auto minmax(0,1fr) auto; min-height:640px; }
+        .embedded-live-room .live-chat-title { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
+        .embedded-live-room .live-chat-stream { overflow:auto; background:#f8faf7; border:1px solid var(--live-line); border-radius:24px; padding:18px; min-height:0; }
+        .embedded-live-room .live-msg { display:flex; gap:10px; margin:12px 0; max-width:82%; }
+        .embedded-live-room .live-msg.user { margin-left:auto; flex-direction:row-reverse; }
+        .embedded-live-room .live-msg.voice-summary { max-width:88%; }
+        .embedded-live-room .live-msg.ai { max-width:92%; }
+        .embedded-live-room .msg-avatar { width:38px; height:38px; border-radius:15px; background:var(--live-mint); flex:0 0 auto; overflow:hidden; display:grid; place-items:center; }
+        .embedded-live-room .msg-avatar img, .embedded-live-room .participant-avatar img { width:100%; height:100%; object-fit:contain; }
+        .embedded-live-room .msg-bubble { background:#fff; border:1px solid var(--live-line); border-radius:20px; padding:12px 14px; box-shadow:0 8px 18px rgba(27,42,71,.04); }
+        .embedded-live-room .live-msg.user .msg-bubble { background:var(--live-mint); border-color:#cce3d3; }
+        .embedded-live-room .live-msg.voice-summary .msg-bubble { background:#fff7ed; border-color:#fed7aa; }
+        .embedded-live-room .live-msg.ai .msg-bubble { background:#f3fbf6; border-color:#cfe6d9; }
+        .embedded-live-room .msg-bubble small { display:block; color:var(--live-muted); font-weight:950; margin-bottom:5px; font-size:11px; }
+        .embedded-live-room .msg-bubble p { margin:0; line-height:1.6; font-size:.86rem; }
+        .embedded-live-room .live-input-bar { display:grid; grid-template-columns:auto auto 1fr auto auto; gap:8px; margin-top:14px; }
+        .embedded-live-room .live-input-bar input { width:100%; border:1px solid var(--live-line); border-radius:14px; padding:12px 14px; background:#fff; outline:none; }
+        .embedded-live-room .icon-btn { border:1px solid var(--live-line); background:#fff; border-radius:14px; padding:0 13px; font-size:18px; }
+        .embedded-live-room .primary-button, .embedded-live-room .small-button, .embedded-live-room .danger-button { border:0; border-radius:14px; padding:11px 15px; font-weight:900; display:inline-flex; justify-content:center; align-items:center; }
+        .embedded-live-room .primary-button { background:var(--live-green); color:#fff; }
+        .embedded-live-room .small-button { background:var(--live-mint); color:var(--live-green); }
+        .embedded-live-room .danger-button { background:#fff0e8; color:#c2410c; }
+        .embedded-live-room .full { width:100%; }
+        .embedded-live-room .live-sidebar-v2 { display:grid; gap:12px; align-content:start; min-height:0; max-height:none; overflow:auto; }
+        .embedded-live-room .compact-panel { padding:18px; border-radius:24px; }
+        .embedded-live-room .compact-panel label { display:block; margin:9px 0; color:#425166; font-weight:800; font-size:.85rem; }
+        .embedded-live-room .toggle-row { background:#f8faf7; border:1px solid var(--live-line); border-radius:14px; padding:10px; }
+        .embedded-live-room .muted { color:var(--live-muted); font-size:.8rem; line-height:1.55; }
+        .embedded-live-room .participant-list { display:grid; gap:8px; }
+        .embedded-live-room .participant { display:flex; gap:9px; align-items:center; background:#fbfdfb; border:1px solid var(--live-line); border-radius:16px; padding:9px; }
+        .embedded-live-room .participant-avatar { width:34px; height:34px; border-radius:13px; background:var(--live-mint); display:grid; place-items:center; overflow:hidden; flex:0 0 auto; }
+        .embedded-live-room .participant p { margin:2px 0 0; font-size:12px; color:var(--live-muted); }
+        .embedded-live-room .speaker-queue { padding:0; margin:0; display:grid; gap:7px; list-style:none; }
+        .embedded-live-room .speaker-queue li { display:flex; gap:8px; align-items:center; background:#fff; border:1px solid var(--live-line); border-radius:14px; padding:9px; font-weight:850; }
+        .embedded-live-room .speaker-queue span { width:24px; height:24px; border-radius:9px; background:var(--live-navy); color:#fff; display:grid; place-items:center; font-size:12px; }
+        .embedded-live-room .master-panel { border-color:#cfe6d9; background:linear-gradient(180deg,#fff,#f7fcf8); }
+        @media(max-width:980px){ .embedded-live-room .live-main-v2{grid-template-columns:1fr}.embedded-live-room .live-sidebar-v2{grid-template-columns:repeat(2,minmax(0,1fr))}.embedded-live-room .live-header-v2{grid-template-columns:1fr}.embedded-live-room .live-chat-main{min-height:72vh}.embedded-live-room .live-msg{max-width:100%} }
+        @media(max-width:620px){ .embedded-live-room .live-sidebar-v2{grid-template-columns:1fr}.embedded-live-room .live-input-bar{grid-template-columns:auto auto 1fr}.embedded-live-room .live-chat-title{display:grid}.embedded-live-room .live-header-actions{justify-content:space-between} }
+</style>
 
 </head>
 <body class="min-h-screen flex flex-col justify-between">
@@ -1018,10 +1081,9 @@
                             <button class="nav-item active w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-gray-500 hover:text-brand-navy hover:bg-brand-ivory transition-colors" data-view="home">HOME</button>
                             <button class="nav-item w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-gray-500 hover:text-brand-navy hover:bg-brand-ivory transition-colors" data-view="chat">채팅</button>
                             <button class="nav-item w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-gray-500 hover:text-brand-navy hover:bg-brand-ivory transition-colors" data-view="board">게시판</button>
-                            <button class="nav-item w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-gray-500 hover:text-brand-navy hover:bg-brand-ivory transition-colors" data-view="book">주제도서</button>
+                            <button class="nav-item w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-gray-500 hover:text-brand-navy hover:bg-brand-ivory transition-colors" data-view="book">모임 일정</button>
                             <button class="nav-item w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-gray-500 hover:text-brand-navy hover:bg-brand-ivory transition-colors" data-view="live">LIVE</button>
                             <button class="nav-item w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-gray-500 hover:text-brand-navy hover:bg-brand-ivory transition-colors" data-view="members">멤버</button>
-                            <button class="nav-item w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-gray-500 hover:text-brand-navy hover:bg-brand-ivory transition-colors" data-view="schedule">일정</button>
                             <button class="nav-item master-only w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-gray-500 hover:text-brand-navy hover:bg-brand-ivory transition-colors" data-view="admin">관리</button>
                         </nav>
                     </div>
@@ -1029,67 +1091,86 @@
                 </aside>
 
                 <main class="min-w-0 space-y-6">
-                    <section id="view-home" class="view active space-y-6">
-                        <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,.65fr)] gap-6">
-                            <article class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-6">
-                                <div class="flex items-start justify-between gap-4 mb-5">
-                                    <div>
-                                        <span class="text-xs font-bold text-brand-sage tracking-wider uppercase">현재 주제도서</span>
-                                        <h2 id="homeBookTitle" class="serif-title text-2xl font-bold text-brand-navy mt-1">작별인사</h2>
-                                    </div>
-                                    <button class="px-3 py-2 rounded-xl bg-brand-ivory text-brand-navy text-[11px] font-bold hover:bg-brand-sageLight transition-colors" data-go="book">자세히</button>
-                                </div>
-                                <div class="grid grid-cols-[96px_minmax(0,1fr)] sm:grid-cols-[120px_minmax(0,1fr)] gap-5 items-center">
-                                    <div id="homeBookCover" class="aspect-[2/3] rounded-2xl bg-gradient-to-br from-brand-sage to-brand-navy text-white shadow-sm flex items-center justify-center text-center px-3 overflow-hidden">
+                    <section id="view-home" class="view active space-y-5">
+                        <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1.25fr)_minmax(300px,.75fr)] gap-5">
+                            <article class="meeting-home-card bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-5">
+                                <div class="flex flex-col sm:flex-row gap-5">
+                                    <div id="homeBookCover" class="w-20 h-28 rounded-xl bg-white text-brand-navy shadow-sm flex items-center justify-center text-center px-2 overflow-hidden border border-brand-ivoryDark shrink-0">
                                         <span class="serif-title font-bold leading-snug">작별인사</span>
                                     </div>
-                                    <div class="min-w-0">
-                                        <p id="homeBookInfo" class="text-sm font-bold text-brand-navy">김영하 · 복복서가</p>
-                                        <p id="homeBookMeeting" class="inline-flex mt-2 px-3 py-1.5 rounded-full bg-brand-sageLight text-brand-sageDark text-[11px] font-bold">7월 11일 오후 8시 · LIVE ROOM</p>
-                                        <p class="text-xs text-gray-500 leading-relaxed mt-3">7월 11일 오후 8시 · LIVE ROOM에서 함께 이야기합니다</p>
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex flex-wrap items-center gap-2 mb-2">
+                                            <span class="text-xs font-bold text-brand-sage tracking-wider uppercase">모임 일정</span>
+                                            <span class="px-2.5 py-1 rounded-full bg-orange-50 text-orange-700 text-[10px] font-bold border border-orange-100">투표 진행 중</span>
+                                        </div>
+                                        <h2 id="homeBookTitle" class="serif-title text-2xl font-bold text-brand-navy">작별인사</h2>
+                                        <p id="homeBookInfo" class="text-sm font-bold text-brand-navy mt-1">김영하 · 복복서가</p>
+                                        <p id="homeBookMeeting" class="mt-3 text-sm font-bold text-brand-navy">7월 11일 오후 8시 · LIVE ROOM</p>
+                                        <p id="homeBookRange" class="text-xs text-gray-500 leading-relaxed mt-2">읽기 범위 1~180쪽 · 논제: 인간다움, 선택, 작별의 의미</p>
+                                        <div class="mt-4 rounded-2xl bg-brand-sageLight/70 border border-brand-sage/20 p-3">
+                                            <p class="text-xs font-bold text-brand-sageDark">지금 LIVE 참여 투표가 진행 중이에요. 모임 전까지 참여 여부를 알려주세요.</p>
+                                        </div>
+                                        <div class="flex flex-wrap gap-2 mt-4">
+                                            <button class="px-4 py-2.5 rounded-xl bg-brand-navy text-white text-xs font-bold hover:bg-brand-navyLight transition-colors" data-go="live">참여 투표하기</button>
+                                            <button class="px-4 py-2.5 rounded-xl bg-brand-ivory text-brand-navy text-xs font-bold hover:bg-brand-sageLight transition-colors" data-go="book">모임 일정 보기</button>
+                                        </div>
                                     </div>
                                 </div>
                             </article>
 
-                            <div class="space-y-6">
-                                <article class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-5">
+                            <article class="meeting-live-summary bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-5">
+                                <div class="flex items-center justify-between gap-3">
                                     <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-50 text-orange-700 text-[11px] font-bold border border-orange-100">🔴 LIVE 예정</span>
-                                    <h2 class="serif-title text-xl font-bold text-brand-navy mt-4">7월 11일 오후 8:00</h2>
-                                    <p class="text-xs text-gray-500 leading-relaxed mt-2">채팅 중심 LIVE ROOM · 음성 AI 요약 · 참여 예정 14명</p>
-                                    <button class="mt-4 w-full py-3 rounded-xl bg-brand-navy text-white text-xs font-bold hover:bg-brand-navyLight transition-colors" data-go="live">LIVE 탭 보기</button>
-                                </article>
-                                <article class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-5">
-                                    <span class="text-xs font-bold text-brand-sage tracking-wider uppercase">다음 일정</span>
-                                    <h2 id="homeNextSchedule" class="serif-title text-xl font-bold text-brand-navy mt-1">7월 18일</h2>
-                                    <p class="text-xs text-gray-500 leading-relaxed mt-2">『아몬드』 사전 대화 · 일반 채팅방</p>
-                                    <button class="mt-4 w-full py-3 rounded-xl bg-brand-ivory text-brand-navy text-xs font-bold hover:bg-brand-sageLight transition-colors" data-go="schedule">일정 보기</button>
-                                </article>
-                            </div>
+                                    <span class="text-[11px] font-bold text-brand-sageDark bg-brand-sageLight px-2.5 py-1 rounded-full">AI 요약 ON</span>
+                                </div>
+                                <h2 class="serif-title text-xl font-bold text-brand-navy mt-3">7월 11일 오후 8:00</h2>
+                                <p class="text-xs text-gray-500 leading-relaxed mt-1">채팅 중심 LIVE ROOM · 음성 보조 · 종료 리포트 생성</p>
+                                <div class="mt-4 grid grid-cols-2 gap-2 text-center">
+                                    <div class="rounded-xl bg-brand-ivory/70 border border-brand-ivoryDark p-3"><strong class="block text-brand-navy text-lg">5명</strong><span class="text-[10px] font-bold text-gray-500">참여 예정</span></div>
+                                    <div class="rounded-xl bg-brand-ivory/70 border border-brand-ivoryDark p-3"><strong class="block text-brand-navy text-lg">D-3</strong><span class="text-[10px] font-bold text-gray-500">투표 마감</span></div>
+                                </div>
+                                <button class="mt-4 w-full py-3 rounded-xl bg-brand-navy text-white text-xs font-bold hover:bg-brand-navyLight transition-colors" data-go="live">LIVE ROOM 확인하기</button>
+                            </article>
                         </div>
 
-                        <article class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-6">
-                            <div class="flex items-center justify-between gap-3 mb-4">
-                                <h2 class="serif-title text-xl font-bold text-brand-navy">최근 활동</h2>
-                                <button class="px-3 py-2 rounded-xl bg-brand-ivory text-brand-navy text-[11px] font-bold hover:bg-brand-sageLight transition-colors" data-go="board">게시판</button>
-                            </div>
-                            <ul id="activityList" class="space-y-2 text-xs text-brand-navy"></ul>
-                        </article>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                            <article class="meeting-home-card bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-5">
+                                <div class="mb-4">
+                                    <span class="text-xs font-bold text-brand-sage tracking-wider uppercase">CLUB STATUS</span>
+                                    <h2 class="serif-title text-xl font-bold text-brand-navy mt-1">모임 현황</h2>
+                                    <p class="text-xs text-gray-500 mt-1">새 글과 댓글, LIVE 준비 소식을 한눈에 모았어요.</p>
+                                </div>
+                                <div id="activityList" class="meeting-status-list compact"></div>
+                            </article>
+
+                            <article class="meeting-home-card bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-5">
+                                <div class="mb-4">
+                                    <span class="text-xs font-bold text-brand-sage tracking-wider uppercase">ONLINE MEMBERS</span>
+                                    <h2 class="serif-title text-xl font-bold text-brand-navy mt-1">접속중 멤버</h2>
+                                    <p class="text-xs text-gray-500 mt-1"><strong id="homeOnlineCount" class="text-brand-sageDark">🟢 5명</strong>이 지금 모임에 접속해 있어요.</p>
+                                </div>
+                                <div id="homeOnlinePreview" class="online-preview-list mb-3"></div>
+                                <div class="rounded-2xl bg-brand-sageLight/70 border border-brand-sage/20 p-3 mb-3">
+                                    <p class="text-xs font-bold text-brand-sageDark leading-relaxed">지금 접속한 멤버들과 바로 인사를 나누고, 오늘 읽은 문장을 가볍게 공유해보세요.</p>
+                                </div>
+                                <button class="w-full py-3 rounded-xl bg-brand-navy text-white text-xs font-bold hover:bg-brand-navyLight transition-colors" data-go="chat">채팅하기</button>
+                            </article>
+                        </div>
                     </section>
 
                     <section id="view-chat" class="view space-y-6">
                         <div class="border-b border-brand-ivoryDark pb-5">
                             <span class="text-xs font-bold text-brand-sage tracking-wider uppercase">COMMUNITY CHAT</span>
                             <h2 class="serif-title text-2xl font-bold text-brand-navy mt-1">채팅</h2>
-                            <p class="text-xs text-gray-500 mt-2">평소 모임 대화, 사진 공유, AI 호출을 위한 공간입니다.</p>
+                            <p class="text-xs text-gray-500 mt-2">모임원들끼리 자유롭게 대화하고 사진을 나누는 공간입니다. AI 모아는 LIVE에서만 함께합니다.</p>
                         </div>
                         <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_280px] gap-6">
                             <article class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm overflow-hidden flex flex-col min-h-[560px]">
-                                <div class="px-5 py-4 border-b border-brand-ivoryDark bg-brand-ivory/40 text-xs font-bold text-brand-navy">📌 이번 주 토론 전까지 『작별인사』 4장까지 읽어주세요.</div>
                                 <div id="chatFeed" class="chat-feed flex-1 p-5 overflow-y-auto space-y-3 bg-gradient-to-b from-brand-ivory/30 to-white custom-scrollbar"></div>
                                 <form id="chatForm" class="p-4 border-t border-brand-ivoryDark bg-white flex items-center gap-2">
                                     <button type="button" id="addPhotoMessageBtn" title="사진 첨부" class="w-10 h-10 rounded-xl bg-brand-ivory border border-brand-ivoryDark text-brand-navy font-bold hover:bg-brand-sageLight transition-colors">＋</button>
                                     <button type="button" id="emojiChatBtn" title="이모지" class="w-10 h-10 rounded-xl bg-brand-ivory border border-brand-ivoryDark text-brand-navy font-bold hover:bg-brand-sageLight transition-colors">😊</button>
-                                    <input id="chatInput" class="flex-1 px-4 py-3 rounded-xl bg-brand-ivory/70 border border-brand-ivoryDark text-sm outline-none focus:border-brand-sage" placeholder="메시지를 입력하세요. 예: 모아야, 이 장면 설명해줘" autocomplete="off" />
+                                    <input id="chatInput" class="flex-1 px-4 py-3 rounded-xl bg-brand-ivory/70 border border-brand-ivoryDark text-sm outline-none focus:border-brand-sage" placeholder="모임원들과 자유롭게 이야기해보세요." autocomplete="off" />
                                     <button class="px-5 py-3 rounded-xl bg-brand-navy text-white text-xs font-bold hover:bg-brand-navyLight transition-colors" type="submit">전송</button>
                                 </form>
                             </article>
@@ -1128,32 +1209,55 @@
                     </section>
 
                     <section id="view-book" class="view space-y-6">
-                        <div class="border-b border-brand-ivoryDark pb-5">
-                            <span class="text-xs font-bold text-brand-sage tracking-wider uppercase">READING BOOKS</span>
-                            <h2 class="serif-title text-2xl font-bold text-brand-navy mt-1">전체 주제도서</h2>
-                            <p class="text-xs text-gray-500 mt-2">이전·현재·다음 주제도서를 한 흐름으로 관리하고, 토론 기록과 아카이브를 연결합니다.</p>
-                        </div>
-                        <article class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-6">
-                            <span class="text-xs font-bold text-brand-sage tracking-wider uppercase">현재 주제도서</span>
-                            <div class="grid grid-cols-[100px_minmax(0,1fr)] sm:grid-cols-[140px_minmax(0,1fr)] gap-5 mt-4 items-center">
-                                <div id="bookCoverTitle" class="aspect-[2/3] rounded-2xl bg-gradient-to-br from-brand-sage to-brand-navy text-white shadow-sm flex items-center justify-center text-center px-3 overflow-hidden"><span class="serif-title font-bold">작별인사</span></div>
-                                <div>
-                                    <h3 id="bookTitle" class="serif-title text-2xl font-bold text-brand-navy">작별인사</h3>
-                                    <p id="bookMeta" class="text-sm font-bold text-brand-navy mt-1">김영하 · 복복서가</p>
-                                    <p id="bookDiscussDate" class="text-xs text-gray-500 mt-3">토론일: 7월 11일 오후 8시 · LIVE ROOM</p>
-                                    <p id="bookDiscussionPoints" class="text-xs text-gray-500 leading-relaxed mt-2">논제: 인간다움, 선택, 작별의 의미</p>
-                                </div>
+                        <div class="border-b border-brand-ivoryDark pb-5 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+                            <div>
+                                <span class="text-xs font-bold text-brand-sage tracking-wider uppercase">MEETING SCHEDULE</span>
+                                <h2 class="serif-title text-2xl font-bold text-brand-navy mt-1">모임 일정</h2>
+                                <p class="text-xs text-gray-500 mt-2">주제도서와 모임 일정을 한 화면에서 관리합니다.</p>
                             </div>
-                        </article>
-                        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                            <article class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-5">
-                                <h3 class="font-bold text-sm text-brand-navy mb-3">이전 주제도서</h3>
-                                <div id="previousTopicList" class="space-y-3"></div>
+                            <button id="openScheduleEditorBtn" class="master-only px-4 py-2.5 rounded-xl bg-brand-navy text-white text-xs font-bold hover:bg-brand-navyLight transition-colors">모임 일정 수정</button>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-6">
+                            <article class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-6 meeting-plan-card">
+                                <div class="flex items-center justify-between gap-3 mb-4">
+                                    <span class="text-xs font-bold text-brand-sage tracking-wider uppercase">이번 모임</span>
+                                    <span id="currentMeetingType" class="px-3 py-1.5 rounded-full bg-orange-50 text-orange-700 text-[11px] font-bold border border-orange-100">LIVE</span>
+                                </div>
+                                <div class="grid grid-cols-[100px_minmax(0,1fr)] sm:grid-cols-[140px_minmax(0,1fr)] gap-5 items-center">
+                                    <div id="bookCoverTitle" class="aspect-[2/3] rounded-2xl bg-white text-brand-navy shadow-sm flex items-center justify-center text-center px-3 overflow-hidden border border-brand-ivoryDark"><span class="serif-title font-bold">작별인사</span></div>
+                                    <div>
+                                        <h3 id="bookTitle" class="serif-title text-2xl font-bold text-brand-navy">작별인사</h3>
+                                        <p id="bookMeta" class="text-sm font-bold text-brand-navy mt-1">김영하 · 복복서가</p>
+                                        <div class="meeting-info-list mt-4">
+                                            <p id="bookDiscussDate">📅 7월 11일 오후 8시 · LIVE ROOM</p>
+                                            <p id="bookReadingRange">📖 읽기 범위 1~180쪽</p>
+                                            <p id="bookDiscussionPoints">💬 논제: 인간다움, 선택, 작별의 의미</p>
+                                        </div>
+                                        <div class="flex flex-wrap gap-2 mt-4 master-only">
+                                            <button id="inlineCurrentEditBtn" type="button" class="small-button">수정</button>
+                                            <button type="button" class="danger-button" id="finishCurrentMeetingBtn">모임 종료</button>
+                                        </div>
+                                        <form id="currentInlineEditForm" class="hidden master-only schedule-inline-editor mt-4 space-y-2">
+                                            <div class="grid grid-cols-[1fr_auto] gap-2"><input id="currentScheduleTitle" class="px-3 py-2.5 bg-white border border-brand-ivoryDark rounded-xl text-xs" placeholder="도서명"><button type="button" id="searchCurrentBookBtn" class="px-3 py-2.5 rounded-xl bg-brand-ivory text-brand-navy text-xs font-bold">책 검색</button></div>
+                                            <input id="currentScheduleAuthor" class="w-full px-3 py-2.5 bg-white border border-brand-ivoryDark rounded-xl text-xs" placeholder="저자">
+                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2"><input id="currentScheduleDate" class="px-3 py-2.5 bg-white border border-brand-ivoryDark rounded-xl text-xs" placeholder="일시"><select id="currentSchedulePlace" class="px-3 py-2.5 bg-white border border-brand-ivoryDark rounded-xl text-xs"><option>LIVE ROOM</option><option>오프라인</option><option>혼합</option></select></div>
+                                            <input id="currentScheduleRange" class="w-full px-3 py-2.5 bg-white border border-brand-ivoryDark rounded-xl text-xs" placeholder="읽기 범위">
+                                            <textarea id="currentSchedulePoints" rows="2" class="w-full p-3 bg-white border border-brand-ivoryDark rounded-xl text-xs" placeholder="토론주제 / 논제"></textarea>
+                                            <div class="flex justify-end gap-2"><button type="button" id="cancelCurrentInlineEditBtn" class="px-3 py-2 rounded-xl bg-brand-ivory text-brand-navy text-[11px] font-bold">취소</button><button type="submit" class="px-4 py-2 rounded-xl bg-brand-navy text-white text-[11px] font-bold">저장</button></div>
+                                        </form>
+                                    </div>
+                                </div>
                             </article>
-                            <article class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-5">
-                                <div class="flex items-center justify-between gap-3 mb-3"><h3 class="font-bold text-sm text-brand-navy">다음 주제도서</h3><button id="showNextBookFormBtn" class="master-only px-3 py-2 rounded-xl bg-brand-ivory text-brand-navy text-[11px] font-bold hover:bg-brand-sageLight">추가</button></div>
+
+                            <article class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-5 meeting-plan-card">
+                                <div class="flex items-center justify-between gap-3 mb-4">
+                                    <span class="text-xs font-bold text-brand-sage tracking-wider uppercase">다음 모임</span>
+                                    <button id="showNextBookFormBtn" class="master-only px-3 py-2 rounded-xl bg-brand-ivory text-brand-navy text-[11px] font-bold hover:bg-brand-sageLight">도서 추가</button>
+                                </div>
+                                <div id="nextMeetingPreview" class="mb-4"></div>
                                 <form id="nextTopicForm" class="hidden space-y-2 mb-4 border border-brand-ivoryDark rounded-2xl p-3 bg-brand-ivory/30">
-                                    <input id="nextTopicTitle" class="w-full px-3 py-2 bg-white border border-brand-ivoryDark rounded-xl text-xs" placeholder="도서명" />
+                                    <div class="grid grid-cols-[1fr_auto] gap-2"><input id="nextTopicTitle" class="w-full px-3 py-2 bg-white border border-brand-ivoryDark rounded-xl text-xs" placeholder="도서명" /><button type="button" id="searchNextTopicBookBtn" class="px-3 py-2 rounded-xl bg-brand-ivory text-brand-navy text-[11px] font-bold">책 검색</button></div>
                                     <input id="nextTopicAuthor" class="w-full px-3 py-2 bg-white border border-brand-ivoryDark rounded-xl text-xs" placeholder="저자" />
                                     <input id="nextTopicDate" class="w-full px-3 py-2 bg-white border border-brand-ivoryDark rounded-xl text-xs" placeholder="모임 예정일" />
                                     <textarea id="nextTopicMemo" rows="2" class="w-full px-3 py-2 bg-white border border-brand-ivoryDark rounded-xl text-xs" placeholder="상세내용 메모"></textarea>
@@ -1162,6 +1266,11 @@
                                 <div id="nextTopicList" class="space-y-3"></div>
                             </article>
                         </div>
+
+                        <article class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-5">
+                            <h3 class="font-bold text-sm text-brand-navy mb-3">이전 모임 기록</h3>
+                            <div id="previousTopicList" class="space-y-3"></div>
+                        </article>
                     </section>
 
                     <section id="view-live" class="view space-y-6">
@@ -1170,22 +1279,35 @@
                             <h2 class="serif-title text-2xl font-bold text-brand-navy mt-1">LIVE</h2>
                             <p class="text-xs text-gray-500 mt-2">LIVE는 커뮤니티 탭이 아니라 별도의 채팅 중심 독서토론방으로 입장합니다.</p>
                         </div>
-                        <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px] gap-6">
-                            <article class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-6">
-                                <span class="inline-flex px-3 py-1.5 rounded-full bg-orange-50 text-orange-700 text-[11px] font-bold border border-orange-100">🔴 시작 1시간 전 입장 가능</span>
-                                <h3 id="liveBookTitle" class="serif-title text-2xl font-bold text-brand-navy mt-4">작별인사</h3>
-                                <p class="text-xs text-gray-500 mt-2 leading-relaxed">LIVE ROOM은 대화창 중심으로 열리며, 음성 참여자의 발언은 AI가 채팅에 요약해 대화 흐름을 이어줍니다.</p>
-                                <button onclick="location.href='live.html'" class="mt-5 px-6 py-3 rounded-xl bg-brand-navy text-white text-xs font-bold hover:bg-brand-navyLight transition-colors inline-flex items-center gap-2"><i data-lucide="radio" class="w-4 h-4"></i> LIVE ROOM 입장</button>
-                            </article>
-                            <article class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-6 live-vote-card">
+                        <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-6">
+                            <article class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-5 live-compact-card">
                                 <div class="flex items-center justify-between gap-3 mb-3">
+                                    <span class="inline-flex px-3 py-1.5 rounded-full bg-orange-50 text-orange-700 text-[11px] font-bold border border-orange-100">🔴 LIVE 예정</span>
+                                    <span class="text-[11px] font-bold text-gray-500">시작 1시간 전 입장 가능</span>
+                                </div>
+                                <h3 id="liveBookTitle" class="serif-title text-xl font-bold text-brand-navy">작별인사</h3>
+                                <p id="liveMeetingMeta" class="text-xs text-gray-500 mt-2 leading-relaxed">7월 11일 오후 8시 · LIVE ROOM</p>
+                                <div class="live-room-brief mt-4">
+                                    <p><strong>오늘의 주제</strong><span id="liveBriefTopic">인간다움, 선택, 작별의 의미</span></p>
+                                    <p><strong>읽기 범위</strong><span id="liveBriefRange">1~180쪽</span></p>
+                                    <p><strong>참여 안내</strong><span>입장 전 참여 투표를 남기면 모임장이 진행 순서를 준비할 수 있어요.</span></p>
+                                </div>
+                                <button onclick="window.open('live.html', '_blank', 'noopener,noreferrer')" class="mt-4 w-full px-5 py-3 rounded-xl bg-brand-navy text-white text-xs font-bold hover:bg-brand-navyLight transition-colors inline-flex items-center justify-center gap-2"><i data-lucide="radio" class="w-4 h-4"></i> LIVE ROOM 입장</button>
+                            </article>
+
+                            <article class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-5 live-vote-card live-vote-wide">
+                                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
                                     <div>
                                         <span class="text-xs font-bold text-brand-sage tracking-wider uppercase">참여 투표</span>
                                         <h3 class="serif-title text-xl font-bold text-brand-navy mt-1">온라인 모임 참여 여부</h3>
+                                        <p class="text-xs text-gray-500 leading-relaxed mt-2">라이브 시작 하루 전까지 투표할 수 있어요.</p>
                                     </div>
-                                    <span id="liveVoteSummary" class="px-3 py-1.5 rounded-full bg-brand-sageLight text-brand-sageDark text-[11px] font-bold">총 8명 중 5명 참여 예정</span>
+                                    <div class="live-vote-count text-center sm:text-right">
+                                        <strong id="liveVoteJoinCount">5명</strong>
+                                        <span id="liveVoteSummary">총 8명 중 5명 참여 예정</span>
+                                    </div>
                                 </div>
-                                <p class="text-xs text-gray-500 leading-relaxed mb-4">라이브 시작 하루 전까지 투표할 수 있어요. 참여가 어렵다면 댓글로 사유를 남겨주세요.</p>
+                                <div class="live-vote-bar mb-4"><span id="liveVoteBar" style="width:62.5%"></span></div>
                                 <div class="grid sm:grid-cols-2 gap-2 mb-3">
                                     <button id="voteJoinBtn" type="button" class="live-vote-btn active px-4 py-3 rounded-xl text-xs font-bold border border-brand-sage bg-brand-sageLight text-brand-sageDark">참여</button>
                                     <button id="voteMaybeBtn" type="button" class="live-vote-btn px-4 py-3 rounded-xl text-xs font-bold border border-brand-ivoryDark bg-brand-ivory text-brand-navy">다음에 참여</button>
@@ -1196,24 +1318,11 @@
                                 </form>
                                 <div id="liveVoteComments" class="mt-4 space-y-2 text-xs"></div>
                             </article>
-                            <aside class="space-y-4">
-                                <div class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-5">
-                                    <h3 class="font-bold text-sm text-brand-navy mb-3">AI 역할</h3>
-                                    <div class="space-y-2">
-                                        <button class="ai-role-choice w-full px-3 py-2.5 rounded-xl bg-brand-sageLight text-brand-sageDark text-xs font-bold text-left" data-role="퍼실리테이터">퍼실리테이터</button>
-                                        <button class="ai-role-choice w-full px-3 py-2.5 rounded-xl bg-brand-ivory text-brand-navy text-xs font-bold text-left" data-role="보조">보조</button>
-                                        <button class="ai-role-choice w-full px-3 py-2.5 rounded-xl bg-brand-ivory text-brand-navy text-xs font-bold text-left" data-role="AI 없음">AI 없음</button>
-                                    </div>
-                                    <p class="text-xs text-gray-500 leading-relaxed mt-3">현재 설정: <strong id="communityAiMode" class="text-brand-navy">퍼실리테이터</strong></p>
-                                </div>
-                                <div class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-5">
-                                    <h3 class="font-bold text-sm text-brand-navy mb-3">음성 보조</h3>
-                                    <div class="space-y-2 text-xs text-brand-navy"><label class="flex items-center gap-2"><input type="checkbox" checked> AI 음성인식 요약</label><label class="flex items-center gap-2"><input type="checkbox" checked> 종료 리포트 생성</label></div>
-                                </div>
-                            </aside>
+
+
                         </div>
                         <article class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-5">
-                            <div class="flex items-center justify-between gap-3 mb-3"><h3 class="font-bold text-sm text-brand-navy">최근 LIVE 리포트</h3><button id="previewLiveReportBtn" class="px-3 py-2 rounded-xl bg-brand-ivory text-brand-navy text-[11px] font-bold">새로고침</button></div>
+                            <div class="flex items-center justify-between gap-3 mb-3"><h3 class="font-bold text-sm text-brand-navy">독서모임 아카이브</h3><button id="previewLiveReportBtn" class="px-3 py-2 rounded-xl bg-brand-ivory text-brand-navy text-[11px] font-bold">새로고침</button></div>
                             <div id="reportPreviewList" class="space-y-3"></div>
                         </article>
                     </section>
@@ -1526,6 +1635,15 @@
                 <span class="text-xs font-bold text-brand-sage tracking-wider uppercase">독서 아카이브</span>
                 <h1 class="serif-title text-3xl font-bold text-brand-navy mt-1">지나간 사유의 기록들</h1>
                 <p class="text-gray-500 text-xs mt-2">나와 동료들이 함께 깊게 고민했던 흔적들을 꺼내어 봅니다.</p>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-brand-ivoryDark shadow-sm p-5">
+                <div class="mb-4">
+                    <span class="text-xs font-bold text-brand-sage tracking-wider uppercase">독서모임 아카이브</span>
+                    <h2 class="serif-title text-xl font-bold text-brand-navy mt-1">함께 읽고 나눈 기록</h2>
+                    <p class="text-xs text-gray-500 mt-2">목록에서는 핵심 정보만 확인하고, 독서기록 보기를 누르면 상세 기록이 별도 화면으로 자연스럽게 열립니다.</p>
+                </div>
+                <div id="liveMeetingArchiveList" class="report-preview-list"></div>
             </div>
             
             <div class="space-y-4">
@@ -2312,6 +2430,8 @@
     </div>
 
 
+
+
     <!-- AI Conversation Share Modal -->
     <div id="ai-share-modal" class="fixed inset-0 z-[140] hidden bg-brand-navy/60 backdrop-blur-sm items-center justify-center p-4" onclick="if(event.target.id==='ai-share-modal') closeAIShareModal()">
         <div class="bg-white w-full max-w-3xl max-h-[86vh] rounded-[2rem] shadow-2xl border border-brand-ivoryDark overflow-hidden flex flex-col animate-fadeIn">
@@ -2340,6 +2460,43 @@
     <script src="js/app.js"></script>
     <script src="js/gathering.js"></script>
     <script src="js/meeting-community.js"></script>
+    <script id="bookmate-embedded-live-room-nav">
+    function openEmbeddedLiveRoom(){
+        try {
+            window.open('live.html', '_blank', 'noopener');
+        } catch(e) {
+            location.href = 'live.html';
+        }
+    }
+    function returnToMeetingLiveTab(){
+        try {
+            if (typeof navigate === 'function') navigate('club-meeting');
+            setTimeout(function(){
+                var liveBtn = document.querySelector('#view-club-meeting .nav-item[data-view="live"]');
+                if (liveBtn) liveBtn.click();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                if (window.lucide) lucide.createIcons();
+            }, 80);
+        } catch(e) {}
+    }
+    </script>
+
+    <script>
+    (function(){
+        if (!window.__BOOKMATE_RETURN_LIVE__) return;
+        function openLiveTab(){
+            try { if (typeof navigate === 'function') navigate('club-meeting'); } catch(e) {}
+            setTimeout(function(){
+                var liveBtn = document.querySelector('#view-club-meeting .nav-item[data-view="live"]');
+                if (liveBtn) liveBtn.click();
+                try { sessionStorage.removeItem('bookmate_return_live'); } catch(e) {}
+                try { if (location.hash === '#live') history.replaceState(null, '', location.pathname + location.search); } catch(e) {}
+            }, 160);
+        }
+        window.addEventListener('load', function(){ [80, 320, 900].forEach(function(ms){ setTimeout(openLiveTab, ms); }); });
+    })();
+    </script>
+    <script src="live.js"></script>
     <script src="js/ai.js"></script>
     <script src="js/archive.js"></script>
     <script src="js/lounge.js"></script>
@@ -2354,7 +2511,7 @@
         function forceGuestLanding(){
             if (!window.__BOOKMATE_FORCE_GUEST_HOME__) return;
             try {
-                ['bookmate_v2_auth_session','bookmate_auth_session','bookmate_current_view','bookmate_last_view','bookmate_active_view'].forEach(function(k){ localStorage.removeItem(k); });
+                ['bookmate_v2_auth_session','bookmate_auth_session','bookmate_current_view','bookmate_last_view','bookmate_active_view','bookmate_meeting_phase15_guest_lock_flat_cover','bookmate_meeting_phase14_flatcover_guestavatar','bookmate_meeting_phase13_realfix','bookmate_meeting_phase12_guest_cover_fix'].forEach(function(k){ localStorage.removeItem(k); });
                 if (location.hash === '#club-meeting' || location.hash === '#meeting') history.replaceState(null, '', location.pathname + location.search);
             } catch(e) {}
             try {
@@ -2378,9 +2535,19 @@
             var style = document.getElementById('bookmate-startup-guard-style'); if (style) style.remove();
         }
         [0,30,120,300,700].forEach(function(ms){ setTimeout(forceGuestLanding, ms); });
-        window.addEventListener('load', function(){ setTimeout(forceGuestLanding, 0); setTimeout(function(){ window.__BOOKMATE_FORCE_GUEST_HOME__ = false; }, 1000); });
+        window.addEventListener('load', function(){ setTimeout(forceGuestLanding, 0); setTimeout(function(){ window.__BOOKMATE_FORCE_GUEST_HOME__ = false; }, 3000); });
     })();
     </script>
+
+    <dialog id="meetingArchiveDialog" class="meeting-archive-dialog" aria-labelledby="meetingArchiveDialogTitle">
+        <div class="meeting-archive-dialog-shell">
+            <div class="meeting-archive-dialog-topbar">
+                <strong id="meetingArchiveDialogTitle">독서기록</strong>
+                <button id="meetingArchiveDialogClose" type="button" aria-label="독서기록 닫기">×</button>
+            </div>
+            <div id="meetingArchiveDialogBody" class="meeting-archive-dialog-body"></div>
+        </div>
+    </dialog>
 
 </body>
 </html>

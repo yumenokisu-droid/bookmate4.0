@@ -6,73 +6,120 @@
   <title>BOOKMATE LIVE ROOM</title>
   <link rel="stylesheet" href="meeting.css" />
 </head>
-<body class="live-body">
-  <div class="live-shell-v2">
-    <header class="live-header-v2">
-      <a href="index.html" class="back-link">← BOOKMATE로 돌아가기</a>
-      <div>
-        <p class="eyebrow">우리의 문학 LIVE</p>
-        <h1>『작별인사』 독서토론</h1>
+<body class="live-body live-room-page">
+  <div class="live-room-shell">
+    <header class="live-room-header">
+      <button type="button" class="live-back-button" id="liveBackLink">← BOOKMATE로 돌아가기</button>
+      <div class="live-room-heading">
+        <span class="live-room-kicker">우리의 문학 · LIVE ROOM</span>
+        <h1>함께 읽고, 바로 이야기하는 독서모임</h1>
       </div>
-      <div class="live-header-actions">
-        <span class="status-pill live" id="liveStatusPill">LIVE 준비중</span>
-        <strong id="liveClock">00:00</strong>
+      <div class="live-room-status">
+        <span class="live-status-badge" id="liveStatusPill">LIVE 진행중</span>
+        <strong id="liveClock">00:18:42</strong>
       </div>
     </header>
 
-    <main class="live-main-v2">
-      <section class="live-chat-main card">
-        <div class="live-chat-title">
-          <div>
-            <p class="eyebrow">대화 중심 LIVE ROOM</p>
-            <h2>💬 LIVE 대화</h2>
-          </div>
-          <button class="small-button" id="simulateVoiceBtn">음성 발언 요약 예시</button>
+    <section class="live-context-bar">
+      <div class="live-book-context">
+        <span class="context-label">현재 주제도서</span>
+        <div>
+          <strong id="currentBookTitle">『작별인사』</strong>
+          <span id="currentBookAuthor">김영하</span>
         </div>
-        <div id="liveChatStream" class="live-chat-stream"></div>
-        <form id="liveRoomForm" class="live-input-bar">
-          <button type="button" class="icon-btn" id="emojiBtn">😊</button>
-          <button type="button" class="icon-btn" id="attachBtn">📎</button>
-          <input id="liveRoomInput" placeholder="메시지를 입력하세요. 예: 모아야, 다음 질문 부탁해" autocomplete="off" />
-          <button type="button" class="icon-btn" id="micBtn">🎤</button>
-          <button class="primary-button" type="submit">보내기</button>
+        <button type="button" class="context-change-button host-only" id="changeBookBtn">주제도서 변경</button>
+      </div>
+      <div class="live-prompt-context">
+        <span class="context-label">이번 모임 발제문</span>
+        <strong id="currentPrompt">기억이 흔들리는 순간에도 인간다움은 유지될 수 있을까요?</strong>
+      </div>
+    </section>
+
+    <main class="live-room-layout">
+      <section class="live-conversation-card">
+        <div class="conversation-head">
+          <div>
+            <span class="conversation-eyebrow">실시간 대화</span>
+            <h2>LIVE 대화</h2>
+          </div>
+          <span class="api-status" id="apiStatus">AI 연결 준비됨</span>
+        </div>
+
+        <div id="liveChatStream" class="live-chat-scroll" aria-live="polite"></div>
+
+        <div class="emoji-picker" id="emojiPicker" hidden>
+          <button type="button">😊</button><button type="button">👍</button><button type="button">❤️</button>
+          <button type="button">👏</button><button type="button">📚</button><button type="button">🤔</button>
+          <button type="button">😢</button><button type="button">✨</button>
+        </div>
+
+        <form id="liveRoomForm" class="live-message-composer">
+          <button type="button" class="composer-icon" id="emojiBtn" aria-label="이모티콘">😊</button>
+          <button type="button" class="composer-icon" id="attachBtn" aria-label="자료 첨부">📎</button>
+          <input id="liveRoomInput" placeholder="메시지를 입력하세요. 모아를 부르려면 ‘모아야’라고 입력해보세요." autocomplete="off" />
+          <button type="button" class="composer-icon mic-button" id="micBtn" aria-label="음성 발언">🎤</button>
+          <button class="composer-send" type="submit">보내기</button>
         </form>
+
+        <details class="host-control-panel host-only" id="hostControlPanel">
+          <summary>모임장 AI 설정 및 제어</summary>
+          <div class="host-control-body">
+            <section>
+              <h3>AI 진행 설정</h3>
+              <div class="host-role-options">
+                <label><input type="radio" name="liveAiRole" value="퍼실리테이터" checked><span><strong>퍼실리테이터</strong><small>발제, 흐름 정리, 참여 유도까지 토론 진행을 돕습니다.</small></span></label>
+                <label><input type="radio" name="liveAiRole" value="보조"><span><strong>보조</strong><small>‘모아야’라고 호출했을 때 작품 정보와 질문에 답합니다.</small></span></label>
+                <label><input type="radio" name="liveAiRole" value="없음"><span><strong>AI 없음</strong><small>AI 개입 없이 모임원끼리 자유롭게 진행합니다.</small></span></label>
+              </div>
+            </section>
+            <section>
+              <h3>모임장 AI 제어</h3>
+              <div class="host-action-grid">
+                <button type="button" id="nextPromptBtn">다음 질문</button>
+                <button type="button" id="summaryBtn">현재까지 요약</button>
+                <button type="button" id="encourageBtn">참여 유도</button>
+                <button type="button" id="finishBtn" class="danger">종료 리포트</button>
+              </div>
+            </section>
+          </div>
+        </details>
       </section>
 
-      <aside class="live-sidebar-v2">
-        <section class="card compact-panel">
-          <h3>🤖 AI 역할</h3>
-          <label><input type="radio" name="liveAiRole" value="퍼실리테이터" checked> 퍼실리테이터</label>
-          <label><input type="radio" name="liveAiRole" value="보조"> 보조</label>
-          <label><input type="radio" name="liveAiRole" value="없음"> AI 없음</label>
-          <p class="muted" id="roleDesc">AI가 발제문, 발언순서, 시간관리, 참여유도를 자연스럽게 진행합니다.</p>
+      <aside class="live-right-rail">
+        <section class="rail-card participant-card">
+          <div class="rail-title-row"><h2>참여자</h2><span id="participantCount">5명</span></div>
+          <div id="participantList" class="participant-scroll"></div>
         </section>
 
-        <section class="card compact-panel master-panel">
-          <h3>모임장 AI 제어</h3>
-          <button class="primary-button full" id="nextPromptBtn">다음 발제문</button>
-          <button class="small-button full" id="summaryBtn">현재까지 요약</button>
-          <button class="small-button full" id="balanceBtn">발언 균형</button>
-          <button class="small-button full" id="encourageBtn">참여 유도</button>
-          <button class="danger-button full" id="finishBtn">종료 리포트 생성</button>
-        </section>
-
-        <section class="card compact-panel">
-          <h3>🎤 음성 보조</h3>
-          <label class="toggle-row"><input type="checkbox" id="voiceSummaryToggle" checked> AI 음성인식 요약</label>
-          <label class="toggle-row"><input type="checkbox" id="voiceRecordToggle"> 음성 기록 저장</label>
-          <p class="muted">음성으로 말한 내용을 AI가 1인칭 요약으로 채팅 흐름에 올립니다.</p>
-        </section>
-
-        <section class="card compact-panel">
-          <h3>👥 참여자</h3>
-          <div id="participantList" class="participant-list"></div>
-          <h3>✋ 발언순서</h3>
-          <ol id="speakerQueue" class="speaker-queue"></ol>
+        <section class="rail-card voice-control-card">
+          <div class="rail-title-row"><h2>내 음성 설정</h2><span class="self-name">달빛독서가</span></div>
+          <label class="voice-toggle-row">
+            <span><strong>마이크</strong><small id="micStateText">켜짐</small></span>
+            <input type="checkbox" id="micToggle" checked>
+          </label>
+          <label class="voice-slider-row"><span>스피커 음량</span><input type="range" id="speakerVolume" min="0" max="100" value="72"><output id="speakerVolumeOut">72</output></label>
+          <label class="voice-slider-row"><span>내 마이크 음량</span><input type="range" id="micVolume" min="0" max="100" value="64"><output id="micVolumeOut">64</output></label>
+          <label class="voice-toggle-row">
+            <span><strong>음성 요약</strong><small>긴 발언을 한 번에 정리</small></span>
+            <input type="checkbox" id="voiceSummaryToggle" checked>
+          </label>
+          <p class="voice-help">마이크가 켜진 상태에서 아래 대화창의 🎤 버튼을 누르면 음성 발언 예시가 대화에 추가됩니다.</p>
         </section>
       </aside>
     </main>
   </div>
+
+  <dialog id="bookDialog" class="book-change-dialog">
+    <form method="dialog">
+      <div class="dialog-head"><h2>주제도서 변경</h2><button value="cancel" aria-label="닫기">×</button></div>
+      <p>모임 중 다른 책으로 넘어갈 수 있어요. 변경하면 AI 모아도 새 책을 기준으로 대화합니다.</p>
+      <label>책 제목<input id="bookTitleInput" value="데미안"></label>
+      <label>저자<input id="bookAuthorInput" value="헤르만 헤세"></label>
+      <label>새 발제문<input id="bookPromptInput" value="싱클레어의 성장은 타인과의 관계 속에서 어떻게 달라졌을까요?"></label>
+      <div class="dialog-actions"><button value="cancel">취소</button><button type="button" id="applyBookBtn" class="primary">변경 적용</button></div>
+    </form>
+  </dialog>
+
   <div class="toast" id="toast"></div>
   <script src="live.js"></script>
 </body>

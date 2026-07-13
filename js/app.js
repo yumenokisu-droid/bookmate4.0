@@ -761,7 +761,7 @@
                     const img = document.createElement('img');
                     img.src = imageUrl;
                     img.alt = title || '책 표지';
-                    img.className = `${extraClass} shadow-md hover:scale-105 transition-transform duration-300`;
+                    img.className = extraClass.includes('book-cover-plain') ? extraClass.replace('book-cover-plain', '').trim() : `${extraClass} shadow-md hover:scale-105 transition-transform duration-300`;
                     img.referrerPolicy = 'no-referrer';
                     img.onerror = () => handleImgError(title || 'BOOKMATE', containerId);
                     container.innerHTML = '';
