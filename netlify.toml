@@ -12,3 +12,8 @@
   from = "/share/:id"
   to = "/.netlify/functions/share?id=:id"
   status = 200
+
+[[redirects]]
+  from = "/admin"
+  to = "/admin/"
+  status = 301
