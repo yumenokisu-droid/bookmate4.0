@@ -4,7 +4,7 @@
         }
         function showGuestActionModal(kind='social') {
             const configs = {
-                social: { icon:'👤', title:'BOOKMATE가 되어\n다른 독자와 소통해보세요.', desc:'아래와 같은 기능을 이용할 수 있습니다.', bullets:['북라운지 방문','북메이트 신청','인사하기'] },
+                social: { icon:'👤', title:'BOOKMATE가 되어\n다른 독자와 소통해보세요.', desc:'아래와 같은 기능을 이용할 수 있습니다.', bullets:['북라운지 방문','북메이트 신청','쪽지 보내기'] },
                 discussion: { icon:'📚', title:'함께 책 이야기를 나눠요.', desc:'로그인 후 감상, 추천, 질문을 자유롭게 남길 수 있습니다.', bullets:['감상 남기기','추천하기','질문하기'] },
                 gathering: { icon:'👥', title:'BOOKMATE가 되어 독서모임을 함께 하세요.', desc:'비슷한 독서취향을 가진 사람들과\n책으로 연결됩니다.', bullets:['독서모임 참여','함께 읽기','모임 기록 저장'] }
             };
@@ -157,7 +157,7 @@
         function isSameLibrary(a,b){ return !!a && !!b && !isNoLibrary(a) && !isNoLibrary(b) && normalizeLibraryName(a)===normalizeLibraryName(b); }
         function libraryBadgeHTML(author, post){ const library=getPostLibrary(post||{author}); if(!library || isNoLibrary(library)) return ''; const verified=getAuthorLibraryVerified(author); const short=library.replace('도서관','').replace('시립','시립'); return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-brand-sageLight text-brand-sageDark text-[9px] font-bold border border-brand-sage/20">🏛 ${escapeAttr(short)}${verified?' 인증':''}</span>`; }
         function visitMemberLounge(author){ if(isGuestUser()){ showGuestJoinPrompt('lounge'); return; } const account=findAccountByNickname(author); window.bookmateVisitedLoungeAuthor = account ? account.nickname : author; navigate('booklounge'); renderOfficialLounge(); showToast(`${window.bookmateVisitedLoungeAuthor}님의 북라운지로 이동했습니다.`); }
-        function memberQuickAction(action,author){ if(action==='북라운지 방문'){ visitMemberLounge(author); return; } showToast(`${author}님에게 '${action}' 기능을 실행했습니다.`);}
+        function memberQuickAction(action,author){ if(action==='북라운지 방문'){ visitMemberLounge(author); return; } if(action==='쪽지 보내기'){ if(typeof openDirectMessage==='function') openDirectMessage(author,{source:'discussion'}); return; } showToast(`${author}님에게 '${action}' 기능을 실행했습니다.`);}
         function renderDiscussionWidgets(){renderRecommendationRanking(); renderHotDiscussionBook(); renderDiscussionTags();}
         function renderHotDiscussionBook(){const c=document.getElementById('hot-discussion-book-card'); if(!c)return; const books={}; (state.socialPosts||[]).forEach(p=>{if(p.book)books[p.book]=(books[p.book]||0)+1+(p.comments?.length||0)}); const ent=Object.entries(books).sort((a,b)=>b[1]-a[1])[0]; if(!ent){c.innerHTML='<div class="text-xs text-gray-400">아직 이야기되는 책이 없습니다.</div>';return;} const title=ent[0], m=getDiscussionBookMeta(title), st=getBookDiscussionStats(title); c.innerHTML=`<span class="text-xs font-bold text-brand-navy tracking-wider uppercase block border-b border-brand-ivory pb-2 flex items-center gap-1.5"><i data-lucide="flame" class="w-4 h-4 text-orange-500"></i> 오늘 가장 많이 이야기되는 책</span><button onclick="openBookDiscussion('${escapeAttr(title)}')" class="w-full text-left mt-4 group"><div class="flex gap-3 items-center">${bookCoverHTML(m,'w-16 h-24')}<div class="min-w-0"><h4 class="serif-title font-bold text-brand-navy line-clamp-2 group-hover:text-brand-sage">${title}</h4><p class="text-[10px] text-gray-500 mt-1">${m.author||'저자 정보 없음'}</p><div class="flex gap-1.5 mt-2 flex-wrap text-[10px] font-bold"><span class="bg-brand-sageLight text-brand-sageDark px-2 py-0.5 rounded-full">💬 ${st.total}</span><span class="bg-brand-ivory text-brand-navy px-2 py-0.5 rounded-full">👍 ${st.likes}</span></div></div></div></button>`; lucide.createIcons();}
         function renderDiscussionTags(){const c=document.getElementById('discussion-tag-list'); if(!c)return; const tags=['#소설','#감상','#추천','#질문','#채식주의자','#달러구트','#사피엔스','#독서모임']; c.innerHTML=tags.map(t=>`<button onclick="filterSocialFeed('${t.replace('#','')}')" class="px-3 py-1.5 rounded-full bg-brand-ivory hover:bg-brand-sageLight text-[10px] font-bold text-brand-navy transition-colors">${t}</button>`).join('');}
@@ -236,7 +236,7 @@
                 let catColor='bg-[#FAF1D6] text-amber-800', icon='💡'; if(p.category==='감상'){catColor='bg-[#EAF2E8] text-brand-sageDark'; icon='📖';} if(p.category==='질문'){catColor='bg-blue-50 text-blue-600'; icon='❓';} if(p.category==='함께 읽어요'){catColor='bg-purple-50 text-purple-700'; icon='👥';}
                 const ownerActions = isCurrentUserAuthor(p.author) ? `<div class="flex items-center gap-1 mr-2"><button onclick="editSocialPost(${p.id})" class="px-2 py-1 rounded-lg bg-brand-ivory text-[10px] font-bold text-brand-navy hover:bg-brand-sageLight">수정</button><button onclick="deleteSocialPost(${p.id})" class="px-2 py-1 rounded-lg bg-red-50 text-[10px] font-bold text-red-500 hover:bg-red-100">삭제</button></div>` : '';
                 const div=document.createElement('div'); div.className='bg-white p-6 rounded-2xl border border-brand-ivoryDark shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all';
-                div.innerHTML=`${p.book?`<button onclick="openBookDiscussion('${escapeAttr(p.book)}')" class="w-full text-left mb-5 group"><div class="flex gap-4 bg-brand-ivory/40 border border-brand-ivoryDark rounded-2xl p-3 hover:border-brand-sage/40 transition-colors">${bookCoverHTML(m,'w-20 h-28')}<div class="min-w-0 flex-1 py-1"><p class="text-[9px] font-bold text-brand-sageDark tracking-wider uppercase">BOOK DISCUSSION</p><h3 class="serif-title text-lg font-bold text-brand-navy line-clamp-2 group-hover:text-brand-sage">${m.title}</h3><p class="text-[11px] text-gray-500 mt-1">${m.author||'저자 정보 없음'}</p><div class="flex gap-1.5 flex-wrap mt-3 text-[10px] font-bold"><span class="bg-white border border-brand-ivoryDark text-brand-navy px-2 py-0.5 rounded-full">💬 이야기 ${st.total}</span><span class="bg-white border border-brand-ivoryDark text-brand-sageDark px-2 py-0.5 rounded-full">👍 관심 ${st.likes}</span></div></div></div></button>`:''}<div class="flex justify-between items-start mb-3 relative"><button onclick="openMemberActionMenu('${escapeAttr(p.author)}', ${p.id})" class="flex items-center gap-2.5 text-left group">${getAvatarByName(p.author,'w-9 h-9')}<div><h4 class="font-bold text-xs text-brand-navy group-hover:text-brand-sage flex items-center gap-1.5 flex-wrap"><span>${p.author}</span> <span class="text-[9px] text-gray-400 font-normal">${p.time}</span> ${libraryBadgeHTML(p.author,p)} ${(p.scope==='내 도서관'||p.visibility==='library')?'<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-brand-ivory text-brand-navy text-[9px] font-bold border border-brand-ivoryDark">우리 도서관 공개</span>':''}</h4><p class="text-[10px] text-gray-400">닉네임을 누르면 메뉴가 열립니다</p></div></button><div id="member-menu-${p.id}" class="member-action-menu hidden absolute left-0 top-11 bg-white border border-brand-ivoryDark rounded-xl shadow-xl p-1.5 z-30 w-40 text-[11px] font-bold"><button onclick="memberQuickAction('북라운지 방문','${escapeAttr(p.author)}')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-brand-ivory">🏠 북라운지 방문</button><button onclick="memberQuickAction('인사하기','${escapeAttr(p.author)}')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-brand-ivory">👋 인사하기</button><button onclick="memberQuickAction('북메이트 신청','${escapeAttr(p.author)}')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-brand-ivory">🤝 북메이트 신청</button></div><div class="flex items-center gap-1">${ownerActions}<span class="${catColor} text-[10px] px-2.5 py-1 rounded-full font-bold">${icon} ${p.category}</span></div></div><div class="text-sm text-gray-700 leading-relaxed mb-4">${p.text}</div><div class="flex gap-4 text-xs border-t border-brand-ivory pt-3 mt-2"><button onclick="likeSocialItem('post', ${p.id})" class="flex items-center gap-1.5 font-semibold transition-colors ${p.liked?'text-red-500':'text-gray-400 hover:text-brand-navy'}"><i data-lucide="heart" class="w-4 h-4 ${p.liked?'fill-red-500':''}"></i> 좋아요 ${p.likes}</button><button onclick="toggleSocialComments(${p.id})" class="flex items-center gap-1.5 font-semibold text-gray-400 hover:text-brand-navy transition-colors"><i data-lucide="message-circle" class="w-4 h-4"></i> 댓글 ${commentCount}</button></div>${commentsHTML}`;
+                div.innerHTML=`${p.book?`<button onclick="openBookDiscussion('${escapeAttr(p.book)}')" class="w-full text-left mb-5 group"><div class="flex gap-4 bg-brand-ivory/40 border border-brand-ivoryDark rounded-2xl p-3 hover:border-brand-sage/40 transition-colors">${bookCoverHTML(m,'w-20 h-28')}<div class="min-w-0 flex-1 py-1"><p class="text-[9px] font-bold text-brand-sageDark tracking-wider uppercase">BOOK DISCUSSION</p><h3 class="serif-title text-lg font-bold text-brand-navy line-clamp-2 group-hover:text-brand-sage">${m.title}</h3><p class="text-[11px] text-gray-500 mt-1">${m.author||'저자 정보 없음'}</p><div class="flex gap-1.5 flex-wrap mt-3 text-[10px] font-bold"><span class="bg-white border border-brand-ivoryDark text-brand-navy px-2 py-0.5 rounded-full">💬 이야기 ${st.total}</span><span class="bg-white border border-brand-ivoryDark text-brand-sageDark px-2 py-0.5 rounded-full">👍 관심 ${st.likes}</span></div></div></div></button>`:''}<div class="flex justify-between items-start mb-3 relative"><button onclick="openMemberActionMenu('${escapeAttr(p.author)}', ${p.id})" class="flex items-center gap-2.5 text-left group">${getAvatarByName(p.author,'w-9 h-9')}<div><h4 class="font-bold text-xs text-brand-navy group-hover:text-brand-sage flex items-center gap-1.5 flex-wrap"><span>${p.author}</span> <span class="text-[9px] text-gray-400 font-normal">${p.time}</span> ${libraryBadgeHTML(p.author,p)} ${(p.scope==='내 도서관'||p.visibility==='library')?'<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-brand-ivory text-brand-navy text-[9px] font-bold border border-brand-ivoryDark">우리 도서관 공개</span>':''}</h4><p class="text-[10px] text-gray-400">닉네임을 누르면 메뉴가 열립니다</p></div></button><div id="member-menu-${p.id}" class="member-action-menu hidden absolute left-0 top-11 bg-white border border-brand-ivoryDark rounded-xl shadow-xl p-1.5 z-30 w-40 text-[11px] font-bold"><button onclick="memberQuickAction('북라운지 방문','${escapeAttr(p.author)}')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-brand-ivory">🏠 북라운지 방문</button><button onclick="memberQuickAction('쪽지 보내기','${escapeAttr(p.author)}')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-brand-ivory">✉ 쪽지 보내기</button><button onclick="memberQuickAction('북메이트 신청','${escapeAttr(p.author)}')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-brand-ivory">🤝 북메이트 신청</button></div><div class="flex items-center gap-1">${ownerActions}<span class="${catColor} text-[10px] px-2.5 py-1 rounded-full font-bold">${icon} ${p.category}</span></div></div><div class="text-sm text-gray-700 leading-relaxed mb-4">${p.text}</div><div class="flex gap-4 text-xs border-t border-brand-ivory pt-3 mt-2"><button onclick="likeSocialItem('post', ${p.id})" class="flex items-center gap-1.5 font-semibold transition-colors ${p.liked?'text-red-500':'text-gray-400 hover:text-brand-navy'}"><i data-lucide="heart" class="w-4 h-4 ${p.liked?'fill-red-500':''}"></i> 좋아요 ${p.likes}</button><button onclick="toggleSocialComments(${p.id})" class="flex items-center gap-1.5 font-semibold text-gray-400 hover:text-brand-navy transition-colors"><i data-lucide="message-circle" class="w-4 h-4"></i> 댓글 ${commentCount}</button></div>${commentsHTML}`;
                 container.appendChild(div);
             });
             lucide.createIcons();
@@ -413,8 +413,8 @@
 
         function getManagedSeedUsers() {
             const fallbackUsers = [
-            { id: 'moa01', password: '1234', name: '김도윤', age: 29, gender: '남성', nickname: '달빛독서가', library: '익산시립도서관', libraryVerified: true, tastes: ['소설','에세이','인문'], readingType: '인물의 심리와 관계를 따라 읽는 독자', readingTypeIcon: '📚', avatarId: 1, role: '따뜻한 감상글', readBooksCount: 68, gatheringCount: 3, chatMessagesCount: 1540 },
-            { id: 'moa02', password: '1234', name: '이서윤', age: 34, gender: '여성', nickname: '사유올빼미', library: '전북대표도서관', libraryVerified: true, tastes: ['철학','심리','인문'], readingType: '질문을 통해 생각을 확장하는 독자', readingTypeIcon: '🧠', avatarId: 2, role: '깊은 댓글 · 사유형 독자', readBooksCount: 91, gatheringCount: 2, chatMessagesCount: 2120 }
+            { id: 'moa01', password: '1234', name: '김도윤', age: 29, gender: '남성', nickname: '달빛독서가', library: '익산시립도서관', libraryVerified: true, tastes: ['소설','에세이','인문'], readingType: '인물의 심리와 관계를 따라 읽는 독자', readingTypeIcon: '📚', avatarId: 1, role: '따뜻한 감상글', readBooksCount: 68, gatheringCount: 2, chatMessagesCount: 1540 },
+            { id: 'moa02', password: '1234', name: '이서윤', age: 34, gender: '여성', nickname: '사유올빼미', library: '경기도서관', libraryVerified: true, tastes: ['철학','심리','인문'], readingType: '질문을 통해 생각을 확장하는 독자', readingTypeIcon: '🧠', avatarId: 2, role: '깊은 댓글 · 사유형 독자', readBooksCount: 91, gatheringCount: 2, chatMessagesCount: 2120 }
         ];
             const dataset = getManagedDataset();
             const managedAccounts = dataset && (Array.isArray(dataset.accounts) ? dataset.accounts : (Array.isArray(dataset.users) ? dataset.users : []));
@@ -682,9 +682,35 @@
             } catch(e) {}
         }
 
+        function restoreLoggedInSessionAfterLive() {
+            if (!window.__BOOKMATE_RETURN_LIVE__) return false;
+            try {
+                const sessionId = localStorage.getItem(AUTH_SESSION_KEY) || localStorage.getItem('bookmate_auth_session');
+                if (!sessionId) return false;
+                const user = getAuthUsers().find(item => item.id === sessionId);
+                if (!user) return false;
+                state.currentUser = authUserToCurrentUser(user);
+                applyActivityDataForAccount(state.currentUser);
+                refreshAccountBoundViews();
+                hideAuthScreen();
+                updateAuthHeader();
+                updateGuestHomeVisibility();
+                updateUIProfileData();
+                try {
+                    document.documentElement.classList.remove('bookmate-startup-lock');
+                    document.getElementById('bookmate-startup-guard-style')?.remove();
+                } catch(e) {}
+                return true;
+            } catch(e) {
+                console.warn('[BOOKMATE] LIVE 복귀 세션 복원 실패', e);
+                return false;
+            }
+        }
+
         function initAuthSystem() {
             renderDemoAccounts();
-            forceGuestHomeStartup();
+            const restored = restoreLoggedInSessionAfterLive();
+            if (!restored) forceGuestHomeStartup();
             saveAppState();
         }
 
@@ -988,14 +1014,14 @@
         }
 
 
-        function sayHelloToReader(name) { showToast(`${name}님에게 인사를 건넸습니다! 🙋`); }
+        function sayHelloToReader(name) { if(typeof openDirectMessage==='function') openDirectMessage(name,{source:'ai'}); }
         window.onload = function() {
             loadAppState();
             initAuthSystem();
-            forceGuestHomeStartup();
-            try { history.replaceState(null, '', location.pathname); } catch(e) {}
-            if (typeof navigate === 'function') navigate('home');
-            forceGuestHomeStartup();
+            if (!window.__BOOKMATE_RETURN_LIVE__) {
+                try { history.replaceState(null, '', location.pathname); } catch(e) {}
+                if (typeof navigate === 'function') navigate('home');
+            }
             lucide.createIcons();
             updateUIProfileData();
             renderSocialFeed();

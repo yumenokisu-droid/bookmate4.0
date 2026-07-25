@@ -1,0 +1,73 @@
+/* RC24 — modal-safe toast layer */
+#toast-container {
+  position: fixed;
+  inset: auto max(18px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) auto;
+  z-index: 2147483647;
+  width: min(420px, calc(100vw - 32px));
+  max-width: calc(100vw - 32px);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+  pointer-events: none;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 9px;
+}
+
+#toast-container:popover-open,
+#toast-container.toast-fallback-open {
+  display: flex;
+}
+
+#toast-container::backdrop {
+  display: none;
+  background: transparent;
+}
+
+.bookmate-toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 12px 15px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 14px;
+  color: #fff;
+  box-shadow: 0 16px 42px rgba(15, 23, 42, 0.24);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.55;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  pointer-events: auto;
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity .24s ease, transform .24s ease;
+  backdrop-filter: blur(10px);
+}
+
+.bookmate-toast.is-success { background: rgba(57, 91, 75, 0.97); }
+.bookmate-toast.is-error { background: rgba(203, 68, 68, 0.97); }
+.bookmate-toast-icon { width: 17px; height: 17px; flex: 0 0 auto; margin-top: 1px; }
+.bookmate-toast.is-leaving { opacity: 0; transform: translateY(8px); }
+
+/* 오래된 모임용 토스트가 겹쳐도 새 전역 토스트보다 위로 나오지 않게 정리 */
+#view-club-meeting > #toast { z-index: 100; }
+
+@media (max-width: 640px) {
+  #toast-container {
+    inset: auto 14px calc(14px + env(safe-area-inset-bottom)) 14px;
+    width: auto;
+    max-width: none;
+    align-items: stretch;
+  }
+  .bookmate-toast {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 13px;
+    font-size: 11px;
+  }
+}

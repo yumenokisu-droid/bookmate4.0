@@ -253,7 +253,8 @@ function renderOfficialLounge() {
 
   const tags = document.getElementById('mypage-lounge-tags');
   if (tags) {
-    const rewardNames = ['기본 배경', '모아1', ...acquiredMissions.map(m => m.reward)];
+    const libraryRewards = typeof getLibraryMissionRewards === 'function' ? getLibraryMissionRewards() : [];
+    const rewardNames = [...new Set(['기본 배경', '모아1', ...acquiredMissions.map(m => m.reward), ...libraryRewards])];
     tags.innerHTML = rewardNames.map(name =>
       `<span class="px-3 py-1.5 rounded-full bg-brand-ivory border border-brand-ivoryDark text-[10px] font-bold text-brand-navy">${name}</span>`
     ).join('');

@@ -41,9 +41,16 @@
                 promptResponses: 0
             },
             notifications: [
-                { id: 1, type: 'hello', from: '사유올빼미', initial: '사', message: '달러구트 모임에서 좋은 말씀 감사했어요!', time: '10분 전', isRead: false },
-                { id: 2, type: 'invite_rx', from: '지혜의등대', initial: '지', gathering: '사피엔스: 인간 본성의 비밀 추적', message: '사피엔스 모임에 초대합니다. 성향이 잘 맞으실 일 것 같아요!', time: '2시간 전', isRead: false },
-                { id: 3, type: 'invite_tx', to: '한줄수집가', initial: '한', gathering: '도둑맞은 집중력 회복 모임', status: '수락 대기중', time: '1일 전', isRead: true }
+                                { id: 90, type: 'note', from: '문장수집가', initial: '문', message: '오늘 LIVE 전에 나누고 싶은 문장을 보냈어요.', time: '18분 전', isRead: false },
+                { id: 91, type: 'guestbook', from: '책읽는기린', initial: '책', message: '북라운지 방명록에 따뜻한 인사를 남겼어요.', time: '42분 전', isRead: false },
+                { id: 2, type: 'invite_rx', from: '지혜의등대', avatarId: 4, gathering: '고전의 향기', message: '다음 주 『1984』 첫 모임에 함께해요.', time: '2시간 전', isRead: false },
+                { id: 3, type: 'lounge_visit', from: '사유올빼미', avatarId: 2, message: '당신의 북라운지를 둘러봤어요.', time: '어제', isRead: true }
+            ],
+            directMessages: [
+                { id: 1801, partner: '문장수집가', sender: '문장수집가', recipient: '달빛독서가', text: '오늘 LIVE 전에 나누고 싶은 문장을 보냈어요. 마지막 장면에서 골라봤어요.', time: '18분 전', createdAt: '2026-07-21T21:42:00', read: false },
+                { id: 1802, partner: '문장수집가', sender: '달빛독서가', recipient: '문장수집가', text: '좋아요. 저도 인상 깊은 장면을 하나 준비해둘게요.', time: '어제', createdAt: '2026-07-20T20:10:00', read: true },
+                { id: 1803, partner: '사유올빼미', sender: '사유올빼미', recipient: '달빛독서가', text: '고전의 향기에서 나눈 데미안 이야기가 오래 남았어요.', time: '2시간 전', createdAt: '2026-07-21T20:00:00', read: false },
+                { id: 1804, partner: '책읽는기린', sender: '달빛독서가', recipient: '책읽는기린', text: '다음 우리의 문학 모임에서도 같이 이야기해요.', time: '3일 전', createdAt: '2026-07-18T17:00:00', read: true }
             ],
             recentBooks: [
                 { id: 1, title: "불편한 편의점", author: "김호연", date: "2026.06.20 완독", review: "따뜻한 연대와 위로가 느껴지는 책. 골목길 편의점이 주는 일상의 기적.", color: "bg-[#2A4365]" },
@@ -58,156 +65,7 @@
                 { id: 1, title: "데미안 자아 탐구 모임", role: "발제자", date: "2026.05.10 종료", comments: 42 },
                 { id: 2, title: "이기적 유전자 심층 토론", role: "참여자", date: "2026.04.22 종료", comments: 18 }
             ],
-            gatherings: [
-                {
-                    id: 1,
-                    title: "달러구트 꿈 백화점 사색 소모임",
-                    book: "달러구트 꿈 백화점",
-                    author: "이미예",
-                    membersCount: 6,
-                    maxMembers: 10,
-                    scope: "공개",
-                    type: "정기모임",
-                    method: "온라인",
-                    schedule: "매주 목요일 21:00",
-                    suitability: 94,
-                    desc: "현실의 노곤함을 내려놓고 포근한 꿈 백화점 속 단골손님들의 이야기를 나눕니다.",
-                    keywords: ["힐링/에세이", "소설/문학"],
-                    joined: true,
-                    isLeader: true
-                },
-                {
-                    id: 2,
-                    title: "사피엔스: 인간 본성의 비밀 추적",
-                    book: "사피엔스",
-                    author: "유발 하라리",
-                    membersCount: 12,
-                    maxMembers: 15,
-                    scope: "공개",
-                    type: "정기모임",
-                    method: "오프라인",
-                    schedule: "격주 토요일 14:00",
-                    suitability: 89,
-                    desc: "인지혁명부터 이르는 사피엔스의 전반적 흐름 속에서 우리가 당연시 여기는 사회적 질서를 비평해 봅니다.",
-                    keywords: ["인문학", "사회/과학"],
-                    joined: true
-                },
-                {
-                    id: 3,
-                    title: "직장인 도둑맞은 집중력 회복 모임",
-                    book: "도둑맞은 집중력",
-                    author: "요한 하리",
-                    membersCount: 4,
-                    maxMembers: 8,
-                    scope: "도서관 전용",
-                    library: "익산시립도서관",
-                    type: "정기모임",
-                    method: "오프라인",
-                    schedule: "매주 수요일 19:30",
-                    suitability: 92,
-                    desc: "스마트폰에 빼앗긴 집중력을 되찾기 위해 도서관 모임방에 모여 2시간씩 집중 독서 후 짧은 토론을 진행합니다.",
-                    keywords: ["자기계발", "사회/과학"],
-                    joined: true
-                },
-                {
-                    id: 4,
-                    title: "불편한 편의점: 일상의 위로를 나누는 모임",
-                    book: "불편한 편의점",
-                    author: "김호연",
-                    membersCount: 15,
-                    maxMembers: 20,
-                    scope: "공개",
-                    type: "1회성",
-                    method: "온라인",
-                    schedule: "7월 15일(토) 20:00",
-                    suitability: 85,
-                    desc: "편의점이라는 익숙한 공간 속에서 만나는 사람들의 상처와 회복, 일상의 위로를 함께 나눕니다.",
-                    keywords: ["소설/문학", "인문학"],
-                    joined: false
-                },
-                {
-                    id: 5,
-                    title: "집중력 회복 북클럽 (서울시립 전용)",
-                    book: "도둑맞은 집중력",
-                    author: "요한 하리",
-                    membersCount: 10,
-                    maxMembers: 12,
-                    scope: "도서관 전용",
-                    library: "서울시립 도서관",
-                    type: "정기모임",
-                    method: "온라인",
-                    schedule: "격주 금요일 21:00",
-                    suitability: 78,
-                    desc: "디지털 환경 속에서 흐트러진 집중력을 회복하고, 나만의 몰입 루틴을 함께 찾아가는 모임입니다. (서울시립도서관 인증 회원 전용)",
-                    keywords: ["자기계발", "힐링/에세이"],
-                    joined: false
-                },
-                {
-                    id: 6,
-                    title: "데미안 자아 탐구 독서모임",
-                    book: "데미안",
-                    author: "헤르만 헤세",
-                    membersCount: 7,
-                    maxMembers: 10,
-                    scope: "공개",
-                    type: "정기모임",
-                    method: "오프라인",
-                    schedule: "매월 첫째주 일요일 15:00",
-                    suitability: 95,
-                    desc: "자기 내면의 목소리와 성장의 의미를 함께 읽고 나누는 고전 문학 독서모임입니다.",
-                    keywords: ["소설/문학", "사회/과학"],
-                    joined: false
-                },
-                {
-                    id: 7,
-                    title: "아몬드: 공감 감각을 깨우는 모임",
-                    book: "아몬드",
-                    author: "손원평",
-                    membersCount: 9,
-                    maxMembers: 12,
-                    scope: "공개",
-                    type: "1회성",
-                    method: "온라인",
-                    schedule: "7월 20일(월) 20:00",
-                    suitability: 91,
-                    desc: "감정을 느끼고 표현하는 방식, 공감의 언어를 함께 나누는 소설 독서모임입니다.",
-                    keywords: ["소설/문학", "힐링/에세이"],
-                    joined: false
-                },
-                {
-                    id: 8,
-                    title: "채식주의자 깊이 읽기",
-                    book: "채식주의자",
-                    author: "한강",
-                    membersCount: 6,
-                    maxMembers: 10,
-                    scope: "공개",
-                    type: "정기모임",
-                    method: "오프라인",
-                    schedule: "격주 화요일 19:00",
-                    suitability: 87,
-                    desc: "인간의 욕망과 폭력, 침묵의 감각을 문장 단위로 천천히 읽어봅니다.",
-                    keywords: ["소설/문학", "인문학"],
-                    joined: false
-                },
-                {
-                    id: 9,
-                    title: "82년생 김지영 사회 읽기",
-                    book: "82년생 김지영",
-                    author: "조남주",
-                    membersCount: 11,
-                    maxMembers: 15,
-                    scope: "도서관 전용",
-                    library: "익산시립도서관",
-                    type: "1회성",
-                    method: "온라인",
-                    schedule: "7월 27일(월) 21:00",
-                    suitability: 84,
-                    desc: "소설 속 일상 장면을 통해 세대, 돌봄, 노동의 문제를 차분히 이야기합니다.",
-                    keywords: ["소설/문학", "사회/과학"],
-                    joined: false
-                }
-            ],
+            gatherings: JSON.parse(JSON.stringify(window.BOOKMATE_GROUPS || [])),
             socialPosts: [
                 {
                     id: 101,
@@ -371,7 +229,7 @@
                     category: "함께 읽어요",
                     scope: "전체",
                     visibility: "public",
-                    library: "국립도서관",
+                    library: "국립중앙도서관",
                     book: "데미안",
                     text: "『데미안』은 혼자 읽는 것보다 같이 이야기할 때 훨씬 풍성해지는 책 같아요. 함께 읽고 각자의 ‘알을 깨는 순간’을 나눠보고 싶습니다.",
                     likes: 21,
@@ -422,3 +280,6 @@
                 actions: `<button onclick="archiveAndEndMeeting()" class="bg-brand-navy text-white text-xs font-bold px-6 py-3 rounded-xl shadow-lg animate-bounce">🔒 요약본 저장 및 아카이브 서첩 발행</button>`
             }
         };
+
+// RC18: 독서모임 커뮤니티 모듈에서 앱의 공통 모임 데이터에 안전하게 접근합니다.
+window.bookmateAppState = state;

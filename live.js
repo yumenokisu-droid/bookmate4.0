@@ -3,6 +3,7 @@ const esc = value => String(value ?? '').replace(/[&<>\"]/g, c => ({'&':'&amp;',
 const KEY = 'bookmate_live_room_rc3_people_first';
 const REPORT_KEY = 'bookmate_live_reports';
 const CURRENT_USER = '달빛독서가';
+const discussionLeader = localStorage.getItem('bookmate_current_discussion_leader') || '문장수집가';
 
 const defaultState = {
   seconds: 1122,
@@ -13,7 +14,7 @@ const defaultState = {
   micOn: true,
   participants: [
     {name:'달빛독서가', status:'마이크 켜짐', online:true, speaking:false, avatar:'assets/characters/moa-1.png'},
-    {name:'문장수집가', status:'듣는 중', online:true, speaking:false, avatar:'assets/characters/moa-2.png'},
+    {name:'문장수집가', status:'토론 리더', online:true, speaking:false, avatar:'assets/characters/moa-2.png'},
     {name:'책읽는고양이', status:'발언 중', online:true, speaking:true, avatar:'assets/characters/moa-3.png'},
     {name:'초록책갈피', status:'채팅 참여', online:true, speaking:false, avatar:'assets/characters/moa-4.png'},
     {name:'AI 모아', status:'퍼실리테이터', online:true, speaking:false, avatar:'assets/characters/ai-moa.png'}
@@ -34,10 +35,23 @@ let state = loadState();
 let timer = null;
 let aiBusy = false;
 
+function normalizeMessages(messages){
+  const cleaned=[];
+  for(const raw of Array.isArray(messages)?messages:[]){
+    const message={...raw, text:String(raw?.text||'').trim()};
+    if(!message.text || message.text==='생각을 정리하고 있어요…') continue;
+    const previous=cleaned[cleaned.length-1];
+    if(previous && previous.user===message.user && previous.type===message.type && previous.text===message.text) continue;
+    cleaned.push(message);
+  }
+  return cleaned.slice(-80);
+}
 function loadState(){
   try {
     const saved = JSON.parse(localStorage.getItem(KEY));
-    return saved ? {...defaultState, ...saved, book:{...defaultState.book, ...(saved.book||{})}} : structuredClone(defaultState);
+    const merged = saved ? {...defaultState, ...saved, book:{...defaultState.book, ...(saved.book||{})}} : structuredClone(defaultState);
+    merged.messages = normalizeMessages(merged.messages);
+    return merged;
   } catch { return structuredClone(defaultState); }
 }
 function saveState(){ localStorage.setItem(KEY, JSON.stringify(state)); }
@@ -56,6 +70,11 @@ function messageMarkup(message){
   return `<article class="${rowClass}">${isMe ? content + avatarMarkup(message.user) : avatarMarkup(message.user) + content}</article>`;
 }
 
+
+function syncDiscussionLeaderUI(){
+  const el=$('discussionLeaderName'); if(el) el.textContent=discussionLeader;
+  document.querySelectorAll('.host-only').forEach(node=>node.dataset.roleLabel='토론 리더');
+}
 function render(){
   $('liveClock').textContent = formatTime(state.seconds);
   $('liveStatusPill').textContent = state.running ? 'LIVE 진행중' : 'LIVE 준비중';
@@ -73,12 +92,24 @@ function render(){
 }
 
 function addMessage(user,text,type,label=''){
-  state.messages.push({user,text,type,label});
+  const cleanText=String(text||'').trim();
+  if(!cleanText) return;
+  const previous=state.messages[state.messages.length-1];
+  if(previous && previous.user===user && previous.type===type && previous.text===cleanText) return;
+  state.messages.push({user,text:cleanText,type,label});
+  state.messages=normalizeMessages(state.messages);
   saveState();
   render();
 }
 function addAI(text){ addMessage('AI 모아',text,'ai'); }
-function recentConversation(){ return state.messages.slice(-12).map(m=>`${m.user}: ${m.text}`).join('\n'); }
+function recentConversation(){ return state.messages.slice(-14).map(m=>`${m.user}: ${m.text}`).join('\n'); }
+function setAiThinking(active){
+  const stream=$('liveChatStream');
+  stream?.querySelector('[data-ai-thinking]')?.remove();
+  if(!active || !stream) return;
+  stream.insertAdjacentHTML('beforeend', `<article class="message-row ai ai-thinking" data-ai-thinking="true">${avatarMarkup('AI 모아')}<div class="message-content"><div class="message-meta"><strong>AI 모아</strong><span class="ai-badge">AI</span></div><div class="message-bubble"><span class="thinking-dots"><i></i><i></i><i></i></span><span>대화를 살펴보고 있어요</span></div></div></article>`);
+  stream.scrollTop=stream.scrollHeight;
+}
 
 function fallbackReply(kind){
   if(kind.includes('다음')) return `새 질문을 제안할게요. 『${state.book.title}』에서 인물이 자신의 정체성을 가장 분명하게 드러낸 장면은 어디였나요? 그 장면을 선택한 이유도 함께 이야기해보세요.`;
@@ -89,19 +120,49 @@ function fallbackReply(kind){
 
 async function callMoa(kind,userMessage=''){
   if(state.aiRole==='없음') return toast('현재 AI 없음 모드입니다.');
-  if(aiBusy) return toast('AI 모아가 응답을 준비 중이에요.');
-  aiBusy=true; $('apiStatus').textContent='AI 응답 중…';
-  addAI('생각을 정리하고 있어요…');
+  if(aiBusy) return toast('AI 모아가 이미 응답을 준비 중이에요.');
+  aiBusy=true;
+  const status=$('apiStatus');
+  if(status) status.textContent='AI 응답 중…';
+  setAiThinking(true);
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),22000);
   try {
-    const systemPrompt = `너는 BOOKMATE의 AI 독서파트너 모아다. 현재 LIVE 독서토론에서 ${state.aiRole} 역할을 맡고 있다. 현재 주제도서는 『${state.book.title}』, 저자는 ${state.book.author}, 발제문은 "${state.book.prompt}"이다. 반드시 현재 주제도서와 최근 대화 맥락을 기준으로 한국어로 자연스럽게 답한다. 사람의 대화를 대신하지 말고 흐름을 정리하거나 질문을 제안한다. 3~6문장으로 답한다.`;
-    const response = await fetch('/.netlify/functions/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:`${kind}\n사용자 입력: ${userMessage||'없음'}`,book:`${state.book.title} / ${state.book.author}`,systemPrompt,conversationText:recentConversation()})});
+    const roleGuide = state.aiRole==='보조'
+      ? '사용자가 직접 모아를 부르거나 질문했을 때만 답하고, 진행을 주도하지 않는다.'
+      : '토론 리더를 대신하지 말고, 필요한 순간에만 대화를 정리하거나 한 가지 질문을 제안한다.';
+    const systemPrompt = `너는 BOOKMATE의 AI 독서파트너 모아다. 현재 LIVE 독서토론에서 ${state.aiRole} 역할을 맡고 있다. ${roleGuide} 현재 주제도서는 『${state.book.title}』, 저자는 ${state.book.author}, 발제문은 "${state.book.prompt}"이다. 최근 대화에서 이미 말한 내용을 그대로 반복하지 않는다. 참여자의 이름과 의견을 정확히 구분한다. 한국어로 자연스럽게 2~4문장만 답한다.`;
+    const response = await fetch('/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      signal:controller.signal,
+      body:JSON.stringify({
+        message:`요청 유형: ${kind}\n사용자 입력: ${userMessage||'없음'}`,
+        book:`${state.book.title} / ${state.book.author}`,
+        systemPrompt,
+        conversationText:recentConversation()
+      })
+    });
     const data=await response.json().catch(()=>({}));
-    state.messages.pop();
-    addAI(data.reply || fallbackReply(kind));
-    $('apiStatus').textContent = data.reply ? 'AI 연결됨' : '기본 응답 모드';
-  } catch {
-    state.messages.pop(); addAI(fallbackReply(kind)); $('apiStatus').textContent='기본 응답 모드';
-  } finally { aiBusy=false; saveState(); render(); }
+    if(!response.ok) throw new Error(data.detail||data.error||`HTTP ${response.status}`);
+    let reply=String(data.reply||'').trim();
+    const lastAI=[...state.messages].reverse().find(m=>m.type==='ai')?.text||'';
+    if(!reply || reply===lastAI) reply=fallbackReply(`${kind} 다른 표현`);
+    addAI(reply);
+    if(status) status.textContent=`AI 연결됨${data.model?` · ${data.model}`:''}`;
+  } catch(error) {
+    const fallback=fallbackReply(kind);
+    const lastAI=[...state.messages].reverse().find(m=>m.type==='ai')?.text||'';
+    addAI(fallback===lastAI ? '방금 나온 의견을 바탕으로, 다른 참여자에게는 이 장면이 어떻게 읽혔는지 들어보면 좋겠습니다.' : fallback);
+    if(status) status.textContent=error?.name==='AbortError'?'응답 지연 · 기본 모드':'기본 응답 모드';
+    console.warn('[BOOKMATE LIVE AI]', error);
+  } finally {
+    clearTimeout(timeout);
+    setAiThinking(false);
+    aiBusy=false;
+    saveState();
+    render();
+  }
 }
 
 function startTimer(){ if(timer) return; state.running=true; timer=setInterval(()=>{state.seconds++; $('liveClock').textContent=formatTime(state.seconds); saveState();},1000); }
@@ -109,7 +170,7 @@ function startTimer(){ if(timer) return; state.running=true; timer=setInterval((
 function boot(){
   render(); startTimer();
   $('liveBackLink').onclick=()=>{ try{sessionStorage.setItem('bookmate_return_live','1')}catch{} location.href='index.html#live'; };
-  $('liveRoomForm').onsubmit=e=>{ e.preventDefault(); const value=$('liveRoomInput').value.trim(); if(!value) return; addMessage(CURRENT_USER,value,'me'); $('liveRoomInput').value=''; if(state.aiRole==='퍼실리테이터' || (state.aiRole==='보조' && value.includes('모아'))) callMoa('사용자 채팅에 답변',value); };
+  $('liveRoomForm').onsubmit=e=>{ e.preventDefault(); const value=$('liveRoomInput').value.trim(); if(!value) return; addMessage(CURRENT_USER,value,'me'); $('liveRoomInput').value=''; const calledMoa=/모아(야|에게|,|\s)|@모아/.test(value); const asksQuestion=/[?？]$/.test(value) || /(어떻게|왜|무엇|맞아|궁금|정리해|설명해)/.test(value); if((state.aiRole==='퍼실리테이터' && (calledMoa||asksQuestion)) || (state.aiRole==='보조' && calledMoa)) callMoa('사용자 채팅에 답변',value); };
   $('emojiBtn').onclick=()=>{ $('emojiPicker').hidden=!$('emojiPicker').hidden; };
   $('emojiPicker').querySelectorAll('button').forEach(btn=>btn.onclick=()=>{ $('liveRoomInput').value += `${btn.textContent} `; $('liveRoomInput').focus(); $('emojiPicker').hidden=true; });
   $('attachBtn').onclick=()=>toast('자료 첨부는 게시판 자료와 연결할 예정입니다.');
@@ -130,6 +191,9 @@ function boot(){
     if(state.aiRole!=='없음') callMoa('주제도서 변경 안내와 새 토론 시작 질문');
   };
   document.querySelectorAll('input[name="liveAiRole"]').forEach(r=>r.onchange=e=>{ state.aiRole=e.target.value; saveState(); render(); toast(`AI 역할을 ${state.aiRole}(으)로 변경했습니다.`); });
+  $('startPromptBtn').onclick=()=>{ addMessage('BOOKMATE',`${discussionLeader} 토론 리더가 첫 발제를 시작했습니다.`, 'system'); if(state.aiRole!=='없음') callMoa('첫 발제문을 소개하고 참여자에게 의견을 요청해줘'); };
+  $('pollBtn').onclick=()=>{ addMessage('BOOKMATE','토론 리더가 의견 투표를 시작했습니다. 채팅으로 A 또는 B를 남겨주세요.', 'system'); toast('투표를 시작했어요.'); };
+  syncDiscussionLeaderUI();
   $('nextPromptBtn').onclick=()=>callMoa('다음 질문 제안');
   $('summaryBtn').onclick=()=>callMoa('현재까지 대화 요약');
   $('encourageBtn').onclick=()=>callMoa('참여 유도 질문');
@@ -148,6 +212,7 @@ function boot(){
       durationSeconds:state.seconds,
       duration:formatTime(state.seconds),
       participants:participantNames,
+      discussionLeader,
       oneLine:'같은 책을 읽었지만, 서로 다른 삶이 만나 하나의 이야기를 완성한 시간.',
       discussionPrompts:[state.book.prompt],
       summaryPoints:[

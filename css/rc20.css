@@ -1,0 +1,64 @@
+/* BOOKMATE RC19 — 북라운지 복원·방문 동선·도서관 배지 동기화 */
+#official-lounge-main,
+#mypage-lounge-preview{
+  display:block !important;
+  visibility:visible !important;
+  opacity:1 !important;
+}
+#official-lounge-main:empty::after,
+#mypage-lounge-preview:empty::after{
+  content:'라운지를 불러오는 중입니다.';
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#8a877f;
+  font-size:.72rem;
+  background:#fffaf1;
+}
+.lounge-restored-meta{
+  display:flex;
+  align-items:center;
+  gap:1rem;
+  padding:.85rem 1.1rem;
+  border-top:1px solid #e7dfd2;
+  background:#fff;
+}
+.lounge-restored-meta>div:first-child{min-width:150px}
+.lounge-restored-label{display:block;font-size:.56rem;font-weight:900;letter-spacing:.12em;color:#78917e;margin-bottom:.16rem}
+.lounge-restored-meta b{display:block;color:#24364b;font-size:.78rem}
+.lounge-current-items{display:flex;align-items:center;gap:.38rem;flex-wrap:wrap;min-width:0;flex:1}
+.lounge-current-item{display:inline-flex;align-items:center;gap:.24rem;padding:.3rem .54rem;border-radius:999px;background:#f5f1e8;border:1px solid #e1d8ca;color:#4b5965;font-size:.59rem;font-weight:800;white-space:nowrap}
+.lounge-own-return{border:1px solid #c9d6c9;background:#edf4eb;color:#365b46;border-radius:.7rem;padding:.48rem .7rem;font-size:.62rem;font-weight:900;white-space:nowrap}
+.lounge-future-card--secondary{padding:.85rem 1rem!important;border-style:dashed!important;background:#fbfaf7!important;box-shadow:none!important}
+.lounge-future-card--secondary .lounge-future-icon{width:34px!important;height:34px!important}
+.lounge-future-card--secondary b{font-size:.72rem!important}
+.lounge-future-card--secondary p{font-size:.61rem!important;margin-top:.12rem!important}
+.lounge-future-card--secondary>span{font-size:.52rem!important}
+
+.mypage-bookmate-row-v2 .bookmate-row-actions{display:flex;align-items:center;gap:.35rem;flex-wrap:nowrap}
+.bookmate-lounge-btn{display:inline-flex;align-items:center;gap:.25rem;padding:.45rem .62rem;border-radius:.65rem;background:#fff;border:1px solid #dcd4c7;color:#24364b;font-size:.62rem;font-weight:800;white-space:nowrap}
+.bookmate-lounge-btn:hover{background:#fff8ed;border-color:#cdbb9d}
+
+.library-badge-card{position:relative;padding-right:3.2rem!important}
+.library-badge-card>em{position:absolute;right:.72rem;top:50%;transform:translateY(-50%);font-style:normal;font-size:.54rem;font-weight:900;padding:.22rem .42rem;border-radius:999px;background:#eee9df;color:#989289}
+.library-badge-card.is-earned>em{background:#e4f0e4;color:#3f6c4e}
+.library-badge-card small{line-height:1.35}
+
+@media(max-width:700px){
+  .lounge-restored-meta{align-items:flex-start;flex-wrap:wrap;gap:.55rem;padding:.75rem}
+  .lounge-restored-meta>div:first-child{min-width:0;width:100%}
+  .lounge-current-items{width:100%}
+  .lounge-own-return{width:100%;justify-content:center}
+  .mypage-bookmate-row-v2{grid-template-columns:auto minmax(0,1fr)}
+  .mypage-bookmate-row-v2 .bookmate-row-actions{grid-column:1/-1;justify-content:flex-end}
+}
+
+/* RC20: restored lounge mission area */
+#view-booklounge .lounge-mission-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:.75rem}
+#view-booklounge .lounge-mission-card{min-height:138px}
+#view-booklounge .lounge-mission-icon{width:58px;height:58px}
+#view-booklounge .lounge-mission-img{max-width:50px;max-height:50px}
+@media(max-width:900px){#view-booklounge .lounge-mission-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){#view-booklounge .lounge-mission-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:.55rem}#view-booklounge .lounge-mission-card{min-height:125px;padding:.72rem}}

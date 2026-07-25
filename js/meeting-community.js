@@ -1,11 +1,13 @@
 (function(){
   const ROOT_ID = 'view-club-meeting';
-  const STORAGE_KEY = 'bookmate_meeting_rc2_status';
+  const STORAGE_KEY_BASE = 'bookmate_meeting_rc18_status';
+  let activeCommunityId = 'default';
   const REPORT_KEY = 'bookmate_live_reports';
   const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const defaultState = {
     membership: 'member',
     aiMode: '퍼실리테이터',
+    discussionLeader: '문장수집가',
     boardFilter: '전체',
     liveVote: { choice:'참여', total:8, join:5, comments:[{user:'문장수집가', text:'저는 참여 가능해요. 발제문 미리 읽어둘게요.'},{user:'초록책갈피', text:'일정이 겹쳐서 다음에 참여할게요.'}] },
     club:{
@@ -32,16 +34,16 @@
       {id:3, category:'자료실', author:'문장수집가', title:'이번 주 참고 자료', body:'토론 전에 보면 좋은 기사와 인터뷰를 모아둘게요.', likes:2, comments:[], time:'2일 전'}
     ],
     schedules:[
-      {date:'7.11', title:'작별인사 LIVE 토론', meta:'20:00 · LIVE ROOM'},
-      {date:'7.18', title:'아몬드 사전 대화', meta:'20:00 · 일반 채팅방'},
-      {date:'8.03', title:'다음 주제도서 선정 회의', meta:'19:30 · 온라인'}
+      {date:'7.11', title:'작별인사 LIVE 토론', meta:'20:00 · LIVE ROOM', leader:'문장수집가'},
+      {date:'7.18', title:'아몬드 사전 대화', meta:'20:00 · 일반 채팅방', leader:'초록책갈피'},
+      {date:'8.03', title:'다음 주제도서 선정 회의', meta:'19:30 · 온라인', leader:'달빛독서가'}
     ],
     members:[
-      {name:'달빛독서가', role:'모임장', visits:50, meetings:8, posts:12, chats:156, online:true, avatarType:'moa', avatarId:1},
-      {name:'문장수집가', role:'부모임장', visits:42, meetings:6, posts:9, chats:121, online:true, avatarType:'moa', avatarId:2},
-      {name:'책읽는고양이', role:'회원', visits:35, meetings:3, posts:3, chats:45, online:true, avatarType:'moa', avatarId:3},
-      {name:'초록책갈피', role:'회원', visits:21, meetings:2, posts:1, chats:18, online:false, avatarType:'moa', avatarId:4},
-      {name:'밤의서재', role:'회원', visits:17, meetings:1, posts:0, chats:9, online:false, avatarType:'moa', avatarId:1}
+      {name:'달빛독서가', role:'모임장', intro:'문학과 오래 남는 문장을 좋아합니다.', leaderCount:5, discussionCount:48, completedBooks:31, clubsCount:4, sharedBooks:['작별인사','1984','어린 왕자'], online:true, avatarType:'moa', avatarId:1},
+      {name:'문장수집가', role:'부모임장', intro:'질문이 많은 독서를 좋아해요. SF와 한국문학을 즐겨 읽습니다.', leaderCount:8, discussionCount:42, completedBooks:35, clubsCount:12, sharedBooks:['작별인사','1984','어린 왕자'], online:true, avatarType:'moa', avatarId:2},
+      {name:'책읽는고양이', role:'회원', intro:'조용히 읽고 오래 이야기하는 시간을 좋아합니다.', leaderCount:2, discussionCount:27, completedBooks:24, clubsCount:6, sharedBooks:['작별인사','아몬드'], online:true, avatarType:'moa', avatarId:3},
+      {name:'초록책갈피', role:'회원', intro:'새로운 작가를 발견하고 함께 나누는 것을 좋아해요.', leaderCount:3, discussionCount:21, completedBooks:18, clubsCount:5, sharedBooks:['작별인사','어린 왕자'], online:false, avatarType:'moa', avatarId:4},
+      {name:'밤의서재', role:'회원', intro:'밤에 읽은 문장을 천천히 기록합니다.', leaderCount:1, discussionCount:17, completedBooks:15, clubsCount:3, sharedBooks:['1984'], online:false, avatarType:'moa', avatarId:1}
     ]
   };
   let state = loadState();
@@ -51,21 +53,32 @@
   function root(){ return document.getElementById(ROOT_ID); }
   function q(sel){ const r=root(); return r ? r.querySelector(sel) : null; }
   function qa(sel){ const r=root(); return r ? Array.from(r.querySelectorAll(sel)) : []; }
-  function sanitizeState(data){
-    const cloned = data || JSON.parse(JSON.stringify(defaultState));
+  function getCommunityDefaults(activeGathering){
+    const preset = (window.BOOKMATE_COMMUNITY_PRESETS || {})[Number(activeGathering?.id || activeCommunityId)] || {};
+    return merge(defaultState, JSON.parse(JSON.stringify(preset)));
+  }
+  function communityStorageKey(){ return `${STORAGE_KEY_BASE}_${activeCommunityId}`; }
+  function sanitizeState(data, defaults = defaultState){
+    const cloned = data || JSON.parse(JSON.stringify(defaults));
     // 수정 모드는 화면 상태라서 저장/새로고침 뒤에는 반드시 닫힌 상태로 시작합니다.
     (cloned.posts || []).forEach(p => { if (p && Object.prototype.hasOwnProperty.call(p, 'editing')) delete p.editing; });
+    cloned.discussionLeader = cloned.discussionLeader || '문장수집가';
+    const defaultsByName = Object.fromEntries((defaults.members || defaultState.members).map(m=>[m.name,m]));
+    cloned.members = (cloned.members || defaults.members || defaultState.members).map(m=>({...defaultsByName[m.name], ...m}));
+    const defaultSchedules = defaults.schedules || defaultState.schedules;
+    cloned.schedules = (cloned.schedules || defaultSchedules).map((item,i)=>({...item, leader:item.leader || defaultSchedules[i]?.leader || cloned.discussionLeader}));
     return cloned;
   }
-  function loadState(){
-    try { return sanitizeState(merge(defaultState, JSON.parse(localStorage.getItem(STORAGE_KEY)) || {})); }
-    catch(e){ return sanitizeState(JSON.parse(JSON.stringify(defaultState))); }
+  function loadState(activeGathering = null){
+    const defaults = getCommunityDefaults(activeGathering);
+    try { return sanitizeState(merge(defaults, JSON.parse(localStorage.getItem(communityStorageKey())) || {}), defaults); }
+    catch(e){ return sanitizeState(JSON.parse(JSON.stringify(defaults)), defaults); }
   }
   function merge(a,b){ if(Array.isArray(a)) return Array.isArray(b)?b:a; if(a && typeof a==='object'){ const out={...a}; Object.keys(b||{}).forEach(k=>out[k]=merge(a[k],b[k])); return out; } return b===undefined?a:b; }
   function saveState(){
     const toSave = JSON.parse(JSON.stringify(state));
     (toSave.posts || []).forEach(p => { if (p) delete p.editing; });
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+    localStorage.setItem(communityStorageKey(), JSON.stringify(toSave));
   }
   function toast(text){ if (typeof showToast === 'function') showToast(text); else alert(text); }
   function isInvited(){ return new URLSearchParams(location.search).get('invite') === '1' || state.membership === 'invited'; }
@@ -77,7 +90,7 @@
     if(typeof loadBookCover === 'function') setTimeout(()=>loadBookCover(book?.title || book?.book || '', id, cls, book?.coverUrl || '', {title:book?.title||book?.book||'', author:book?.author||'', isbn:book?.isbn||'', coverUrl:book?.coverUrl||''}), 0);
   }
   function switchCommunityView(view){
-    qa('.view').forEach(v => v.classList.toggle('active', v.id === `view-${view}`));
+    qa('.view').forEach(v => v.classList.toggle('active', v.id === `meeting-view-${view}`));
     qa('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.view === view));
     if(view === 'live') renderReportPreview();
     const target = q('.meeting-main'); if(target) target.scrollIntoView({behavior:'smooth', block:'start'});
@@ -89,6 +102,9 @@
       state.club.category = activeGathering.category || state.club.category;
       state.club.privacy = activeGathering.scope || state.club.privacy;
       state.club.membersCount = activeGathering.membersCount || state.club.membersCount;
+      state.club.schedule = activeGathering.schedule || state.club.schedule;
+      state.club.region = activeGathering.library || activeGathering.place || activeGathering.method || state.club.region;
+      state.club.joinType = activeGathering.libraryOnly ? `${activeGathering.library || '소속도서관'} 인증` : (activeGathering.joinType || state.club.joinType);
       state.currentBook.title = activeGathering.book || state.currentBook.title;
       state.currentBook.author = activeGathering.author || state.currentBook.author;
       state.currentBook.coverUrl = activeGathering.coverUrl || state.currentBook.coverUrl || '';
@@ -108,7 +124,8 @@
     const metaText = `${c.category} · ${c.privacy}모임 · ${c.membersCount}명`;
     const miniMeta=q('#miniClubMeta'); if(miniMeta) miniMeta.textContent=metaText;
     const desc=q('#clubDesc'); if(desc) desc.textContent=c.desc;
-    const badges=q('#clubMetaBadges'); if(badges) badges.innerHTML = [`👥 ${c.membersCount}명`,`📚 ${c.category}`,`${c.privacy==='비공개'?'🔒 비공개':'🌐 공개'}`,`🗓 매주 토요일`].map(x=>`<span>${esc(x)}</span>`).join('');
+    const privacyBadge = c.privacy === '비공개' ? '🔒 비공개' : (c.privacy === '도서관 전용' ? '🏛 도서관 전용' : '🌐 공개');
+    const badges=q('#clubMetaBadges'); if(badges) badges.innerHTML = [`👥 ${c.membersCount}명`,`📚 ${c.category}`,privacyBadge,`🗓 ${c.schedule || '일정 협의'}`].map(x=>`<span>${esc(x)}</span>`).join('');
     ['#clubNameInput','#clubCategoryInput','#clubAgeInput','#clubRegionInput'].forEach(sel=>{ const el=q(sel); if(!el) return; const key={ '#clubNameInput':'title','#clubCategoryInput':'category','#clubAgeInput':'age','#clubRegionInput':'region'}[sel]; el.value=c[key]||''; });
     const d=q('#clubDescInput'); if(d) d.value=c.desc||'';
     const r=q('#clubRuleInput'); if(r) r.value=c.rule||'';
@@ -257,18 +274,35 @@
   }
   function renderMemberDetail(index=0){
     const m=state.members[index] || state.members[0]; const el=q('#memberDetail'); if(!el || !m) return;
-    el.innerHTML=`<div class="member-detail-head">${avatarHTML(m.name,'member-avatar big')}<div><h3>${esc(m.name)}</h3><p class="muted">${esc(m.role)}</p></div></div><div class="member-stats"><div><strong>${m.visits}</strong><span>방문수</span></div><div><strong>${m.meetings}</strong><span>독서모임 참여</span></div><div><strong>${m.posts}</strong><span>게시글</span></div><div><strong>${m.chats}</strong><span>채팅 참여</span></div></div><div class="member-manage master-only"><button class="small-button full">부모임장 지정</button><button class="small-button full">모임장 변경</button><button class="danger-button full">강제퇴장</button></div>`;
+    const shared=Array.isArray(m.sharedBooks)?m.sharedBooks:[];
+    el.innerHTML=`
+      <div class="member-profile-card">
+        <div class="member-detail-head">${avatarHTML(m.name,'member-avatar big')}<div><h3>${esc(m.name)}</h3><p class="member-role-line">${esc(m.role)}</p><p class="member-intro">${esc(m.intro||'함께 읽고 이야기하는 북메이트입니다.')}</p></div></div>
+        <section class="member-profile-section"><h4>📚 독서모임 활동</h4><dl class="quiet-activity-list">
+          <div><dt>토론 리더</dt><dd>${Number(m.leaderCount||0)}회</dd></div><div><dt>토론 참여</dt><dd>${Number(m.discussionCount||m.meetings||0)}회</dd></div><div><dt>완독한 주제도서</dt><dd>${Number(m.completedBooks||0)}권</dd></div><div><dt>함께한 독서모임</dt><dd>${Number(m.clubsCount||0)}개</dd></div>
+        </dl></section>
+        <section class="member-profile-section shared-books-section"><h4>📚 나와 함께 읽은 책</h4><div class="shared-book-chips">${shared.map(book=>`<span>${esc(book)}</span>`).join('')||'<span class="empty-shared">아직 함께 읽은 책이 없습니다.</span>'}</div><p>총 <strong>${shared.length}권</strong> 함께 읽었습니다.</p></section>
+        <div class="member-social-actions"><button type="button" class="member-primary-action" data-member-action="mate" data-member-name="${esc(m.name)}">🤝 북메이트 신청</button><button type="button" class="member-secondary-action" data-member-action="note" data-member-name="${esc(m.name)}">✉ 쪽지 보내기</button><button type="button" class="member-text-action" data-member-action="profile" data-member-name="${esc(m.name)}">👤 프로필 보기</button></div>
+        <details class="member-permission-panel master-only"><summary>⚙ 권한 설정</summary><div><button type="button" data-permission="coleader" data-member-name="${esc(m.name)}">부모임장 지정</button><button type="button" data-permission="leader" data-member-name="${esc(m.name)}">모임장 변경</button><button type="button" data-permission="remove" data-member-name="${esc(m.name)}" class="danger">강제퇴장</button></div></details>
+      </div>`;
   }
   function renderSchedule(){
     const el=q('#scheduleList'); if(!el) return;
-    el.innerHTML=state.schedules.map((s,i)=>`<article class="schedule-item"><div class="schedule-date">${esc(s.date)}</div><div><strong>${esc(s.title)}</strong><p class="muted">${esc(s.meta)}</p></div><button class="small-button delete-schedule" data-index="${i}">관리</button></article>`).join('');
+    el.innerHTML=state.schedules.map((s,i)=>`<article class="schedule-item schedule-with-leader"><div class="schedule-date">${esc(s.date)}</div><div class="schedule-copy"><strong>${esc(s.title)}</strong><p class="muted">${esc(s.meta)}</p><p class="schedule-leader">👤 토론 리더 <b>${esc(s.leader||state.discussionLeader)}</b></p></div><button class="small-button delete-schedule master-only" data-index="${i}">관리</button></article>`).join('');
+    const current=state.schedules[0]; if(current?.leader){ state.discussionLeader=current.leader; saveState(); syncDiscussionLeader(); }
+  }
+  function syncDiscussionLeader(){
+    const name=state.discussionLeader||'문장수집가';
+    const target=q('#liveDiscussionLeader'); if(target) target.textContent=name;
+    try{ localStorage.setItem('bookmate_current_discussion_leader',name); }catch(e){}
   }
   function getReports(){
     try{
       const saved=JSON.parse(localStorage.getItem(REPORT_KEY)||'[]');
       if(saved.length) return saved;
     }catch(e){}
-    return [{schemaVersion:2,id:'demo-goodbye',title:'작별인사 독서모임',book:'작별인사',author:'김영하',date:'2026. 7. 13. 오후 8:33',duration:'20:30',participants:['달빛독서가','문장수집가','책읽는고양이','초록책갈피','AI 모아'],oneLine:'같은 책을 읽었지만, 서로 다른 삶이 만나 하나의 이야기를 완성한 시간.',discussionPrompts:['기억이 흔들리는 순간에도 인간다움은 유지될 수 있을까요?','작품 속 인물의 선택을 작별이 아닌 관계를 지키는 방식으로 볼 수 있을까요?'],summaryPoints:['기억이 한 사람의 정체성을 구성하는 핵심 요소인지 함께 살펴보았습니다.','기억이 흔들리더라도 관계 속 태도와 선택이 인간다움을 보여줄 수 있다는 의견이 나왔습니다.','작품의 마지막 장면을 관계의 포기가 아닌 끝까지 지키려는 선택으로 해석하기도 했습니다.','같은 장면을 두고도 기억, 관계, 선택의 중요성에 대한 서로 다른 경험과 관점이 이어졌습니다.'],differentViews:[{label:'관점 A',text:'기억이 인간을 만든다. 기억이 없다면 선택의 이유와 정체성도 달라질 수 있다.'},{label:'관점 B',text:'기억보다 선택이 인간다움을 만든다. 기억이 사라져도 타인을 대하는 태도는 남을 수 있다.'}],highlightQuote:{text:'기억보다 선택이 결국 나를 만든다고 생각해요.',speaker:'문장수집가'},keywords:['인간다움','기억','선택','정체성'],nextQuestion:'기억을 모두 잃더라도 같은 사람이라고 할 수 있을까요?'}];
+    if (String(activeCommunityId) === '2') return [{schemaVersion:2,id:'demo-demian',title:'고전의 향기 『데미안』 독서모임',book:'데미안',author:'헤르만 헤세',date:'2026. 7. 16. 오후 7:00',duration:'74:20',participants:['사유올빼미','지혜의등대','달빛독서가','문장수집가','책읽는기린','AI 모아'],oneLine:'고전의 문장을 오늘의 삶에 비추며, 자기 자신에게 이르는 길을 함께 살펴본 시간.',discussionPrompts:['싱클레어가 두 세계 사이에서 흔들리는 모습은 오늘의 우리와 어떻게 닮았을까요?','“새는 알에서 나오려고 투쟁한다”는 문장을 각자의 성장 경험과 어떻게 연결할 수 있을까요?'],summaryPoints:['성장은 익숙한 세계를 부수는 일이라 불안과 상실을 동반한다는 의견이 이어졌습니다.','데미안은 정답을 주는 인물보다 싱클레어가 자기 목소리를 듣도록 돕는 존재로 읽혔습니다.','선과 악을 단순히 나누기보다 자신의 내면 전체를 받아들이는 과정이 중요하다는 해석이 나왔습니다.'],differentViews:[{label:'관점 A',text:'데미안은 싱클레어를 이끄는 실제 인물이자 성장의 동반자다.'},{label:'관점 B',text:'데미안은 싱클레어 내면의 목소리와 자아를 상징하는 존재다.'}],highlightQuote:{text:'알을 깨는 일은 두렵지만, 결국 자기 삶을 시작하는 일이기도 해요.',speaker:'지혜의등대'},keywords:['자아','성장','내면','고전'],nextQuestion:'나는 지금 어떤 익숙한 세계의 껍질을 깨야 할까요?'}];
+    return [{schemaVersion:2,id:'demo-goodbye',title:'우리의 문학 『작별인사』 독서모임',book:'작별인사',author:'김영하',date:'2026. 7. 18. 오후 8:00',duration:'82:10',participants:['달빛독서가','문장수집가','책읽는기린','초록책갈피','AI 모아'],oneLine:'같은 책을 읽었지만, 서로 다른 삶이 만나 하나의 이야기를 완성한 시간.',discussionPrompts:['기억이 흔들리는 순간에도 인간다움은 유지될 수 있을까요?','작품 속 인물의 선택을 작별이 아닌 관계를 지키는 방식으로 볼 수 있을까요?'],summaryPoints:['기억이 한 사람의 정체성을 구성하는 핵심 요소인지 함께 살펴보았습니다.','기억이 흔들리더라도 관계 속 태도와 선택이 인간다움을 보여줄 수 있다는 의견이 나왔습니다.','작품의 마지막 장면을 관계의 포기가 아닌 끝까지 지키려는 선택으로 해석하기도 했습니다.'],differentViews:[{label:'관점 A',text:'기억이 인간을 만든다. 기억이 없다면 선택의 이유와 정체성도 달라질 수 있다.'},{label:'관점 B',text:'기억보다 선택이 인간다움을 만든다. 기억이 사라져도 타인을 대하는 태도는 남을 수 있다.'}],highlightQuote:{text:'기억보다 선택이 결국 나를 만든다고 생각해요.',speaker:'문장수집가'},keywords:['인간다움','기억','선택','정체성'],nextQuestion:'기억을 모두 잃더라도 같은 사람이라고 할 수 있을까요?'}];
   }
   function normalizeReport(r){
     const messages=Array.isArray(r.messages)?r.messages:[];
@@ -278,7 +312,7 @@
     const duration=/^\d{1,3}:\d{2}$/.test(rawDuration)?`${Number(rawDuration.split(':')[0])}분 ${Number(rawDuration.split(':')[1])}초`:rawDuration;
     return {
       ...r, book, author:r.author||'', title:r.title||`${book} 독서모임`,
-      date:r.date||'저장된 기록', duration, participants,
+      date:r.date||'저장된 기록', duration, participants, discussionLeader:r.discussionLeader||'',
       oneLine:r.oneLine||r.summary||'함께 읽고 서로의 생각을 나눈 독서모임 기록입니다.',
       discussionPrompts:Array.isArray(r.discussionPrompts)&&r.discussionPrompts.length?r.discussionPrompts:(r.prompt?[r.prompt]:[]),
       summaryPoints:Array.isArray(r.summaryPoints)&&r.summaryPoints.length?r.summaryPoints:(r.summary?[r.summary]:['서로 다른 감상과 해석을 중심으로 이야기를 나누었습니다.']),
@@ -291,7 +325,7 @@
     r=normalizeReport(r);
     return `<article class="report-card archive-card-simple">
       <div class="report-card-main"><span class="role">${esc(r.date)}</span><h3>📖 ${esc(r.book)}${r.author?` · ${esc(r.author)}`:''}</h3>
-      <p class="report-meta"><span>👥 참여 ${r.participants.length}명</span><span>🕒 ${esc(r.duration)}</span></p>
+      <p class="report-meta">${r.discussionLeader?`<span>👤 토론 리더 ${esc(r.discussionLeader)}</span>`:''}<span>👥 참여 ${r.participants.length}명</span><span>🕒 ${esc(r.duration)}</span></p>
       <div class="keywords">${r.keywords.slice(0,4).map(k=>`<span>#${esc(k)}</span>`).join('')}</div></div>
       <button type="button" class="report-detail-btn" data-report-id="${esc(r.id)}">독서기록 보기</button>
     </article>`;
@@ -309,7 +343,7 @@
     const views=report.differentViews.length?report.differentViews:[{label:'다양한 관점',text:'참여자들이 같은 장면을 서로 다른 경험과 시선으로 해석했습니다.'}];
     const people=report.participants.length?report.participants:['참여자 기록 없음'];
     body.innerHTML=`
-      <header class="archive-detail-header"><span>📚 독서모임 아카이브</span><h2>📖 ${esc(report.book)}${report.author?` · ${esc(report.author)}`:''}</h2><p>${esc(report.date)} · 참여 ${people.length}명 · ${esc(report.duration)}</p></header>
+      <header class="archive-detail-header"><span>📚 독서모임 아카이브</span><h2>📖 ${esc(report.book)}${report.author?` · ${esc(report.author)}`:''}</h2><p>${esc(report.date)} · ${report.discussionLeader?`토론 리더 ${esc(report.discussionLeader)} · `:''}참여 ${people.length}명 · ${esc(report.duration)}</p></header>
       <section class="archive-detail-section archive-ai-line"><h3>🤖 AI가 남긴 한 줄 기록</h3><blockquote>“${esc(report.oneLine)}”</blockquote></section>
       <section class="archive-detail-section"><h3>📖 이번 모임 발제문</h3><ol>${prompts.map((v,i)=>`<li><b>${i+1}</b><span>${esc(v)}</span></li>`).join('')}</ol></section>
       <section class="archive-detail-section"><h3>💬 토론 요약</h3><ul>${report.summaryPoints.slice(0,5).map(v=>`<li>${esc(v)}</li>`).join('')}</ul></section>
@@ -415,7 +449,8 @@
     q('#nextTopicList')?.addEventListener('click',e=>{ const idx=Number(e.target.dataset.index); if(Number.isNaN(idx)) return; if(e.target.classList.contains('remove-next-book')){ state.nextBooks.splice(idx,1); editingNextIndex=null; saveState(); renderTopicBooks(); renderActivity(); return; } if(e.target.classList.contains('edit-next-book')){ editingNextIndex=idx; renderTopicBooks(); return; } if(e.target.classList.contains('cancel-next-edit')){ editingNextIndex=null; renderTopicBooks(); return; } if(e.target.classList.contains('next-search-book')){ if(typeof openBookSearchModal==='function') openBookSearchModal(`nextEditTitle${idx}`,`nextEditAuthor${idx}`,null); else toast('책 검색 기능을 불러오지 못했어요.'); return; } if(e.target.classList.contains('promote-next-book')){ const nb=state.nextBooks.splice(idx,1)[0]; state.previousBooks.unshift({...state.currentBook, method:'온라인', archive:true, memo:'이전 현재도서에서 이동됨'}); state.currentBook={title:nb.title, author:nb.author, publisher:nb.publisher||'모임장 지정', date:nb.date, place:nb.place||'LIVE ROOM', readingRange:nb.readingRange||'자율', points:nb.memo, progress:0, isbn:nb.isbn||'', coverUrl:nb.coverUrl||''}; saveState(); syncBook(); renderActivity(); toast('현재 주제도서로 지정했어요.'); }});
     q('#nextTopicList')?.addEventListener('submit',e=>{ if(!e.target.classList.contains('next-inline-edit-form')) return; e.preventDefault(); saveNextBookEdit(Number(e.target.dataset.index)); });
     q('#memberList')?.addEventListener('click',e=>{ const row=e.target.closest('.member-row'); if(!row) return; renderMembers(Number(row.dataset.index)); });
-    q('#scheduleForm')?.addEventListener('submit',e=>{e.preventDefault(); const date=q('#scheduleDate').value.trim(), title=q('#scheduleTitle').value.trim(), meta=q('#scheduleMeta').value.trim(); if(!date||!title) return toast('날짜와 일정명을 입력해주세요.'); state.schedules.unshift({date,title,meta:meta||'세부 미정'}); ['#scheduleDate','#scheduleTitle','#scheduleMeta'].forEach(s=>q(s).value=''); saveState(); renderSchedule(); toast('일정을 등록했어요.');});
+    q('#memberDetail')?.addEventListener('click',e=>{ const action=e.target.closest('[data-member-action]'); if(action){ const name=action.dataset.memberName; if(action.dataset.memberAction==='mate'){ action.textContent='✓ 북메이트 신청됨'; action.disabled=true; toast(`${name}님에게 북메이트 신청을 보냈어요.`); } else if(action.dataset.memberAction==='note'){ if (typeof openDirectMessage === 'function') openDirectMessage(name, { source:'community', gathering:state.club.title }); else toast(`${name}님에게 쪽지를 보낼 수 있어요.`); } else { toast(`${name}님의 전체 프로필로 이동합니다.`); } return; } const permission=e.target.closest('[data-permission]'); if(permission){ const name=permission.dataset.memberName; const m=state.members.find(x=>x.name===name); if(!m) return; if(permission.dataset.permission==='coleader'){m.role='부모임장'; toast(`${name}님을 부모임장으로 지정했어요.`);} else if(permission.dataset.permission==='leader'){state.members.forEach(x=>{if(x.role==='모임장')x.role='회원';});m.role='모임장';toast(`${name}님에게 모임장 권한을 넘겼어요.`);} else {state.members=state.members.filter(x=>x.name!==name);toast(`${name}님을 모임에서 내보냈어요.`);} saveState(); renderMembers(0); } });
+    q('#scheduleForm')?.addEventListener('submit',e=>{e.preventDefault(); const date=q('#scheduleDate').value.trim(), title=q('#scheduleTitle').value.trim(), meta=q('#scheduleMeta').value.trim(), leader=q('#scheduleLeader')?.value||state.discussionLeader; if(!date||!title) return toast('날짜와 일정명을 입력해주세요.'); state.schedules.unshift({date,title,meta:meta||'세부 미정',leader}); state.discussionLeader=leader; ['#scheduleDate','#scheduleTitle','#scheduleMeta'].forEach(s=>q(s).value=''); saveState(); renderSchedule(); toast('일정을 등록했어요.');});
     q('#clubSettingsForm')?.addEventListener('submit',e=>{ e.preventDefault(); state.club.title=q('#clubNameInput').value.trim()||state.club.title; state.club.category=q('#clubCategoryInput').value.trim()||state.club.category; state.club.desc=q('#clubDescInput').value.trim()||state.club.desc; state.club.privacy=q('#clubPrivacyInput').value; state.club.joinType=q('#clubJoinTypeInput').value; state.club.age=q('#clubAgeInput').value.trim()||state.club.age; state.club.region=q('#clubRegionInput').value.trim()||state.club.region; state.club.rule=q('#clubRuleInput').value.trim()||state.club.rule; saveState(); syncClub(); toast('모임 기본 정보를 저장했어요.'); });
     qa('.ai-option-card[data-ai-role]').forEach(card=>card.addEventListener('click',()=>{ const input=card.querySelector('input'); if(input) input.checked=true; state.aiMode=card.dataset.aiRole; qa('.ai-option-card[data-ai-role]').forEach(c=>c.classList.toggle('active', c===card)); syncAiOptionSelections(); saveState(); syncAiMode(); renderActivity(); toast(`AI 역할을 ${state.aiMode}(으)로 설정했어요.`)}));
     qa('.concise-ai-options input[type="checkbox"]').forEach(input=>input.addEventListener('change',()=>{ syncAiOptionSelections(); }));
@@ -426,13 +461,24 @@
     document.addEventListener('click',e=>{ const btn=e.target.closest('.report-detail-btn'); if(btn) openReportDetail(btn.dataset.reportId); });
     document.getElementById('meetingArchiveDialogClose')?.addEventListener('click',closeReportDetail);
     document.getElementById('meetingArchiveDialog')?.addEventListener('click',e=>{ if(e.target===e.currentTarget) closeReportDetail(); });
-    syncAiOptionSelections(); syncClub(); syncBook(); syncAiMode(); renderActivity(); renderChat(); renderPosts(); renderMembers(); renderSchedule(); renderLiveVote(); renderReportPreview();
+    syncAiOptionSelections(); syncClub(); syncBook(); syncAiMode(); syncDiscussionLeader(); renderActivity(); renderChat(); renderPosts(); renderMembers(); renderSchedule(); renderLiveVote(); renderReportPreview();
   }
-  window.openBookmateCommunityMeeting = function(activeGathering){ bootMeetingCommunity(); syncClub(activeGathering); syncBook(); syncAiMode(); renderActivity(); renderChat(); renderPosts(); renderMembers(); renderSchedule(); renderLiveVote(); renderReportPreview(); switchCommunityView('home'); };
+  window.openBookmateCommunityMeeting = function(activeGathering){
+    const nextId = String(activeGathering?.id || 'default');
+    if (nextId !== String(activeCommunityId)) {
+      activeCommunityId = nextId;
+      state = loadState(activeGathering);
+      editingCurrent = false;
+      editingNextIndex = null;
+    }
+    bootMeetingCommunity();
+    syncClub(activeGathering); syncBook(); syncAiMode(); syncDiscussionLeader(); renderActivity(); renderChat(); renderPosts(); renderMembers(); renderSchedule(); renderLiveVote(); renderReportPreview(); switchCommunityView('home');
+  };
   function findGatheringByTitle(bookTitle, gatheringId){
-    try{ const list = (typeof state !== 'undefined' && state.gatherings) ? state.gatherings : (window.state && window.state.gatherings ? window.state.gatherings : []); if(gatheringId) return list.find(x => Number(x.id) === Number(gatheringId)); return list.find(x => x.book === bookTitle && x.joined) || list.find(x => x.book === bookTitle) || null; } catch(e){ return null; }
+    try{ const list = (window.bookmateAppState && Array.isArray(window.bookmateAppState.gatherings)) ? window.bookmateAppState.gatherings : []; if(gatheringId) return list.find(x => Number(x.id) === Number(gatheringId)); return list.find(x => x.book === bookTitle && x.joined) || list.find(x => x.book === bookTitle) || null; } catch(e){ return null; }
   }
-  window.enterMeetingRoom = function(bookTitle = '작별인사', gatheringId = null){ const activeGathering = findGatheringByTitle(bookTitle, gatheringId); if(activeGathering) window.bookmateCurrentGatheringId = activeGathering.id; if(typeof navigate === 'function') navigate('club-meeting'); setTimeout(()=>window.openBookmateCommunityMeeting(activeGathering), 0); toast('독서모임 커뮤니티에 입장했습니다. LIVE는 LIVE 탭에서 별도 입장할 수 있어요.'); };
-  window.enterMeetingRoomById = function(id){ const activeGathering = findGatheringByTitle('', id); if(activeGathering) window.bookmateCurrentGatheringId = activeGathering.id; if(typeof navigate === 'function') navigate('club-meeting'); setTimeout(()=>window.openBookmateCommunityMeeting(activeGathering), 0); toast('독서모임 커뮤니티에 입장했습니다.'); };
+  window.enterMeetingRoom = function(bookTitle = '작별인사', gatheringId = null){ const activeGathering = findGatheringByTitle(bookTitle, gatheringId); if(activeGathering) window.bookmateCurrentGatheringId = activeGathering.id; window.openBookmateCommunityMeeting(activeGathering); if(typeof navigate === 'function') navigate('club-meeting'); setTimeout(()=>window.openBookmateCommunityMeeting(activeGathering), 40); toast('독서모임 커뮤니티에 입장했습니다. LIVE는 LIVE 탭에서 별도 입장할 수 있어요.'); };
+  window.enterMeetingRoomById = function(id){ const activeGathering = findGatheringByTitle('', id); if(activeGathering) window.bookmateCurrentGatheringId = activeGathering.id; window.openBookmateCommunityMeeting(activeGathering); if(typeof navigate === 'function') navigate('club-meeting'); setTimeout(()=>window.openBookmateCommunityMeeting(activeGathering), 40); toast('독서모임 커뮤니티에 입장했습니다.'); };
+  window.getBookmateCommunitySnapshot = function(){ return JSON.parse(JSON.stringify({activeCommunityId, club:state.club, currentBook:state.currentBook, posts:state.posts, chat:state.chat, schedules:state.schedules})); };
   document.addEventListener('DOMContentLoaded', bootMeetingCommunity);
 })();

@@ -61,7 +61,7 @@ ${recent || String(conversationText || '').slice(-2500) || '없음'}
 사용자의 마지막 요청:
 ${latestMessage}
 
-답변 지침: 사용자의 마지막 말에 바로 이어서 답한다. 모드 선택 안내를 반복하지 않는다. 3~6문장으로 간결하게 답한다.`;
+답변 지침: 사용자의 마지막 말에 바로 이어서 답한다. 최근 대화에서 이미 한 표현이나 요약을 반복하지 않는다. 참여자 이름과 발언을 혼동하지 않는다. 모드 선택 안내를 반복하지 않는다. 답변은 2~4문장으로 간결하게 작성하고, 한 번에 질문은 최대 하나만 제안한다.`;
 
     const models = [process.env.GEMINI_MODEL || 'gemini-2.5-flash', 'gemini-2.0-flash'];
     let lastError;
@@ -77,7 +77,7 @@ ${latestMessage}
             maxOutputTokens: 650
           }
         }));
-        const reply = String(result?.text || '').trim();
+        const reply = String(result?.text || '').replace(/^(AI 모아|모아)\s*[:：-]?\s*/i, '').replace(/\n{3,}/g, '\n\n').trim();
         if (reply) return json(200, { reply, model });
         lastError = new Error(`Empty response from ${model}`);
       } catch (error) {

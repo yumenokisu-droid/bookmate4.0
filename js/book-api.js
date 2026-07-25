@@ -8,16 +8,17 @@ const COVER_CACHE_VERSION = '2026-07-06-v1.7-real-guest-lock-flat-cover';
 const DIRECT_COVER_MAP = {
     // 검증 완료: 브라우저 <img>에서 바로 표시되는 image.aladin.co.kr 직접 JPG 주소만 사용합니다.
     "사피엔스": "https://image.aladin.co.kr/product/31424/4/cover500/k482832219_1.jpg",
-    "달러구트 꿈 백화점": "https://image.aladin.co.kr/product/24512/70/cover/k392630952_1.jpg",
+    "달러구트 꿈 백화점": "assets/images/books/dallergut-purple.jpg",
     "도둑맞은 집중력": "https://image.aladin.co.kr/product/31559/97/cover500/s102936816_3.jpg",
-    "불편한 편의점": "https://image.aladin.co.kr/product/26942/84/cover500/k582730818_1.jpg",
-    "데미안": "https://image.aladin.co.kr/product/26/0/cover500/s452139198_1.jpg",
-    "아몬드": "https://image.aladin.co.kr/product/31893/32/cover500/k212833749_2.jpg",
+    "불편한 편의점": "assets/images/books/uncomfortable-store.jpg",
+    "데미안": "assets/images/books/demian.jpg",
+    "아몬드": "assets/images/books/almond.jpg",
     "채식주의자": "https://image.aladin.co.kr/product/29137/2/cover500/8936434594_2.jpg",
     "82년생 김지영": "https://image.aladin.co.kr/product/9476/48/cover500/8937473135_1.jpg",
-    "작별인사": "https://books.google.com/books/content?id=e67o0QEACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api",
-    "노인과 바다": "https://image.yes24.com/goods/5763163/XL",
-    "소년이 온다": "https://image.yes24.com/goods/13137546/XL"
+    "작별인사": "assets/images/books/farewell.jpg",
+    "노인과 바다": "assets/images/books/old-man-and-the-sea.png",
+    "소년이 온다": "assets/images/books/human-acts.jpg",
+    "1984": "assets/images/books/1984-minumsa.jpg"
 };
 
 function getDirectCoverByTitle(title) {
@@ -32,20 +33,21 @@ function getDirectCoverByTitle(title) {
 
 const KNOWN_BOOKS = {
     // 시연 화면의 핵심 도서는 API보다 먼저 검증된 실제 표지 URL을 우선 사용합니다.
-    "작별인사": { author: "김영하", isbn: "9791191114225", alternateIsbns: ["9791191114225"], category: "소설", fixedCoverUrl: "https://books.google.com/books/content?id=e67o0QEACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api" },
+    "1984": { author: "조지 오웰", isbn: "9788937460777", alternateIsbns: ["9788937460777"], category: "고전", fixedCoverUrl: "assets/images/books/1984-minumsa.jpg" },
+    "작별인사": { author: "김영하", isbn: "9791191114225", alternateIsbns: ["9791191114225"], category: "소설", fixedCoverUrl: "assets/images/books/farewell.jpg" },
     "사피엔스": { author: "유발 하라리", isbn: "9788934972464", alternateIsbns: ["9788934972464", "9788934972624", "9788934972976"], category: "인문·사회", fixedCoverUrl: "https://image.aladin.co.kr/product/31424/4/cover500/k482832219_1.jpg" },
-    "달러구트 꿈 백화점": { author: "이미예", isbn: "9791165341909", alternateIsbns: ["9791165341909"], category: "소설", fixedCoverUrl: "https://image.aladin.co.kr/product/24512/70/cover/k392630952_1.jpg" },
+    "달러구트 꿈 백화점": { author: "이미예", isbn: "9791165341909", alternateIsbns: ["9791165341909"], category: "소설", fixedCoverUrl: "assets/images/books/dallergut-purple.jpg" },
     "도둑맞은 집중력": { author: "요한 하리", isbn: "9791167740984", alternateIsbns: ["9791167740984", "9791167740991"], category: "사회·과학", fixedCoverUrl: "https://image.aladin.co.kr/product/31559/97/cover500/s102936816_3.jpg" },
     "아주 작은 습관의 힘": { author: "제임스 클리어", isbn: "9791162540640", alternateIsbns: ["9791162540640"], category: "자기계발" },
-    "불편한 편의점": { author: "김호연", isbn: "9791161571188", alternateIsbns: ["9791161571188"], category: "소설", fixedCoverUrl: "https://image.aladin.co.kr/product/26942/84/cover500/k582730818_1.jpg" },
+    "불편한 편의점": { author: "김호연", isbn: "9791161571188", alternateIsbns: ["9791161571188"], category: "소설", fixedCoverUrl: "assets/images/books/uncomfortable-store.jpg" },
     "역행자": { author: "자청", isbn: "9791191043761", alternateIsbns: ["9791191043761", "9791191891207"], category: "자기계발" },
     "모순": { author: "양귀자", isbn: "9788998441012", alternateIsbns: ["9788998441012"], category: "소설" },
-    "데미안": { author: "헤르만 헤세", isbn: "9788937460449", alternateIsbns: ["9788937460449", "9788937460005", "9788937462344"], category: "고전", fixedCoverUrl: "https://image.aladin.co.kr/product/26/0/cover500/s452139198_1.jpg" },
-    "노인과 바다": { author: "어니스트 헤밍웨이", isbn: "9788937462788", alternateIsbns: ["9788937462788"], category: "고전" },
+    "데미안": { author: "헤르만 헤세", isbn: "9788937460449", alternateIsbns: ["9788937460449", "9788937460005", "9788937462344"], category: "고전", fixedCoverUrl: "assets/images/books/demian.jpg" },
+    "노인과 바다": { author: "어니스트 헤밍웨이", isbn: "9788937462788", alternateIsbns: ["9788937462788"], category: "고전", fixedCoverUrl: "assets/images/books/old-man-and-the-sea.png" },
     "클라라와 태양": { author: "가즈오 이시구로", isbn: "9788937417566", alternateIsbns: ["9788937417566"], category: "소설" },
     "이기적 유전자": { author: "리처드 도킨스", isbn: "9788932471631", alternateIsbns: ["9788932471631", "9788932473901"], category: "과학" },
-    "아몬드": { author: "손원평", isbn: "9788936434267", alternateIsbns: ["9788936434267"], category: "소설", fixedCoverUrl: "https://image.aladin.co.kr/product/31893/32/cover500/k212833749_2.jpg" },
-    "소년이 온다": { author: "한강", isbn: "9788936434120", alternateIsbns: ["9788936434120"], category: "소설" },
+    "아몬드": { author: "손원평", isbn: "9788936434267", alternateIsbns: ["9788936434267"], category: "소설", fixedCoverUrl: "assets/images/books/almond.jpg" },
+    "소년이 온다": { author: "한강", isbn: "9788936434120", alternateIsbns: ["9788936434120"], category: "소설", fixedCoverUrl: "assets/images/books/human-acts.jpg" },
     "채식주의자": { author: "한강", isbn: "9788936433598", alternateIsbns: ["9788936433598", "9788936434595"], category: "소설", fixedCoverUrl: "https://image.aladin.co.kr/product/29137/2/cover500/8936434594_2.jpg" },
     "82년생 김지영": { author: "조남주", isbn: "9788937473135", alternateIsbns: ["9788937473135"], category: "소설", fixedCoverUrl: "https://image.aladin.co.kr/product/9476/48/cover500/8937473135_1.jpg" },
     "미드나잇 라이브러리": { author: "매트 헤이그", isbn: "9791191056556", alternateIsbns: ["9791191056556"], category: "소설" },

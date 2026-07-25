@@ -119,57 +119,427 @@
             return `${hour}:${minute}`;
         }
 
-        function updateHomeReadingSchedule() {
-            const card = document.getElementById('home-reading-schedule-card');
-            if (!card) return;
-            const todays = getTodayJoinedGatherings();
-            if (!todays.length) {
-                card.classList.add('hidden');
-                return;
-            }
-            const g = todays[0];
-            const time = getGatheringScheduleTime(g.schedule) || '오늘';
-            const titleEl = card.querySelector('h2');
-            const descEl = card.querySelector('p.text-xs.sm\\:text-sm, p.text-xs');
-            const button = card.querySelector('button');
-            if (titleEl) titleEl.innerText = `${time}, 『${g.book}』 ${g.title}`;
-            if (descEl) descEl.innerText = `${g.method || '독서모임'} · ${g.platform || g.place || '진행 장소 미정'}에서 진행되는 나의 독서모임입니다.`;
-            if (button) button.setAttribute('onclick', `enterMeetingRoom(${JSON.stringify(g.book)})`);
-            card.classList.remove('hidden');
+        const HOME_BOOK_CATALOG = window.BOOKMATE_BOOKS_BY_TITLE || {};
+
+        const HOME_BOOK_COVERS = {
+            '작별인사': 'assets/images/books/farewell.jpg',
+            '1984': 'assets/images/books/1984-minumsa.jpg',
+            '데미안': 'assets/images/books/demian.jpg',
+            '아몬드': 'assets/images/books/almond.jpg',
+            '소년이온다': 'assets/images/books/human-acts.jpg',
+            '달러구트꿈백화점': 'assets/images/books/dallergut-purple.jpg',
+            '불편한편의점': 'assets/images/books/uncomfortable-store.jpg',
+            '노인과바다': 'assets/images/books/old-man-and-the-sea.png',
+            '사피엔스': 'assets/images/books/sapiens.jpg',
+            '도둑맞은집중력': 'assets/images/books/stolen-focus.jpg',
+            '채식주의자': 'assets/images/books/vegetarian.jpg',
+            '82년생김지영': 'assets/images/books/82-kim-jiyoung.jpg'
+        };
+        const HOME_POPULAR_BOOKS = [
+            { title:'작별인사', count:12 },
+            { title:'1984', count:9 },
+            { title:'데미안', count:7 },
+            { title:'아몬드', count:5 },
+            { title:'소년이 온다', count:4 },
+            { title:'불편한 편의점', count:11 },
+            { title:'달러구트 꿈 백화점', count:10 },
+            { title:'노인과 바다', count:6 }
+        ];
+                const HOME_DISCUSSIONS = [
+            { title:'작별인사', count:12, teaser:'인간다움과 관계에 대한 서로 다른 해석이 이어지고 있어요.', activity:'방금 전에도 새로운 감상이 올라왔어요.' },
+            { title:'1984', count:8, teaser:'감시와 자유를 바라보는 독자들의 의견이 엇갈리고 있어요.', activity:'같은 장면을 전혀 다르게 읽은 이야기가 있어요.' },
+            { title:'데미안', count:6, teaser:'성장과 자기 발견을 자신의 경험과 연결해 이야기하고 있어요.', activity:'오래 남은 문장을 함께 나누고 있어요.' },
+            { title:'불편한 편의점', count:11, teaser:'작은 친절과 공동체의 온기를 발견한 독자들의 이야기가 모였어요.', activity:'편의점에서 가장 기억에 남은 인물은 누구였을까요?' },
+            { title:'아몬드', count:9, teaser:'공감은 타고나는지 배워가는지 다양한 의견이 오가고 있어요.', activity:'윤재와 곤을 바라보는 시선이 서로 달라요.' }
+        ];
+
+        function getHomeBookCover(title) {
+            const key = normalizeHomeBookTitle(title);
+            const local = HOME_BOOK_COVERS[key];
+            if (local) return local;
+            const meta = getHomeBookMeta(title);
+            return meta.cover || '';
         }
 
-        function updateHomeBrief() {
-            const avatarEl = document.getElementById('home-brief-avatar');
-            if (avatarEl) avatarEl.innerHTML = getAvatarHTML(state.currentUser, 'w-14 h-14', 'border-4 border-white shadow-sm');
+        function getHomeCoverMarkup(title, extraClass = '') {
+            const safeTitle = escapeHTML(title || '주제도서');
+            const src = getHomeBookCover(title);
+            const image = src ? `<img src="${escapeHTML(src)}" alt="${safeTitle} 표지" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'">` : '';
+            const hidden = src ? ' style="display:none"' : '';
+            return `<div class="home-cover-shell ${extraClass}">${image}<span class="home-cover-fallback"${hidden}>${safeTitle}</span></div>`;
+        }
 
-            if (typeof isGuestUser === 'function' && isGuestUser()) {
-                safeSetText('home-brief-eyebrow', 'GUEST PREVIEW');
-                safeSetText('home-brief-title', '👋 게스트 독자님, BOOKMATE를 둘러보세요.');
-                safeSetText('home-brief-subtitle', '토론글을 읽고, AI 모아와 책 이야기를 가볍게 체험할 수 있어요.');
-                safeSetText('home-stat-1-value', '읽기');
-                safeSetText('home-stat-1-label', '토론방 둘러보기');
-                safeSetText('home-stat-2-value', '체험');
-                safeSetText('home-stat-2-label', 'AI 모아 대화');
-                safeSetText('home-stat-3-value', '가입');
-                safeSetText('home-stat-3-label', '기록 저장하기');
-                const card = document.getElementById('home-reading-schedule-card');
-                if (card) card.classList.add('hidden');
+function syncHomeDemoData() {
+    const main = (state.gatherings || []).find(g => Number(g.id) === 1) || (state.gatherings || []).find(g => g.joined);
+    if (main) Object.assign(main, {
+        title:'우리의 문학', book:'작별인사', author:'김영하', membersCount:6,
+        scope:'공개', type:'정기모임', method:'온라인', schedule:'매일 20:00', joined:true, isLeader:true,
+        leaderNickname:'달빛독서가'
+    });
+    const demoNotifications = [
+        { id:90, type:'message', from:'문장수집가', avatarId:2, message:'오늘 LIVE 전에 나누고 싶은 문장을 채팅으로 보냈어요.', time:'18분 전', isRead:false },
+        { id:91, type:'guestbook', from:'책읽는기린', avatarId:3, message:'“달빛 아래 책장이 정말 포근해 보여요.”라고 방명록을 남겼어요.', time:'42분 전', isRead:false },
+        { id:92, type:'invite_rx', from:'지혜의등대', avatarId:4, gathering:'1984 자유와 감시 읽기', message:'『1984』를 함께 읽는 새 모임에 초대했어요.', time:'1시간 전', isRead:false },
+        { id:93, type:'hello', from:'사유올빼미', avatarId:2, message:'지난 데미안 모임에서 나눈 이야기가 오래 남았다고 인사를 건넸어요.', time:'2시간 전', isRead:true }
+    ];
+    if (!Array.isArray(state.notifications)) state.notifications = [];
+    demoNotifications.forEach(item => {
+        const existing = state.notifications.find(n => Number(n.id) === item.id);
+        if (existing) Object.assign(existing, item);
+        else state.notifications.push(item);
+    });
+}
+
+        function normalizeHomeBookTitle(title) {
+            return String(title || '').replace(/[『』「」\s:：·]/g, '').toLowerCase();
+        }
+
+        function getHomeBookMeta(title) {
+            const key = Object.keys(HOME_BOOK_CATALOG).find(k => normalizeHomeBookTitle(k) === normalizeHomeBookTitle(title));
+            return key ? HOME_BOOK_CATALOG[key] : {
+                title: title || '책 제목 없음', author: '저자 정보 없음', publisher: '출판사 정보 없음', publicationYear: '확인 중',
+                category: ['도서'], cover: '', themes: ['독서', '이야기'], recommendations: [],
+                description: '책의 기본 정보와 관련 토론을 확인할 수 있습니다. 상세 데이터는 도서 데이터베이스에 순차적으로 연결됩니다.',
+                scene: '가장 기억에 남은 장면', question: '이 장면이 오래 남은 이유는 무엇인가요?'
+            };
+        }
+
+        function getHomeBookReadingStatus(title) {
+            if (typeof isGuestUser === 'function' && isGuestUser()) return { label: '', className: 'guest', hidden: true };
+            const key = normalizeHomeBookTitle(title);
+            const recent = (state.recentBooks || []).some(b => normalizeHomeBookTitle(b.title) === key);
+            const archive = (state.recentArchives || []).some(a => normalizeHomeBookTitle(a.title || '').includes(key));
+            return (recent || archive)
+                ? { label: '읽은 책', className: 'read', hidden: false }
+                : { label: '읽지 않은 책', className: 'unread', hidden: false };
+        }
+
+        function getHomeLibraryProvider() {
+            if (!state.currentUser || !state.currentUser.libraryVerified) return null;
+            return typeof findBookmateLibrary === 'function' ? findBookmateLibrary(state.currentUser.library) : null;
+        }
+
+        function openHomeLibrarySearch(title) {
+            const provider = getHomeLibraryProvider();
+            if (!provider) {
+                closeHomeBookInfo();
+                if (typeof isGuestUser === 'function' && isGuestUser()) openAuthPage('login');
+                else openSettingsModal();
+                showToast('소속도서관을 인증하면 해당 도서관에서 바로 검색할 수 있어요.');
                 return;
             }
+            const url = provider.buildSearchUrl(title);
+            window.open(url, '_blank', 'noopener,noreferrer');
+        }
 
-            safeSetText('home-brief-eyebrow', '오늘의 북메이트');
-            safeSetText('home-brief-title', `${state.currentUser.nickname}님, 오늘도 북메이트와 함께할 준비 되셨나요?`);
-            const joinedCount = state.gatherings ? state.gatherings.filter(g => g.joined).length : 0;
-            const todayGatherings = getTodayJoinedGatherings();
-            const todayCount = todayGatherings.length;
-            safeSetText('home-brief-subtitle', todayCount > 0 ? `오늘은 가입한 독서모임 ${todayCount}개가 예정되어 있어요. 알림에서 자세히 확인할 수 있습니다.` : '오늘 예정된 가입 독서모임은 없습니다. 관심 모임을 찾아보거나 새 모임을 만들어보세요.');
-            safeSetText('home-stat-1-value', '7일');
-            safeSetText('home-stat-1-label', '독서 연속');
-            safeSetText('home-stat-2-value', `${todayCount}개`);
-            safeSetText('home-stat-2-label', '오늘 모임');
-            safeSetText('home-stat-3-value', `${joinedCount}개`);
-            safeSetText('home-stat-3-label', '가입 모임');
+        function openHomeBookInfo(title) {
+            const meta = getHomeBookMeta(title);
+            const modal = document.getElementById('home-book-info-modal');
+            if (!modal) return;
+            safeSetText('home-book-modal-title', meta.title);
+            safeSetText('home-book-modal-author', meta.author);
+            safeSetText('home-book-modal-publisher', meta.publisher || '출판사 정보 없음');
+            safeSetText('home-book-modal-year', meta.publicationYear || '확인 중');
+            safeSetText('home-book-modal-category', (meta.category || ['도서']).join(' / '));
+            safeSetText('home-book-modal-description', meta.description);
+            const status = getHomeBookReadingStatus(meta.title);
+            const statusEl = document.getElementById('home-book-modal-status');
+            if (statusEl) {
+                statusEl.textContent = status.label;
+                statusEl.className = `home-book-status ${status.className}`;
+                statusEl.classList.toggle('hidden', !!status.hidden);
+            }
+            const themes = document.getElementById('home-book-modal-themes');
+            if (themes) themes.innerHTML = (meta.themes || []).map(t => `<span>#${escapeHTML(t)}</span>`).join('');
+            const recommendations = document.getElementById('home-book-modal-recommendations');
+            if (recommendations) {
+                recommendations.innerHTML = (meta.recommendations || []).length
+                    ? meta.recommendations.map(t => `<button onclick="openHomeBookInfo(${JSON.stringify(t).replace(/"/g,'&quot;')})"><i data-lucide="book-open"></i>${escapeHTML(t)}</button>`).join('')
+                    : '<span class="home-book-no-recommendation">연관 추천도서를 준비 중이에요.</span>';
+            }
+            const discussionBtn = document.getElementById('home-book-discussion-btn');
+            if (discussionBtn) discussionBtn.onclick = () => openBookDiscussionFromHome(meta.title);
+            const aiBtn = document.getElementById('home-book-ai-btn');
+            if (aiBtn) aiBtn.onclick = () => openHomeAIQuestion(meta.title, meta.scene, meta.question);
+            const provider = getHomeLibraryProvider();
+            const libraryCaption = document.getElementById('home-book-library-caption');
+            const libraryBtn = document.getElementById('home-book-library-btn');
+            if (provider) {
+                safeSetText('home-book-library-caption', `${provider.name}의 소장자료 검색결과로 이동합니다.`);
+                if (libraryBtn) {
+                    libraryBtn.innerHTML = `<i data-lucide="library"></i><span>${escapeHTML(provider.name)}에서 검색하기</span>`;
+                    libraryBtn.onclick = () => openHomeLibrarySearch(meta.title);
+                }
+            } else {
+                safeSetText('home-book-library-caption', '소속도서관을 인증하면 도서관 소장자료를 바로 확인할 수 있어요.');
+                if (libraryBtn) {
+                    libraryBtn.innerHTML = '<i data-lucide="badge-check"></i><span>소속도서관 인증하기</span>';
+                    libraryBtn.onclick = () => openHomeLibrarySearch(meta.title);
+                }
+            }
+            modal.classList.remove('hidden');
+            requestAnimationFrame(() => modal.classList.add('is-open'));
+            document.body.classList.add('home-modal-open');
+            try { lucide.createIcons(); } catch(e) {}
+        }
+
+        function closeHomeBookInfo() {
+            const modal = document.getElementById('home-book-info-modal');
+            if (!modal) return;
+            modal.classList.remove('is-open');
+            setTimeout(() => modal.classList.add('hidden'), 160);
+            document.body.classList.remove('home-modal-open');
+        }
+
+        function openBookDiscussionFromHome(title) {
+            closeHomeBookInfo();
+            navigate('realtime-room');
+            setTimeout(() => {
+                if (typeof openBookDiscussion === 'function') openBookDiscussion(title);
+            }, 30);
+        }
+
+        function openAllDiscussionsFromHome() {
+            navigate('realtime-room');
+            setTimeout(() => {
+                if (typeof clearBookDiscussionFilter === 'function') clearBookDiscussionFilter();
+            }, 30);
+        }
+
+        function openHomeAIQuestion(bookTitle, scene, question) {
+            closeHomeBookInfo();
+            navigate('ai-chat');
+            setTimeout(() => {
+                if (typeof resetAIChat === 'function') resetAIChat(bookTitle, 'debate');
+                if (typeof setAIBookTitle === 'function') setAIBookTitle(bookTitle, true);
+                const opener = `『${bookTitle}』의 ${scene}에 대해 이야기해볼까요?\n\n${question}`;
+                state.currentAIBook = bookTitle;
+                state.currentAIMode = 'debate';
+                state.aiSetupStage = 'chat';
+                state.aiChatHistory = [
+                    { role: 'user', parts: [{ text: `메인에서 『${bookTitle}』의 장면 질문을 선택했습니다.` }] },
+                    { role: 'model', parts: [{ text: opener }] }
+                ];
+                const scroller = document.getElementById('ai-chat-scroller');
+                if (scroller) {
+                    scroller.innerHTML = '';
+                    if (typeof appendAIMessageToScroller === 'function') appendAIMessageToScroller('model', opener);
+                    scroller.scrollTop = scroller.scrollHeight;
+                }
+                safeSetText('ai-chat-header-book', `『${bookTitle}』`);
+                if (typeof renderAIBookAnalysisCard === 'function') renderAIBookAnalysisCard(bookTitle);
+                if (typeof renderAIRightSidebar === 'function') renderAIRightSidebar();
+            }, 40);
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeHomeBookInfo();
+            if ((e.key === 'Enter' || e.key === ' ') && e.target?.classList?.contains('bookfeed-talk')) e.target.click();
+        });
+
+
+        function renderHomePopularBooks() {
+            const container = document.getElementById('home-popular-books');
+            if (!container) return;
+            container.innerHTML = HOME_POPULAR_BOOKS.map((book, index) => `
+                <button class="bookfeed-book" onclick="openHomeBookInfo(${JSON.stringify(book.title).replace(/"/g,'&quot;')})">
+                    <span class="bookfeed-rank">${index + 1}</span>
+                    ${getHomeCoverMarkup(book.title, 'bookfeed-book-cover')}
+                    <b>${escapeHTML(book.title)}</b>
+                    <small>${Number(book.count)}명 토론 중</small>
+                </button>`).join('');
+        }
+
+        function renderHomeDiscussions() {
+            const container = document.getElementById('home-discussion-rail');
+            if (!container) return;
+            container.innerHTML = HOME_DISCUSSIONS.map(item => `
+                <article class="bookfeed-talk" onclick="openBookDiscussionFromHome(${JSON.stringify(item.title).replace(/"/g,'&quot;')})" role="button" tabindex="0">
+                    ${getHomeCoverMarkup(item.title, 'bookfeed-talk-cover')}
+                    <div>
+                        <div class="bookfeed-talk-title"><b>${escapeHTML(item.title)}</b><span>${Number(item.count)}명 참여</span></div>
+                        <p class="bookfeed-talk-teaser">${escapeHTML(item.teaser)}</p>
+                        <div class="bookfeed-talk-bottom"><small>${escapeHTML(item.activity)}</small><button onclick="event.stopPropagation();openBookDiscussionFromHome(${JSON.stringify(item.title).replace(/"/g,'&quot;')})">참여하기</button></div>
+                    </div>
+                </article>`).join('');
+        }
+
+        function getHomeGroupScopeLabel(group) {
+            if (group.scope === '비공개') return '비공개';
+            if (group.libraryOnly || group.library || group.scope === '도서관 전용') return '도서관 전용';
+            return '공개';
+        }
+
+        function renderHomeMemberGroups() {
+            const container = document.getElementById('home-my-groups');
+            if (!container) return;
+            const joined = (state.gatherings || []).filter(g => g.joined);
+            if (!joined.length) {
+                container.innerHTML = `<button class="bookfeed-empty-card" onclick="navigate('search-results')">참여 중인 모임이 없어요.<br><b>새 모임 찾아보기</b></button>`;
+                return;
+            }
+            container.innerHTML = joined.map(g => `
+                <button class="bookfeed-club bookfeed-club-detail" onclick="enterMeetingRoomById(${Number(g.id)})">
+                    ${getHomeCoverMarkup(g.book || '주제도서', 'bookfeed-group-cover')}
+                    <div class="bookfeed-club-copy">
+                        <div class="bookfeed-card-badges">
+                            <span>${escapeHTML(getHomeGroupScopeLabel(g))}</span>
+                            <span>${escapeHTML(g.method || '모임')}</span>
+                            ${g.isLeader ? '<span class="leader">모임장</span>' : ''}
+                        </div>
+                        <b>${escapeHTML(g.title)}</b>
+                        <small>${escapeHTML(g.schedule || '일정 협의')}</small>
+                        <em>『${escapeHTML(g.book || '주제도서 미정')}』</em>
+                    </div>
+                </button>`).join('');
+        }
+
+
+        function getNotificationAvatarHTML(n, person, sizeClass = 'w-10 h-10') {
+            if (n && n.avatarId) return getAvatarHTML({ name:person, nickname:person, avatarType:'moa', avatarId:Number(n.avatarId) || 1 }, sizeClass);
+            return getAvatarByName(person, sizeClass);
+        }
+
+        function getNotificationPresentation(n) {
+            const type = n?.type || 'message';
+            const person = n?.from || n?.to || n?.leaderNickname || '북메이트';
+            const meetingTitle = n?.gathering || n?.title || '';
+            const common = { type, person, headline:'새로운 알림이 있어요.', detail:n?.message || n?.detail || '', actionLabel:'알림 보기' };
+            if (type === 'meeting') return { ...common, headline:`오늘 ${n.timeLabel || n.time || '예정'} · ${meetingTitle} 모임이 있어요.`, detail:n.detail || '', actionLabel:'일정 보기' };
+            if (type === 'message') return { ...common, headline:`${person}님이 채팅 메시지를 보냈어요.`, detail:n.message || '', actionLabel:'메시지 보기' };
+            if (type === 'guestbook') return { ...common, headline:`${person}님이 북라운지 방명록을 남겼어요.`, detail:n.message || '', actionLabel:'방명록 보기' };
+            if (type === 'hello') return { ...common, headline:`${person}님이 인사를 건넸어요.`, detail:n.message || '', actionLabel:'인사 답하기' };
+            if (type === 'invite_rx') return { ...common, headline:`${person}님이 독서모임에 초대했어요.`, detail:n.message || meetingTitle, actionLabel:'초대 확인' };
+            if (type === 'invite_tx') return { ...common, person:n.to || person, headline:`${n.to || '북메이트'}님에게 초대장을 보냈어요.`, detail:meetingTitle || n.status || '', actionLabel:'상태 보기' };
+            if (type === 'lounge_visit') return { ...common, headline:`${person}님이 북라운지를 방문했어요.`, detail:n.message || '', actionLabel:'북라운지 보기' };
+            return common;
+        }
+
+function renderHomeNotifications() {
+    const container = document.getElementById('home-notification-rail');
+    if (!container) return;
+    const meetingItems = getTodayJoinedGatherings().map((g, index) => ({
+        id:`meeting-${g.id || index}`, type:'meeting', from:g.leaderNickname || '달빛독서가', avatarId:g.isLeader ? state.currentUser?.avatarId : undefined,
+        gathering:g.title, timeLabel:getGatheringScheduleTime(g.schedule) || '예정',
+        detail:`『${g.book || '주제도서'}』 · ${g.method || '모임 방식 확인'} · 참여 예정 ${Number(g.membersCount || 0)}명`, time:'오늘', isRead:false
+    }));
+    const notifications = meetingItems.concat((state.notifications || []).slice().sort((a,b)=>Number(a.isRead)-Number(b.isRead)).slice(0, 6)).slice(0, 7);
+    if (!notifications.length) {
+        container.innerHTML = `<button class="bookfeed-empty-card" onclick="navigate('notifications')">새로운 알림이 없습니다.</button>`;
+        return;
+    }
+    container.innerHTML = notifications.map(n => {
+        const view = getNotificationPresentation(n);
+        return `<button class="bookfeed-notification ${escapeHTML(view.type)}" onclick="navigate('notifications')">
+            <span class="bookfeed-notification-profile">${getNotificationAvatarHTML(n, view.person, 'w-10 h-10')}</span>
+            <div><b>${escapeHTML(view.headline)}</b>${view.detail ? `<p>${escapeHTML(view.detail)}</p>` : ''}<small>${escapeHTML(n.time || '')}</small></div>
+            ${n.isRead ? '' : '<i class="bookfeed-unread-dot"></i>'}
+        </button>`;
+    }).join('');
+}
+
+        function getHomeGroupScope(group) {
+            if (group.libraryOnly || group.library || group.scope === '도서관 전용') return `🏛 ${group.library || '도서관'} 전용`;
+            if (group.scope === '비공개') return '🔒 초대 전용';
+            return '전체 공개';
+        }
+
+        function openHomeGathering(id) {
+            const group = (state.gatherings || []).find(g => Number(g.id) === Number(id));
+            if (!group) return;
+            if (group.joined) { enterMeetingRoomById(group.id); return; }
+            navigate('search-results');
+            setTimeout(() => {
+                if (typeof renderGatheringsGrid === 'function') renderGatheringsGrid([group]);
+            }, 40);
+        }
+
+        function renderHomeNewGroups() {
+            const container = document.getElementById('home-new-groups');
+            if (!container) return;
+            const groups = (state.gatherings || [])
+                .filter(g => !g.joined && g.scope !== '비공개')
+                .sort((a,b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')) || Number(b.id || 0) - Number(a.id || 0))
+                .slice(0, 6);
+            if (!groups.length) {
+                container.innerHTML = `<button class="bookfeed-empty-card" onclick="navigate('search-results')">현재 모집 중인 새 모임을 확인해보세요.</button>`;
+                return;
+            }
+            container.innerHTML = groups.map(g => `
+                <article class="bookfeed-new bookfeed-new-connected" onclick="openHomeGathering(${Number(g.id)})" tabindex="0" role="button">
+                    ${getHomeCoverMarkup(g.book || '주제도서', 'bookfeed-new-cover')}
+                    <div class="bookfeed-new-copy">
+                        <div class="bookfeed-card-badges">
+                            <span>${escapeHTML(getHomeGroupScopeLabel(g))}</span>
+                            <span>${escapeHTML(g.type || '모임')}</span>
+                            ${g.library ? `<span class="library">${escapeHTML(g.library)}</span>` : ''}
+                        </div>
+                        <b>${escapeHTML(g.title)}</b>
+                        <small>『${escapeHTML(g.book || '주제도서 미정')}』</small>
+                        <p>${escapeHTML(g.schedule || '일정 협의')} · ${escapeHTML(g.method || '방식 확인')}</p>
+                        <em>${Number(g.membersCount || 0)}/${Number(g.maxMembers || 0)}명 참여</em>
+                    </div>
+                </article>`).join('');
+        }
+
+        function renderHomeSharedContent() {
+            renderHomePopularBooks();
+            renderHomeDiscussions();
+            renderHomeNewGroups();
+        }
+
+        function renderHomeConnectedData() {
+            syncHomeDemoData();
+            renderHomeSharedContent();
+            renderHomeMemberGroups();
+            renderHomeNotifications();
+            try { lucide.createIcons(); } catch(e) {}
+        }
+
+function updateHomeReadingSchedule() {
+    const card = document.getElementById('home-reading-schedule-card');
+    if (!card) return;
+    syncHomeDemoData();
+    const todays = getTodayJoinedGatherings();
+    const g = todays[0] || (state.gatherings || []).find(item => item.joined);
+    const titleEl = document.getElementById('home-hero-book-title');
+    const authorEl = document.getElementById('home-hero-author');
+    const coverSlot = document.getElementById('home-hero-cover-slot');
+    const titleButton = card.querySelector('.bookfeed-hero-book-title');
+    const liveButton = card.querySelector('.bookfeed-dark-btn');
+    const communityButton = card.querySelector('.bookfeed-light-btn');
+    if (g) {
+        const time = getGatheringScheduleTime(g.schedule) || (todays.length ? '오늘' : g.schedule || '일정 확인');
+        const bookTitle = g.book || '오늘의 독서';
+        if (titleEl) titleEl.innerText = bookTitle;
+        if (authorEl) authorEl.innerText = g.author || getHomeBookMeta(bookTitle).author || '저자 정보 확인';
+        if (coverSlot) coverSlot.innerHTML = getHomeCoverMarkup(bookTitle, 'bookfeed-hero-cover');
+        safeSetText('home-hero-time', todays.length ? `오늘 ${time}` : time);
+        safeSetText('home-hero-method', g.method || g.platform || '독서모임');
+        safeSetText('home-hero-members', `참여 예정 ${Number(g.membersCount || 0)}명`);
+        safeSetText('home-hero-group-name', g.title || '독서모임');
+        if (titleButton) titleButton.setAttribute('onclick', `openHomeBookInfo(${JSON.stringify(bookTitle)})`);
+        if (liveButton) liveButton.setAttribute('onclick', 'openEmbeddedLiveRoom()');
+        if (communityButton) communityButton.setAttribute('onclick', `enterMeetingRoom(${JSON.stringify(bookTitle)}, ${JSON.stringify(g.id || null)})`);
+    }
+    card.classList.remove('hidden');
+}
+
+        function updateHomeBrief() {
+            const memberHome = document.getElementById('member-home-content');
+            const guestHome = document.getElementById('guest-home-content');
+            const guest = typeof isGuestUser === 'function' && isGuestUser();
+            if (memberHome) memberHome.classList.toggle('hidden', guest);
+            if (guestHome) guestHome.classList.toggle('hidden', !guest);
+            const memberSecondary = document.getElementById('member-home-secondary');
+            if (memberSecondary) memberSecondary.classList.toggle('hidden', guest);
+            if (guest) { renderHomeSharedContent(); return; }
+            safeSetText('home-brief-eyebrow', `안녕하세요, ${state.currentUser.nickname}님 ☀️`);
+            safeSetText('home-brief-title', '오늘도 함께 읽어볼까요?');
+            const todayCount = getTodayJoinedGatherings().length;
+            safeSetText('home-brief-subtitle', todayCount > 0 ? `오늘 예정된 독서모임 ${todayCount}개가 있어요. 책과 새로운 질문이 기다리고 있습니다.` : '책과 사람, 그리고 새로운 질문이 기다리고 있어요.');
             updateHomeReadingSchedule();
+            renderHomeConnectedData();
         }
 
         function openProfileCard() {
@@ -221,6 +591,11 @@
             if (profileAvatar) profileAvatar.outerHTML = getAvatarHTML(state.currentUser, 'w-20 h-20', 'shadow-inner relative z-10 border-4 border-white').replace('<div class="', '<div id="profile-avatar-initial" class="');
             safeSetText('profile-nickname', nickname);
             safeSetText('mypage-library-name', library);
+            const libraryVerifiedBadge = document.getElementById('mypage-library-verified-badge');
+            if (libraryVerifiedBadge) {
+                libraryVerifiedBadge.classList.toggle('hidden', !state.currentUser.libraryVerified);
+                libraryVerifiedBadge.textContent = state.currentUser.libraryVerified ? '인증회원' : '미인증';
+            }
             safeSetText('mypage-info-nickname-span', nickname);
             safeSetText('my-read-count-val', state.currentUser.readBooksCount || 0);
             safeSetText('my-chat-count-val', (state.currentUser.chatMessagesCount || 0).toLocaleString());
@@ -243,69 +618,35 @@
             renderMyPageRecentBooks();
             renderReadingTimeline();
             renderMyPageRecentArchives();
+            if (typeof renderHomeLibraryMissionPreview === 'function') renderHomeLibraryMissionPreview();
+            if (state.currentView === 'library' && typeof renderMyLibraryHub === 'function') renderMyLibraryHub();
         }
 
-        function renderMyPageNotifications() {
-            const container = document.getElementById('mypage-notifications-list');
-            if (!container) return;
-            renderSocialComposerState();
-            container.innerHTML = '';
-            
-            const unreadCount = state.notifications.filter(n => !n.isRead).length + (typeof getTodayJoinedGatherings === 'function' ? getTodayJoinedGatherings().length : 0);
-            const badge = document.getElementById('notification-badge-count');
-            if(badge) {
-                badge.innerText = unreadCount;
-                badge.style.display = unreadCount > 0 ? 'flex' : 'none';
-            }
-
-            if (state.notifications.length === 0) {
-                container.innerHTML = `<div class="text-xs text-gray-400 text-center py-4">새로운 알림이 없습니다.</div>`;
-                return;
-            }
-
-            state.notifications.forEach(n => {
-                const isReadClass = n.isRead ? 'opacity-60' : '';
-                const dotClass = n.isRead ? '' : '<span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>';
-                
-                let actions = '';
-                if (n.type === 'hello') {
-                    actions = `<button onclick="handleNotiAction(${n.id}, 'reply')" class="mt-2 px-3 py-1.5 bg-brand-sageLight text-brand-sageDark hover:bg-brand-sage/20 rounded-lg text-[10px] font-bold transition-colors">인사 답하기</button>`;
-                } else if (n.type === 'invite_rx') {
-                    actions = `
-                        <div class="flex gap-2 mt-2">
-                            <button onclick="handleNotiAction(${n.id}, 'accept')" class="px-3 py-1.5 bg-brand-navy hover:bg-brand-navyLight text-white rounded-lg text-[10px] font-bold transition-colors">수락</button>
-                            <button onclick="handleNotiAction(${n.id}, 'decline')" class="px-3 py-1.5 bg-brand-ivory text-brand-navy border border-brand-ivoryDark rounded-lg text-[10px] font-bold transition-colors">거절</button>
-                        </div>
-                    `;
-                } else if (n.type === 'invite_tx') {
-                    actions = `<div class="mt-2 text-[10px] font-bold text-gray-400 border border-gray-200 px-2 py-1 rounded inline-block bg-gray-50">${n.status}</div>`;
-                }
-
-                let profileName = n.from || n.to;
-                let directionText = n.type === 'invite_tx' ? '님에게 초대장을 보냈습니다.' : '님이 메시지를 보냈습니다.';
-                if (n.type === 'hello') directionText = '님이 인사를 건넸습니다.';
-
-                const div = document.createElement('div');
-                div.className = `p-3 rounded-xl border border-brand-ivoryDark bg-brand-ivory/30 ${isReadClass}`;
-                div.innerHTML = `
-                    <div class="flex gap-3">
-                        <div class="relative shrink-0">
-                            ${getAvatarHTML({ name: profileName, avatarType: 'moa', avatarId: n.avatarId || ((n.initial || profileName).charCodeAt(0) % 4) + 1 }, 'w-8 h-8')}
-                            ${dotClass}
-                        </div>
-                        <div class="flex-grow">
-                            <div class="flex justify-between items-start">
-                                <span class="text-[10px] font-bold text-brand-navy block">${profileName} <span class="font-normal text-gray-500">${directionText}</span></span>
-                                <span class="text-[9px] text-gray-400 shrink-0">${n.time}</span>
-                            </div>
-                            <p class="text-[11px] text-gray-600 mt-1 leading-snug">${n.message || `『${n.gathering}』 모임`}</p>
-                            ${actions}
-                        </div>
-                    </div>
-                `;
-                container.appendChild(div);
-            });
-        }
+function renderMyPageNotifications() {
+    const container = document.getElementById('mypage-notifications-list');
+    if (!container) return;
+    renderSocialComposerState();
+    container.innerHTML = '';
+    const unreadCount = state.notifications.filter(n => !n.isRead).length + (typeof getTodayJoinedGatherings === 'function' ? getTodayJoinedGatherings().length : 0);
+    const badge = document.getElementById('notification-badge-count');
+    if (badge) { badge.innerText = unreadCount; badge.style.display = unreadCount > 0 ? 'flex' : 'none'; }
+    if (state.notifications.length === 0) {
+        container.innerHTML = `<div class="text-xs text-gray-400 text-center py-4">새로운 알림이 없습니다.</div>`;
+        return;
+    }
+    state.notifications.forEach(n => {
+        const view = getNotificationPresentation(n);
+        const isReadClass = n.isRead ? 'opacity-60' : '';
+        const dotClass = n.isRead ? '' : '<span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>';
+        let actions = '';
+        if (n.type === 'hello') actions = `<button onclick="handleNotiAction(${n.id}, 'reply')" class="mt-2 px-3 py-1.5 bg-brand-sageLight text-brand-sageDark rounded-lg text-[10px] font-bold">인사 답하기</button>`;
+        else if (n.type === 'invite_rx') actions = `<div class="flex gap-2 mt-2"><button onclick="handleNotiAction(${n.id}, 'accept')" class="px-3 py-1.5 bg-brand-navy text-white rounded-lg text-[10px] font-bold">수락</button><button onclick="handleNotiAction(${n.id}, 'decline')" class="px-3 py-1.5 bg-brand-ivory text-brand-navy border border-brand-ivoryDark rounded-lg text-[10px] font-bold">거절</button></div>`;
+        const div = document.createElement('div');
+        div.className = `p-3 rounded-xl border border-brand-ivoryDark bg-brand-ivory/30 ${isReadClass}`;
+        div.innerHTML = `<div class="flex gap-3"><div class="relative shrink-0">${getNotificationAvatarHTML(n, view.person, 'w-9 h-9')}${dotClass}</div><div class="flex-grow min-w-0"><div class="flex justify-between items-start gap-2"><span class="text-[10px] font-bold text-brand-navy block">${escapeHTML(view.headline)}</span><span class="text-[9px] text-gray-400 shrink-0">${escapeHTML(n.time || '')}</span></div>${view.detail ? `<p class="text-[11px] text-gray-600 mt-1 leading-snug">${escapeHTML(view.detail)}</p>` : ''}${actions}</div></div>`;
+        container.appendChild(div);
+    });
+}
 
         function handleNotiAction(id, actionType) {
             const noti = state.notifications.find(n => n.id === id);
@@ -566,7 +907,10 @@
             if (nick.length > 6) { showToast("대화명은 최대 6자까지 가능합니다.", "error"); return; }
 
             state.currentUser.nickname = nick;
-            state.currentUser.library = document.getElementById('settings-library')?.value || state.currentUser.library;
+            const nextLibrary = document.getElementById('settings-library')?.value || state.currentUser.library;
+            const prevLibrary = state.currentUser.library;
+            state.currentUser.library = nextLibrary;
+            if (prevLibrary && nextLibrary !== prevLibrary) state.currentUser.libraryVerified = false;
             const selected = document.querySelector('input[name="settings-avatar-type"]:checked')?.value || 'moa-1';
             if (selected.startsWith('moa-')) {
                 state.currentUser.avatarType = 'moa';
@@ -622,35 +966,57 @@
             if (viewName === 'ai-chat') renderAIRightSidebar();
             if (viewName === 'archive') renderSavedAIArchives();
             if (viewName === 'notifications') renderNotificationsView();
+            if (viewName === 'library' && typeof renderMyLibraryHub === 'function') renderMyLibraryHub();
+            if (viewName === 'home') {
+                renderHomeConnectedData();
+                if (typeof renderHomeLibraryMissionPreview === 'function') renderHomeLibraryMissionPreview();
+            }
             window.scrollTo({ top: 0, behavior: 'smooth' });
             lucide.createIcons();
         }
 
 
 
-        function renderNotificationsView() {
-            const section = document.getElementById('view-notifications');
-            const list = section ? section.querySelector('.divide-y.divide-brand-ivoryDark') : null;
-            if (!list) return;
-            if (typeof isGuestUser === 'function' && isGuestUser()) {
-                list.innerHTML = `
-                    <div class="p-8 text-center bg-brand-ivory/40">
-                        <div class="w-14 h-14 mx-auto rounded-2xl bg-white border border-brand-ivoryDark flex items-center justify-center text-2xl mb-4">🔔</div>
-                        <h3 class="serif-title text-lg font-bold text-brand-navy">가입하면 나의 모임 알림을 받을 수 있어요.</h3>
-                        <p class="text-xs text-gray-500 leading-relaxed mt-2">게스트 계정에서는 예시 알림을 보여주지 않습니다. BOOKMATE가 되어 독서모임 일정, 초대, 새 글 알림을 확인해보세요.</p>
-                        <button onclick="openAuthPage('login')" class="mt-5 px-5 py-2.5 bg-brand-navy text-white rounded-xl text-xs font-bold shadow">로그인 / 가입하기</button>
-                    </div>`;
-                return;
-            }
-            const todays = getTodayJoinedGatherings();
-            const scheduleItems = todays.map(g => {
-                const time = getGatheringScheduleTime(g.schedule) || '오늘';
-                return `<div class="p-5 flex gap-4 hover:bg-brand-ivory/40 transition-colors"><div class="w-10 h-10 rounded-full bg-red-50 text-red-600 flex items-center justify-center shrink-0"><i data-lucide="calendar-clock" class="w-5 h-5"></i></div><div><h3 class="font-bold text-sm text-brand-navy">${time} 『${g.book}』 ${g.title} 모임이 있습니다.</h3><p class="text-xs text-gray-500 mt-1">${g.method || '독서모임'} · ${g.platform || g.place || g.schedule}</p><button onclick="enterMeetingRoom(${JSON.stringify(g.book)})" class="mt-3 px-3 py-1.5 bg-brand-navy text-white rounded-lg text-[10px] font-bold">입장하기</button></div></div>`;
-            });
-            const baseItems = (state.notifications || []).map(n => `<div class="p-5 flex gap-4 hover:bg-brand-ivory/40 transition-colors"><div class="w-10 h-10 rounded-full bg-brand-sageLight text-brand-sageDark flex items-center justify-center shrink-0">${n.initial || '알'}</div><div><h3 class="font-bold text-sm text-brand-navy">${n.message || n.gathering || '새 알림이 있습니다.'}</h3><p class="text-xs text-gray-500 mt-1">${n.time || ''}</p></div></div>`);
-            list.innerHTML = (scheduleItems.length || baseItems.length) ? [...scheduleItems, ...baseItems].join('') : `<div class="p-8 text-center text-xs text-gray-400">오늘 확인할 알림이 없습니다.</div>`;
-            lucide.createIcons();
-        }
+function renderNotificationsView() {
+    const section = document.getElementById('view-notifications');
+    const list = section ? section.querySelector('.divide-y.divide-brand-ivoryDark') : null;
+    if (!list) return;
+    if (typeof isGuestUser === 'function' && isGuestUser()) {
+        list.innerHTML = `
+            <div class="p-8 text-center bg-brand-ivory/40">
+                <div class="w-14 h-14 mx-auto rounded-2xl bg-white border border-brand-ivoryDark flex items-center justify-center text-2xl mb-4">🔔</div>
+                <h3 class="serif-title text-lg font-bold text-brand-navy">가입하면 나의 모임 알림을 받을 수 있어요.</h3>
+                <p class="text-xs text-gray-500 leading-relaxed mt-2">독서모임 일정, 채팅 메시지, 방명록, 초대 알림을 한곳에서 확인할 수 있습니다.</p>
+                <button onclick="openAuthPage('login')" class="mt-5 px-5 py-2.5 bg-brand-navy text-white rounded-xl text-xs font-bold shadow">로그인 / 가입하기</button>
+            </div>`;
+        return;
+    }
+    const meetingItems = getTodayJoinedGatherings().map((g,index) => ({
+        id:`meeting-page-${g.id || index}`, type:'meeting', from:g.leaderNickname || '달빛독서가', gathering:g.title,
+        timeLabel:getGatheringScheduleTime(g.schedule) || '예정', detail:`『${g.book || '주제도서'}』 · ${g.method || '독서모임'} · 참여 예정 ${Number(g.membersCount || 0)}명`, time:'오늘', groupId:g.id, book:g.book, isRead:false
+    }));
+    const items = meetingItems.concat(state.notifications || []);
+    if (!items.length) {
+        list.innerHTML = `<div class="p-8 text-center text-xs text-gray-400">오늘 확인할 알림이 없습니다.</div>`;
+        return;
+    }
+    list.innerHTML = items.map(n => {
+        const view = getNotificationPresentation(n);
+        const action = n.type === 'meeting'
+            ? `<button onclick="enterMeetingRoom(${JSON.stringify(n.book || '')}, ${JSON.stringify(n.groupId || null)})" class="notification-action-btn primary">모임 확인</button>`
+            : n.type === 'invite_rx'
+                ? `<div class="notification-actions"><button onclick="handleNotiAction(${Number(n.id)}, 'accept')" class="notification-action-btn primary">수락</button><button onclick="handleNotiAction(${Number(n.id)}, 'decline')" class="notification-action-btn">거절</button></div>`
+                : n.type === 'hello'
+                    ? `<button onclick="handleNotiAction(${Number(n.id)}, 'reply')" class="notification-action-btn">인사 답하기</button>`
+                    : '';
+        return `<div class="notification-page-item ${n.isRead ? 'is-read' : ''}">
+            <div class="notification-page-avatar">${getNotificationAvatarHTML(n, view.person, 'w-12 h-12')}</div>
+            <div class="notification-page-copy"><div class="notification-page-head"><h3>${escapeHTML(view.headline)}</h3><time>${escapeHTML(n.time || '')}</time></div>${view.detail ? `<p>${escapeHTML(view.detail)}</p>` : ''}${action}</div>
+            ${n.isRead ? '' : '<i class="notification-page-unread"></i>'}
+        </div>`;
+    }).join('');
+    lucide.createIcons();
+}
 
         function openSettingsModal() {
             normalizeAvatarTarget(state.currentUser);
@@ -732,13 +1098,56 @@
 
         function showToast(message, type = "success") {
             const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            // 팝업과 <dialog>가 열린 상태에서도 토스트가 가려지지 않도록
+            // Popover Top Layer를 사용합니다. 지원하지 않는 브라우저에서는
+            // 최상위 z-index의 고정 레이어로 자동 대체됩니다.
+            const supportsPopover = typeof container.showPopover === 'function';
+            if (supportsPopover) {
+                try {
+                    if (!container.matches(':popover-open')) container.showPopover();
+                } catch (error) {
+                    container.classList.add('toast-fallback-open');
+                }
+            } else {
+                container.classList.add('toast-fallback-open');
+            }
+
             const toast = document.createElement('div');
-            const bgColor = type === "error" ? "bg-red-500" : "bg-brand-sageDark";
-            toast.className = `${bgColor} text-white px-6 py-3 rounded-xl shadow-lg text-sm font-bold toast-enter flex items-center gap-2`;
-            toast.innerHTML = `<i data-lucide="${type === 'error' ? 'alert-circle' : 'check-circle'}" class="w-4 h-4"></i> ${message}`;
+            toast.className = `bookmate-toast ${type === 'error' ? 'is-error' : 'is-success'} toast-enter`;
+            toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+
+            const icon = document.createElement('i');
+            icon.setAttribute('data-lucide', type === 'error' ? 'alert-circle' : 'check-circle');
+            icon.className = 'bookmate-toast-icon';
+
+            const copy = document.createElement('span');
+            copy.textContent = String(message || '');
+
+            toast.append(icon, copy);
             container.appendChild(toast);
-            lucide.createIcons();
-            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
+            if (window.lucide?.createIcons) window.lucide.createIcons();
+
+            const dismiss = () => {
+                toast.classList.add('is-leaving');
+                setTimeout(() => {
+                    toast.remove();
+                    if (container.childElementCount === 0) {
+                        if (supportsPopover) {
+                            try {
+                                if (container.matches(':popover-open')) container.hidePopover();
+                            } catch (error) {
+                                container.classList.remove('toast-fallback-open');
+                            }
+                        } else {
+                            container.classList.remove('toast-fallback-open');
+                        }
+                    }
+                }, 240);
+            };
+
+            setTimeout(dismiss, type === 'error' ? 3800 : 3000);
         }
 
         async function loadBookCover(bookTitle, containerId, extraClass = "w-full h-full object-cover rounded-lg", coverUrl = null, bookData = {}) {

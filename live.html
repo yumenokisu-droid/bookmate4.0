@@ -29,7 +29,7 @@
         </div>
         <button type="button" class="context-change-button host-only" id="changeBookBtn">주제도서 변경</button>
       </div>
-      <div class="live-prompt-context">
+      <div class="live-leader-context"><span class="context-label">토론 리더</span><strong id="discussionLeaderName">문장수집가</strong><small>이번 회차 진행</small></div><div class="live-prompt-context">
         <span class="context-label">이번 모임 발제문</span>
         <strong id="currentPrompt">기억이 흔들리는 순간에도 인간다움은 유지될 수 있을까요?</strong>
       </div>
@@ -62,7 +62,7 @@
         </form>
 
         <details class="host-control-panel host-only" id="hostControlPanel">
-          <summary>모임장 AI 설정 및 제어</summary>
+          <summary>토론 리더 도구</summary>
           <div class="host-control-body">
             <section>
               <h3>AI 진행 설정</h3>
@@ -73,12 +73,9 @@
               </div>
             </section>
             <section>
-              <h3>모임장 AI 제어</h3>
+              <h3>토론 진행 도구</h3>
               <div class="host-action-grid">
-                <button type="button" id="nextPromptBtn">다음 질문</button>
-                <button type="button" id="summaryBtn">현재까지 요약</button>
-                <button type="button" id="encourageBtn">참여 유도</button>
-                <button type="button" id="finishBtn" class="danger">종료 리포트</button>
+                <button type="button" id="startPromptBtn">발제 시작</button><button type="button" id="nextPromptBtn">질문 넘기기</button><button type="button" id="pollBtn">투표 시작</button><button type="button" id="summaryBtn">현재까지 요약</button><button type="button" id="encourageBtn">AI 호출</button><button type="button" id="finishBtn" class="danger">토론 종료</button>
               </div>
             </section>
           </div>

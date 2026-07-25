@@ -12,7 +12,8 @@
                     notifications: state.notifications,
                     socialPosts: state.socialPosts,
                     aiChatHistory: state.aiChatHistory,
-                    currentAIBook: state.currentAIBook
+                    currentAIBook: state.currentAIBook,
+                    directMessages: state.directMessages
                 };
                 localStorage.setItem(BOOKMATE_STORAGE_KEY, JSON.stringify(snapshot));
             } catch (e) {
@@ -25,11 +26,14 @@
                 const raw = localStorage.getItem(BOOKMATE_STORAGE_KEY);
                 if (!raw) return;
                 const saved = JSON.parse(raw);
-                ['recentBooks', 'recentArchives', 'gatherings', 'notifications', 'socialPosts', 'aiChatHistory', 'currentAIBook'].forEach(key => {
+                ['recentBooks', 'recentArchives', 'gatherings', 'notifications', 'socialPosts', 'aiChatHistory', 'currentAIBook', 'directMessages'].forEach(key => {
                     if (saved[key] !== undefined) state[key] = saved[key];
                 });
-                // 첫 화면은 항상 게스트로 시작해야 하므로 저장된 currentUser/currentView는 복원하지 않습니다.
-                // 이전 배포본에서 남은 '달빛독서가' 자동 로그인/독서모임 진입 잔여값을 차단합니다.
+                // 일반 첫 접속은 게스트로 시작하지만, LIVE ROOM 복귀 시에는 저장된 사용자를 먼저 복원합니다.
+                if (window.__BOOKMATE_RETURN_LIVE__ && saved.currentUser && !saved.currentUser.isGuest) {
+                    state.currentUser = saved.currentUser;
+                }
+                // 일반 접속에서는 이전 자동 로그인 잔여값을 복원하지 않습니다.
                 // 기존 브라우저 저장값에서 '나'가 모아4 등으로 남아 있던 문제를 1회 보정합니다.
                 // 사용자가 직접 첨부한 사진은 유지하고, 모아 기본값만 모아1로 맞춥니다.
                 if (!localStorage.getItem(BOOKMATE_AVATAR_MIGRATION_KEY)) {

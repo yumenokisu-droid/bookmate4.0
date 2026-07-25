@@ -1151,7 +1151,7 @@ ${getModeChoicePrompt(validation.book.title)}`;
                                             <p class="text-[9px] text-brand-sage font-medium">"고통은 회피할 때보다 마주할 때..."</p>
                                         </div>
                                     </div>
-                                    <button onclick="sayHelloToReader('사유올빼미')" class="px-3 py-1.5 bg-brand-navy text-white text-[10px] font-bold rounded-lg hover:bg-brand-navyLight shrink-0 transition-colors">인사하기</button>
+                                    <button onclick="openDirectMessage('사유올빼미',{source:'ai'})" class="px-3 py-1.5 bg-brand-navy text-white text-[10px] font-bold rounded-lg hover:bg-brand-navyLight shrink-0 transition-colors">쪽지 보내기</button>
                                 </div>
 
                                 <div class="pt-3 border-t border-brand-sage/20">
