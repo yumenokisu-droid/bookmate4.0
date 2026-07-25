@@ -115,7 +115,7 @@ function fallbackReply(kind){
   if(kind.includes('다음')) return `새 질문을 제안할게요. 『${state.book.title}』에서 인물이 자신의 정체성을 가장 분명하게 드러낸 장면은 어디였나요? 그 장면을 선택한 이유도 함께 이야기해보세요.`;
   if(kind.includes('요약')) return '현재까지는 기억이 정체성을 만든다는 의견과, 기억보다 관계 속 태도와 선택이 인간다움을 보여준다는 의견이 나왔습니다. 참여자들은 마지막 장면과 인물의 선택을 중심으로 서로 다른 해석을 나누고 있습니다.';
   if(kind.includes('참여')) return '아직 의견을 말하지 않은 분은 “가장 기억에 남은 장면” 한 가지만 골라 짧게 말씀해 주세요. 정답을 찾기보다 서로 다른 감상을 비교해보면 좋겠습니다.';
-  return `방금 의견을 『${state.book.title}』의 핵심 주제와 연결해보면, 기억과 선택 중 무엇이 인간다움을 더 잘 보여주는지에 대한 질문으로 이어질 수 있어요.`;
+  return `방금 의견은 『${state.book.title}』에서 기억 자체보다 관계 속에서 내리는 선택이 인간다움을 드러낼 수 있다는 해석과 연결됩니다. 다른 참여자의 관점과 나란히 놓아보면 같은 장면이 서로 다르게 읽힌다는 점도 선명해져요.`;
 }
 
 async function callMoa(kind,userMessage=''){
@@ -126,18 +126,24 @@ async function callMoa(kind,userMessage=''){
   if(status) status.textContent='AI 응답 중…';
   setAiThinking(true);
   const controller=new AbortController();
-  const timeout=setTimeout(()=>controller.abort(),22000);
+  const timeout=setTimeout(()=>controller.abort(),45000);
   try {
     const roleGuide = state.aiRole==='보조'
       ? '사용자가 직접 모아를 부르거나 질문했을 때만 답하고, 진행을 주도하지 않는다.'
       : '토론 리더를 대신하지 말고, 필요한 순간에만 대화를 정리하거나 한 가지 질문을 제안한다.';
-    const systemPrompt = `너는 BOOKMATE의 AI 독서파트너 모아다. 현재 LIVE 독서토론에서 ${state.aiRole} 역할을 맡고 있다. ${roleGuide} 현재 주제도서는 『${state.book.title}』, 저자는 ${state.book.author}, 발제문은 "${state.book.prompt}"이다. 최근 대화에서 이미 말한 내용을 그대로 반복하지 않는다. 참여자의 이름과 의견을 정확히 구분한다. 한국어로 자연스럽게 2~4문장만 답한다.`;
+    const systemPrompt = `너는 BOOKMATE의 AI 독서파트너 모아다. 현재 LIVE 독서토론에서 ${state.aiRole} 역할을 맡고 있다. ${roleGuide} 현재 주제도서는 『${state.book.title}』, 저자는 ${state.book.author}, 발제문은 "${state.book.prompt}"이다. 새로 인사하거나 토론을 처음부터 시작하지 않는다. 가장 최근 참여자의 구체적인 의견을 먼저 짚고 작품의 주제와 연결한다. 최근 대화에서 이미 말한 내용을 그대로 반복하지 않는다. 참여자의 이름과 의견을 정확히 구분한다. 매번 질문하지 말고, 필요한 순간에만 질문을 한 개 제안한다. 한국어로 자연스럽고 완결된 2~4문장으로 답한다.`;
     const response = await fetch('/api/chat',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       signal:controller.signal,
       body:JSON.stringify({
-        message:`요청 유형: ${kind}\n사용자 입력: ${userMessage||'없음'}`,
+        message:userMessage || `요청 유형: ${kind}`,
+        requestKind:kind,
+        channel:'live',
+        history:state.messages.slice(-14).map(m=>({
+          role:m.type==='ai'?'model':'user',
+          parts:[{text:`${m.user}: ${m.text}`}]
+        })),
         book:`${state.book.title} / ${state.book.author}`,
         systemPrompt,
         conversationText:recentConversation()
